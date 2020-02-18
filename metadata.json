@@ -1,0 +1,9 @@
+{
+  "name": "Eruption Profile Switcher",
+  "description": "Runtime profile switcher for eruption-roccat-vulcan",
+  "uuid": "eruption-profile-switcher@x3n0m0rph59.org",
+	"version": 1,
+  "shell-version": [
+    "3.34"
+  ]
+}
