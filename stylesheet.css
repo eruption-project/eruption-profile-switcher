@@ -2,13 +2,17 @@
     font-size: 36px;
     font-weight: bold;
     color: #ffffff;
-    background-color: rgba(10,10,10,0.55);
+    background-color: rgba(10, 10, 10, 0.55);
     border-radius: 15px;
     margin: 50px;
     padding: 50px;
 }
 
-.checkmark {
+.checkmark, .menu-icon {
 	height: 4px;
 	width: 18px;
+}
+
+.slider {
+	width: 200px;
 }

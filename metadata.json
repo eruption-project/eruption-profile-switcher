@@ -2,7 +2,8 @@
   "name": "Eruption Profile Switcher",
   "description": "Runtime profile switcher for eruption-roccat-vulcan",
   "uuid": "eruption-profile-switcher@x3n0m0rph59.org",
-	"version": 1,
+	"version": 2,
+	"url": "https://github.com/X3n0m0rph59/eruption-profile-switcher",
   "shell-version": [
     "3.34"
   ]
