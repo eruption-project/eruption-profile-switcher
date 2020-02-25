@@ -260,10 +260,6 @@ let ProfilesMenuButton = GObject.registerClass(
       this.add_child(hbox);
 
       this.populateMenu();
-
-      this.connect("popup-menu", sender => {
-        this._cancelFlashing = true;
-      });
     }
 
     _onDestroy() {
@@ -335,24 +331,6 @@ let ProfilesMenuButton = GObject.registerClass(
       });
     }
 
-    flashIcon() {
-      this._flashed = false;
-      this._cancelFlashing = false;
-      this._flash_ttl = 3;
-
-      this._timeoutId = Mainloop.timeout_add(550, () => {
-        this._flashed
-          ? this.icon.set_icon_name("info")
-          : this.icon.set_icon_name("keyboard-brightness");
-        this._flashed = !this._flashed;
-
-        if (this._cancelFlashing)
-          this.icon.set_icon_name("keyboard-brightness");
-
-        return this._flash_ttl-- >= 0 || this._cancelFlashing;
-      });
-    }
-
     _brightnessSliderChanged() {
       let percent = this._brightnessSlider.value * 100;
       eruptionConfig.Brightness = percent;
@@ -370,8 +348,6 @@ let ProfilesMenuButton = GObject.registerClass(
     // creation of new profile files
     _profilesChanged(_proxy, sender, [object]) {
       //_showNotification("Eruption profiles updated");
-      this.flashIcon();
-
       profilesMenuButton.populateMenu();
     }
 
