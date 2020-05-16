@@ -1,11 +1,13 @@
-.notification-label {
-    font-size: 36px;
+.slot-label {
     font-weight: bold;
-    color: #ffffff;
-    background-color: rgba(10, 10, 10, 0.55);
-    border-radius: 15px;
-    margin: 50px;
-    padding: 50px;
+    font-size: larger;
+    margin: 3px;
+}
+
+.checkmark-slot {
+    padding: 4px;
+	height: 4px;
+	width: 18px;
 }
 
 .checkmark, .menu-icon {
@@ -15,4 +17,14 @@
 
 .slider {
 	width: 180px;
+}
+
+.notification-label {
+    font-size: 36px;
+    font-weight: bold;
+    color: #ffffff;
+    background-color: rgba(10, 10, 10, 0.55);
+    border-radius: 15px;
+    margin: 50px;
+    padding: 50px;
 }

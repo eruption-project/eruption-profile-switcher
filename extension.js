@@ -27,7 +27,50 @@ const PopupMenu = imports.ui.popupMenu;
 const Slider = imports.ui.slider;
 const Signals = imports.signals;
 
-// D-Bus interface specification
+// D-Bus interface specification: Slots
+const eruptionSlotIface= `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<node name="/org/eruption/slot">
+  <interface name="org.eruption.Slot">
+    <method name="SwitchSlot">
+      <arg name="slot" type="t" direction="in"/>
+      <arg name="status" type="b" direction="out"/>
+    </method>
+    <property name="ActiveSlot" type="t" access="read">
+      <annotation name="org.freedesktop.DBus.Property.EmitsChangedSignal" value="const"/>
+    </property>
+    <signal name="ActiveSlotChanged">
+      <arg name="new slot" type="t"/>
+    </signal>
+  </interface>
+  <interface name="org.freedesktop.DBus.Introspectable">
+    <method name="Introspect">
+      <arg name="xml_data" type="s" direction="out"/>
+    </method>
+  </interface>
+  <interface name="org.freedesktop.DBus.Properties">
+    <method name="Get">
+      <arg name="interface_name" type="s" direction="in"/>
+      <arg name="property_name" type="s" direction="in"/>
+      <arg name="value" type="v" direction="out"/>
+    </method>
+    <method name="GetAll">
+      <arg name="interface_name" type="s" direction="in"/>
+      <arg name="props" type="a{sv}" direction="out"/>
+    </method>
+    <method name="Set">
+      <arg name="interface_name" type="s" direction="in"/>
+      <arg name="property_name" type="s" direction="in"/>
+      <arg name="value" type="v" direction="in"/>
+    </method>
+    <signal name="PropertiesChanged">
+      <arg name="interface_name" type="s"/>
+      <arg name="changed_properties" type="a{sv}"/>
+      <arg name="invalidated_properties" type="as"/>
+    </signal>
+  </interface>
+</node>`.trim();
+
+// D-Bus interface specification: Profiles
 const eruptionProfileIface = `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
 <node name="/org/eruption/profile">
   <interface name="org.eruption.Profile">
@@ -66,10 +109,15 @@ const eruptionProfileIface = `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS O
       <arg name="property_name" type="s" direction="in"/>
       <arg name="value" type="v" direction="in"/>
     </method>
+    <signal name="PropertiesChanged">
+      <arg name="interface_name" type="s"/>
+      <arg name="changed_properties" type="a{sv}"/>
+      <arg name="invalidated_properties" type="as"/>
+    </signal>
   </interface>
 </node>`.trim();
 
-// D-Bus interface specification
+// D-Bus interface specification: Runtime configuration
 const eruptionConfigIface = `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
 <node name="/org/eruption/config">
   <interface name="org.eruption.Config">
@@ -96,17 +144,22 @@ const eruptionConfigIface = `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Ob
       <arg name="property_name" type="s" direction="in"/>
       <arg name="value" type="v" direction="in"/>
     </method>
+    <signal name="PropertiesChanged">
+      <arg name="interface_name" type="s"/>
+      <arg name="changed_properties" type="a{sv}"/>
+      <arg name="invalidated_properties" type="as"/>
+    </signal>
   </interface>
 </node>`.trim();
 
 // D-Bus proxy
-var eruption, eruptionConfig;
+var eruptionSlot, eruptionProfile, eruptionConfig;
 
 // Panel menu button
-var profilesMenuButton;
+var eruptionMenuButton;
 
 // Global state
-var enableSfx, brightness;
+var activeSlot, enableSfx, brightness;
 
 // Show centered notification on the primary monitor
 function _showNotification(msg) {
@@ -136,7 +189,7 @@ function _showNotification(msg) {
 // Get the profile name from a given .profile filename
 function _profileFileToName(filename) {
   let name = ["<unknown>"];
-  let result = eruption.EnumProfilesSync();
+  let result = eruptionProfile.EnumProfilesSync();
 
   name = result[0].find(profile => {
     if (profile[1].localeCompare(filename) === 0) return true;
@@ -167,6 +220,41 @@ class Profile {
   }
 }
 
+var SlotMenuItem = GObject.registerClass(
+  class SlotMenuItem extends PopupMenu.PopupBaseMenuItem {
+    _init(slot, params) {
+      super._init(params);
+
+      this.checkmark = new St.Icon({
+        icon_name: "radio-checked-symbolic",
+        style_class: "checkmark-slot"
+      });
+      this.label = new St.Label({ text: "Slot " + (slot + 1), style_class: 'slot-label' });
+      this.add_child(this.checkmark);
+      this.add_child(this.label);
+
+      this._slot = slot;
+      this.setToggleState(false);
+
+      this.connect("activate", this._activate.bind(this));
+    }
+
+    _activate(_menuItem, _event) {
+      eruptionMenuButton.uncheckAllSlotCheckmarks();
+     
+      try {
+        eruptionSlot.SwitchSlotSync(this._slot);
+      } catch (e) {
+        _showNotification(e.message);
+      }
+    }
+
+    setToggleState(checked) {
+      this.checkmark.set_icon_name(checked ? "radio-checked" : "radio");
+    }
+  }
+);
+
 // Menu item with associated profile object
 var ProfileMenuItem = GObject.registerClass(
   class ProfileMenuItem extends PopupMenu.PopupBaseMenuItem {
@@ -188,10 +276,10 @@ var ProfileMenuItem = GObject.registerClass(
     }
 
     _activate(_menuItem, _event) {
-      profilesMenuButton.clearAllCheckmarks();
+      eruptionMenuButton.uncheckAllProfileCheckmarks();
 
       try {
-        eruption.SwitchProfileSync(this._profile.get_filename());
+        eruptionProfile.SwitchProfileSync(this._profile.get_filename());
       } catch (e) {
         _showNotification(e.message);
       }
@@ -203,26 +291,42 @@ var ProfileMenuItem = GObject.registerClass(
   }
 );
 
-let ProfilesMenuButton = GObject.registerClass(
+let EruptionMenuButton = GObject.registerClass(
   class ProfilesMenuButton extends PanelMenu.Button {
     _init() {
-      super._init(0.0, _("Eruption Profiles"));
+      super._init(0.0, _("Eruption Menu"));
 
       try {
-        const EruptionProxy = Gio.DBusProxy.makeProxyWrapper(
+        const EruptionSlotProxy = Gio.DBusProxy.makeProxyWrapper(
+          eruptionSlotIface
+        );
+        eruptionSlot = new EruptionSlotProxy(
+          Gio.DBus.system,
+          "org.eruption",
+          "/org/eruption/slot"
+        );
+
+        this._active_slot_changed_id = eruptionSlot.connectSignal(
+          "ActiveSlotChanged",
+          this._activeSlotChanged.bind(this)
+        );
+
+        activeSlot = eruptionSlot.ActiveSlot;
+
+        const EruptionProfileProxy = Gio.DBusProxy.makeProxyWrapper(
           eruptionProfileIface
         );
-        eruption = new EruptionProxy(
+        eruptionProfile = new EruptionProfileProxy(
           Gio.DBus.system,
           "org.eruption",
           "/org/eruption/profile"
         );
 
-        this._active_profile_changed_id = eruption.connectSignal(
+        this._active_profile_changed_id = eruptionProfile.connectSignal(
           "ActiveProfileChanged",
           this._activeProfileChanged.bind(this)
         );
-        this._profiles_changed_id = eruption.connectSignal(
+        this._profiles_changed_id = eruptionProfile.connectSignal(
           "ProfilesChanged",
           this._profilesChanged.bind(this)
         );
@@ -266,25 +370,51 @@ let ProfilesMenuButton = GObject.registerClass(
       super._onDestroy();
     }
 
-    populateMenu(active_item) {
+    populateMenu(config) {
       this.menu.removeAll();
 
+      // initialize to sane defaults
+      if (config === undefined) {
+        config = {
+          active_slot: activeSlot,
+          active_item: undefined
+        }
+      }
+
+      // create user slots items
+      for (let i = 0; i < 4; i++) {
+        let slot = new SlotMenuItem(i)
+        if (i == activeSlot) {
+          slot.setToggleState(true);
+        }
+
+        this.menu.addMenuItem(slot);
+      }
+
+      // add separator
+      let separator = new PopupMenu.PopupSeparatorMenuItem();
+      this.menu.addMenuItem(separator);
+
+      // add sub-menu
+      this.profiles_sub = new PopupMenu.PopupSubMenuMenuItem('Profiles');
+      this.menu.addMenuItem(this.profiles_sub);
+
       let active_profile =
-        active_item === undefined ? eruption.ActiveProfile : active_item;
+        config.active_item === undefined ? eruptionProfile.ActiveProfile : config.active_item;
 
       // add profiles radio menu items
-      let result = eruption.EnumProfilesSync();
+      let result = eruptionProfile.EnumProfilesSync();
       result[0].forEach(profile => {
         let item = new ProfileMenuItem(new Profile(profile[0], profile[1]));
         if (active_profile.localeCompare(profile[1]) === 0) {
           item.setToggleState(true);
         }
 
-        this.menu.addMenuItem(item);
+        this.profiles_sub.menu.addMenuItem(item);
       });
 
       // add separator
-      let separator = new PopupMenu.PopupSeparatorMenuItem();
+      separator = new PopupMenu.PopupSeparatorMenuItem();
       this.menu.addMenuItem(separator);
 
       // add controls for the global configuration options of eruption
@@ -325,7 +455,13 @@ let ProfilesMenuButton = GObject.registerClass(
       this.menu.addMenuItem(item);
     }
 
-    clearAllCheckmarks() {
+    uncheckAllSlotCheckmarks() {
+      this.menu._getMenuItems().forEach(elem => {
+        if (elem instanceof SlotMenuItem) elem.setToggleState(false);
+      });
+    }
+
+    uncheckAllProfileCheckmarks() {
       this.menu._getMenuItems().forEach(elem => {
         if (elem instanceof ProfileMenuItem) elem.setToggleState(false);
       });
@@ -336,19 +472,25 @@ let ProfilesMenuButton = GObject.registerClass(
       eruptionConfig.Brightness = percent;
     }
 
+    // D-Bus signal, emitted when the daemon changed its active slot
+    _activeSlotChanged(proxy, sender, [object]) {
+      activeSlot = object;
+      eruptionMenuButton.populateMenu({ active_slot: object });
+    }
+
     // D-Bus signal, emitted when the daemon changed its active profile
     _activeProfileChanged(proxy, sender, [object]) {
       let new_profile = _profileFileToName(object);
       _showNotification(new_profile);
 
-      profilesMenuButton.populateMenu(object);
+      eruptionMenuButton.populateMenu({ active_item: object });
     }
 
     // D-Bus signal, emitted when the daemon registered modification or
     // creation of new profile files
     _profilesChanged(_proxy, sender, [object]) {
       //_showNotification("Eruption profiles updated");
-      profilesMenuButton.populateMenu();
+      eruptionMenuButton.populateMenu();
     }
 
     _sync(proxy) {
@@ -367,13 +509,13 @@ class ProfileSwitcherExtension {
   constructor() {}
 
   enable() {
-    profilesMenuButton = new ProfilesMenuButton();
-    Main.panel.addToStatusArea("profiles-menu", profilesMenuButton, 1, "right");
+    eruptionMenuButton = new EruptionMenuButton();
+    Main.panel.addToStatusArea("eruption-menu", eruptionMenuButton, 1, "right");
   }
 
   disable() {
-    Main.panel.menuManager.removeMenu(profilesMenuButton.menu);
-    profilesMenuButton.destroy();
+    Main.panel.menuManager.removeMenu(eruptionMenuButton.menu);
+    eruptionMenuButton.destroy();
   }
 }
 
