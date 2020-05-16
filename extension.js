@@ -240,12 +240,14 @@ var SlotMenuItem = GObject.registerClass(
     }
 
     _activate(_menuItem, _event) {
-      eruptionMenuButton.uncheckAllSlotCheckmarks();
-     
-      try {
-        eruptionSlot.SwitchSlotSync(this._slot);
-      } catch (e) {
-        _showNotification(e.message);
+      if (this._slot !== activeSlot) {
+        eruptionMenuButton.uncheckAllSlotCheckmarks();
+      
+        try {
+          eruptionSlot.SwitchSlotSync(this._slot);
+        } catch (e) {
+          _showNotification(e.message);
+        }
       }
     }
 

@@ -1,11 +1,10 @@
 .slot-label {
     font-weight: bold;
     font-size: larger;
-    margin: 3px;
 }
 
 .checkmark-slot {
-    padding: 4px;
+    padding: 1px;
 	height: 4px;
 	width: 18px;
 }
