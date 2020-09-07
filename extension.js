@@ -16,8 +16,15 @@
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
-const { Gio, GLib, GObject, Shell, St } = imports.gi;
+const {
+  Gio,
+  GLib,
+  GObject,
+  Shell,
+  St
+} = imports.gi;
 const ExtensionUtils = imports.misc.extensionUtils;
+const Util = imports.misc.util;
 const Lang = imports.lang;
 const Main = imports.ui.main;
 const Mainloop = imports.mainloop;
@@ -28,7 +35,7 @@ const Slider = imports.ui.slider;
 const Signals = imports.signals;
 
 // D-Bus interface specification: Slots
-const eruptionSlotIface= `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+const eruptionSlotIface = `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
 <node name="/org/eruption/slot">
   <interface name="org.eruption.Slot">
     <method name="SwitchSlot">
@@ -159,31 +166,113 @@ var eruptionSlot, eruptionProfile, eruptionConfig;
 var eruptionMenuButton;
 
 // Global state
-var activeSlot, enableSfx, brightness;
+var activeSlot, activeProfile, savedProfile,
+  enableSfx, enableNetFxAmbient, brightness;
 
-// Show centered notification on the primary monitor
+// Show centered notification on the current monitor
 function _showNotification(msg) {
-  let text = new St.Label({ style_class: "notification-label", text: msg });
-  let monitor = Main.layoutManager.primaryMonitor;
+  let text = new St.Label({
+    style_class: "notification-label",
+    text: msg
+  });
+  let monitor = Main.layoutManager.currentMonitor;
 
-  text.opacity = 255;
+  if (monitor) {
+    text.opacity = 255;
 
-  Main.uiGroup.add_actor(text);
-  text.set_position(
-    Math.floor(monitor.width / 2 - text.width / 2),
-    Math.floor(monitor.height / 2 - text.height / 2)
-  );
+    Main.uiGroup.add_actor(text);
+    text.set_position(
+      Math.floor(monitor.width / 2 - text.width / 2),
+      Math.floor(monitor.height / 2 - text.height / 2)
+    );
 
+    Mainloop.timeout_add(1500, () => {
+      Tweener.addTween(text, {
+        opacity: 0,
+        time: 2,
+        transition: "easeInOut",
+        onComplete: () => {
+          Main.uiGroup.remove_actor(text);
+        }
+      });
+    });
+  }
+}
+
+var notificationText;
+var inhibitor = false;
+
+// Show centered notification on the current monitor
+// The notification is faded out conditionally
+function _showOrUpdateNotification(msg) {
+  if (!notificationText) {
+    let text = new St.Label({
+      style_class: "notification-label",
+      text: msg
+    });
+    let monitor = Main.layoutManager.currentMonitor;
+
+    if (monitor) {
+      notificationText = text;
+
+      text.opacity = 255;
+
+      Main.uiGroup.add_actor(text);
+      text.set_position(
+        Math.floor(monitor.width / 2 - text.width / 2),
+        Math.floor(monitor.height / 2 - text.height / 2)
+      );
+
+      Mainloop.timeout_add(1500, () => {
+        if (!inhibitor) {
+          Tweener.addTween(text, {
+            opacity: 0,
+            time: 2,
+            transition: "easeInOut",
+            onComplete: () => {
+              notificationText = null;
+              Main.uiGroup.remove_actor(text);
+            }
+          });
+        }
+      });
+    }
+  } else {
+    notificationText.text = msg;
+    inhibitor = true;
+  }
+}
+
+function _fadeOutNotification() {
   Mainloop.timeout_add(1500, () => {
-    Tweener.addTween(text, {
+    inhibitor = false;
+
+    Tweener.addTween(notificationText, {
       opacity: 0,
       time: 2,
       transition: "easeInOut",
       onComplete: () => {
-        Main.uiGroup.remove_actor(text);
+        Main.uiGroup.remove_actor(notificationText);
+        notificationText = null;
       }
     });
   });
+}
+
+// Enable or disable the NetworkFX Ambient effect
+// Switch the profile to `netfx.profile` and start or kill the `eruption-netfx` process
+function _toggleNetFxAmbient(enable) {
+  if (enable) {
+    savedProfile = activeProfile;
+    eruptionProfile.SwitchProfileSync("netfx.profile");
+
+    Mainloop.timeout_add(1000, () => {
+      Util.spawn(["/usr/bin/eruption-netfx", "ambient"]);
+    });
+  } else {
+    eruptionProfile.SwitchProfileSync(savedProfile);
+    Util.spawn(["/usr/bin/pkill", "eruption-netfx"]);
+  }
 }
 
 // Get the profile name from a given .profile filename
@@ -229,7 +318,10 @@ var SlotMenuItem = GObject.registerClass(
         icon_name: "radio-checked-symbolic",
         style_class: "checkmark-slot"
       });
-      this.label = new St.Label({ text: "Slot " + (slot + 1), style_class: 'slot-label' });
+      this.label = new St.Label({
+        text: "Slot " + (slot + 1),
+        style_class: 'slot-label'
+      });
       this.add_child(this.checkmark);
       this.add_child(this.label);
 
@@ -242,7 +334,7 @@ var SlotMenuItem = GObject.registerClass(
     _activate(_menuItem, _event) {
       if (this._slot !== activeSlot) {
         eruptionMenuButton.uncheckAllSlotCheckmarks();
-      
+
         try {
           eruptionSlot.SwitchSlotSync(this._slot);
         } catch (e) {
@@ -267,7 +359,9 @@ var ProfileMenuItem = GObject.registerClass(
         icon_name: "radio-checked-symbolic",
         style_class: "checkmark"
       });
-      this.label = new St.Label({ text: profile.get_name() });
+      this.label = new St.Label({
+        text: profile.get_name()
+      });
       this.add_child(this.checkmark);
       this.add_child(this.label);
 
@@ -355,7 +449,9 @@ let EruptionMenuButton = GObject.registerClass(
         _showNotification("Error: " + e.message);
       }
 
-      let hbox = new St.BoxLayout({ style_class: "panel-status-menu-box" });
+      let hbox = new St.BoxLayout({
+        style_class: "panel-status-menu-box"
+      });
       this.icon = new St.Icon({
         icon_name: "keyboard-brightness",
         style_class: "status-icon-notify system-status-icon"
@@ -420,6 +516,15 @@ let EruptionMenuButton = GObject.registerClass(
       this.menu.addMenuItem(separator);
 
       // add controls for the global configuration options of eruption
+      let enableNetFxAmbientItem = new PopupMenu.PopupSwitchMenuItem("NetworkFX Ambient", false);
+      this._enableNetFxAmbientItem = enableNetFxAmbientItem;
+      enableNetFxAmbientItem.connect("activate", event => {
+        enableNetFxAmbient = !enableNetFxAmbient;
+        _toggleNetFxAmbient(enableNetFxAmbient);
+      });
+      enableNetFxAmbientItem.setToggleState(enableNetFxAmbient);
+      this.menu.addMenuItem(enableNetFxAmbientItem);
+
       let enableSfxItem = new PopupMenu.PopupSwitchMenuItem("SoundFX", false);
       this._enableSfxItem = enableSfxItem;
       enableSfxItem.connect("activate", event => {
@@ -442,6 +547,10 @@ let EruptionMenuButton = GObject.registerClass(
       brightnessSlider.connect(
         "notify::value",
         this._brightnessSliderChanged.bind(this)
+      );
+      brightnessSlider.connect(
+        "button-release-event",
+        this._brightnessSliderChangeCompleted.bind(this)
       );
 
       item.add(icon);
@@ -470,22 +579,38 @@ let EruptionMenuButton = GObject.registerClass(
     }
 
     _brightnessSliderChanged() {
-      let percent = this._brightnessSlider.value * 100;
-      eruptionConfig.Brightness = percent;
+      Mainloop.timeout_add(1, () => {
+        let percent = this._brightnessSlider.value * 100;
+
+        brightness = percent;
+        eruptionConfig.Brightness = percent;
+
+        _showOrUpdateNotification("Brightness: " + brightness.toFixed(0));
+      });
+    }
+
+    _brightnessSliderChangeCompleted() {
+      _fadeOutNotification();
     }
 
     // D-Bus signal, emitted when the daemon changed its active slot
     _activeSlotChanged(proxy, sender, [object]) {
       activeSlot = object;
-      eruptionMenuButton.populateMenu({ active_slot: object });
+      eruptionMenuButton.populateMenu({
+        active_slot: object
+      });
     }
 
     // D-Bus signal, emitted when the daemon changed its active profile
     _activeProfileChanged(proxy, sender, [object]) {
       let new_profile = _profileFileToName(object);
+      activeProfile = object;
+
       _showNotification(new_profile);
 
-      eruptionMenuButton.populateMenu({ active_item: object });
+      eruptionMenuButton.populateMenu({
+        active_item: object
+      });
     }
 
     // D-Bus signal, emitted when the daemon registered modification or
@@ -502,7 +627,7 @@ let EruptionMenuButton = GObject.registerClass(
       brightness = proxy.Brightness;
       this._brightnessSlider.value = brightness / 100;
 
-      //_showNotification("Brightness: " + brightness);
+      // _showNotification("Brightness: " + brightness);
     }
   }
 );
