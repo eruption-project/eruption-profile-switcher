@@ -279,7 +279,7 @@ function _toggleNetFxAmbient(enable) {
     eruptionProfile.SwitchProfileSync("netfx.profile");
 
     Mainloop.timeout_add(500, () => {
-      Util.spawn(["/usr/bin/eruption-netfx", _get_netfxHostName(), _get_netfxPort(), "ambient"]);
+      Util.spawn(["/usr/bin/eruption-netfx", _getNetFxHostName(), _getNetFxPort(), "ambient"]);
     });
   } else {
     eruptionProfile.SwitchProfileSync(savedProfile[activeSlot]);
@@ -294,13 +294,13 @@ function _switchAwayFromNetfxAmbient() {
   enableNetFxAmbient = false;
 }
 
-function _get_netfxHostName() {
+function _getNetFxHostName() {
   let result = "localhost";
 
   return result;
 }
 
-function _get_netfxPort() {
+function _getNetFxPort() {
   let result = "2359";
 
   return result;
@@ -628,7 +628,7 @@ let EruptionMenuButton = GObject.registerClass(
 
         // don't show notification directly after startup
         if (call_counter_on_slider_changed > 1) {
-          _showOrUpdateNotification("Brightness: " + brightness.toFixed(0));
+          _showOrUpdateNotification("Brightness: " + brightness.toFixed(0) + "%");
         }
       });
 
@@ -673,7 +673,7 @@ let EruptionMenuButton = GObject.registerClass(
       brightness = proxy.Brightness;
       this._brightnessSlider.value = brightness / 100;
 
-      // _showNotification("Brightness: " + brightness);
+      // _showNotification("Brightness: " + brightness + "%");
     }
   }
 );
