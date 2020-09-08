@@ -20,6 +20,7 @@ const {
     GObject,
     Gtk
 } = imports.gi;
+const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 function init() {}
 
@@ -30,28 +31,27 @@ function buildPrefsWidget() {
 }
 
 const PrefsWidget = GObject.registerClass(
-    class PrefsWidget extends Gtk.Box {
+    class PrefsWidget extends Gtk.ScrolledWindow {
 
         _init(params) {
-
             super._init(params);
 
-            this.margin = 20;
-            this.set_spacing(15);
-            this.set_orientation(Gtk.Orientation.VERTICAL);
+            let builder = new Gtk.Builder();
+            // builder.set_translation_domain('eruption-profile-switcher');
+            builder.add_from_file(Me.path + '/prefs.ui');
 
-            this.connect('destroy', Gtk.main_quit);
+            this.connect("destroy", Gtk.main_quit);
 
-            let myLabel = new Gtk.Label({
-                label: "Eruption Profile Switcher | Gnome Shell Extension"
+            let SignalHandler = {
+                on_close_button_clicked(w) {
+                    log("close");
+                }
+            };
+
+            builder.connect_signals_full((builder, object, signal, handler) => {
+                object.connect(signal, SignalHandler[handler].bind(this));
             });
 
-            let hBox = new Gtk.Box();
-            hBox.set_orientation(Gtk.Orientation.HORIZONTAL);
-
-            hBox.pack_start(myLabel, false, false, 0);
-
-            this.add(hBox);
+            this.add(builder.get_object('main_prefs'));
         }
-
     });

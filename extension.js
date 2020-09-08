@@ -166,8 +166,14 @@ var eruptionSlot, eruptionProfile, eruptionConfig;
 var eruptionMenuButton;
 
 // Global state
-var activeSlot, activeProfile, savedProfile,
+var activeSlot,
+  activeProfile = new Array(),
+  savedProfile = new Array(),
   enableSfx, enableNetFxAmbient, brightness;
+
+// Since we don't want to show the brightness indicator after startup
+// we need to track the number of calls
+var call_counter_on_slider_changed = 0;
 
 // Show centered notification on the current monitor
 function _showNotification(msg) {
@@ -196,9 +202,12 @@ function _showNotification(msg) {
         }
       });
     });
+  } else {
+    call_counter_on_slider_changed = 0;
   }
 }
 
+// Global support variables for _showOrUpdateNotification()
 var notificationText;
 var inhibitor = false;
 
@@ -236,6 +245,8 @@ function _showOrUpdateNotification(msg) {
           });
         }
       });
+    } else {
+      call_counter_on_slider_changed = 0;
     }
   } else {
     notificationText.text = msg;
@@ -243,6 +254,7 @@ function _showOrUpdateNotification(msg) {
   }
 }
 
+// Dismiss notification
 function _fadeOutNotification() {
   Mainloop.timeout_add(1500, () => {
     inhibitor = false;
@@ -263,16 +275,35 @@ function _fadeOutNotification() {
 // Switch the profile to `netfx.profile` and start or kill the `eruption-netfx` process
 function _toggleNetFxAmbient(enable) {
   if (enable) {
-    savedProfile = activeProfile;
+    savedProfile[activeSlot] = activeProfile[activeSlot];
     eruptionProfile.SwitchProfileSync("netfx.profile");
 
-    Mainloop.timeout_add(1000, () => {
-      Util.spawn(["/usr/bin/eruption-netfx", "ambient"]);
+    Mainloop.timeout_add(500, () => {
+      Util.spawn(["/usr/bin/eruption-netfx", _get_netfxHostName(), _get_netfxPort(), "ambient"]);
     });
   } else {
-    eruptionProfile.SwitchProfileSync(savedProfile);
+    eruptionProfile.SwitchProfileSync(savedProfile[activeSlot]);
     Util.spawn(["/usr/bin/pkill", "eruption-netfx"]);
   }
+}
+
+// Called when we want to switch to a different slot or profile,
+// while "NetworkFX Ambient" is enabled
+function _switchAwayFromNetfxAmbient() {
+  _toggleNetFxAmbient(false);
+  enableNetFxAmbient = false;
+}
+
+function _get_netfxHostName() {
+  let result = "localhost";
+
+  return result;
+}
+
+function _get_netfxPort() {
+  let result = "2359";
+
+  return result;
 }
 
 // Get the profile name from a given .profile filename
@@ -333,6 +364,10 @@ var SlotMenuItem = GObject.registerClass(
 
     _activate(_menuItem, _event) {
       if (this._slot !== activeSlot) {
+        if (enableNetFxAmbient) {
+          _switchAwayFromNetfxAmbient();
+        }
+
         eruptionMenuButton.uncheckAllSlotCheckmarks();
 
         try {
@@ -372,6 +407,10 @@ var ProfileMenuItem = GObject.registerClass(
     }
 
     _activate(_menuItem, _event) {
+      if (enableNetFxAmbient) {
+        _switchAwayFromNetfxAmbient();
+      }
+
       eruptionMenuButton.uncheckAllProfileCheckmarks();
 
       try {
@@ -426,6 +465,8 @@ let EruptionMenuButton = GObject.registerClass(
           "ProfilesChanged",
           this._profilesChanged.bind(this)
         );
+
+        activeProfile[activeSlot] = eruptionProfile.ActiveProfile;
 
         const EruptionConfigProxy = Gio.DBusProxy.makeProxyWrapper(
           eruptionConfigIface
@@ -585,8 +626,13 @@ let EruptionMenuButton = GObject.registerClass(
         brightness = percent;
         eruptionConfig.Brightness = percent;
 
-        _showOrUpdateNotification("Brightness: " + brightness.toFixed(0));
+        // don't show notification directly after startup
+        if (call_counter_on_slider_changed > 1) {
+          _showOrUpdateNotification("Brightness: " + brightness.toFixed(0));
+        }
       });
+
+      call_counter_on_slider_changed++;
     }
 
     _brightnessSliderChangeCompleted() {
@@ -604,7 +650,7 @@ let EruptionMenuButton = GObject.registerClass(
     // D-Bus signal, emitted when the daemon changed its active profile
     _activeProfileChanged(proxy, sender, [object]) {
       let new_profile = _profileFileToName(object);
-      activeProfile = object;
+      activeProfile[activeSlot] = object;
 
       _showNotification(new_profile);
 
