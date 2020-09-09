@@ -175,6 +175,11 @@ var activeSlot,
 // we need to track the number of calls
 var call_counter_on_slider_changed = 0;
 
+// used to fade out notifications after the brightness slider has been changed
+var brightnessSliderTimeout;
+
+const NOTIFICATION_TIMEOUT_MILLIS = 1500;
+
 // Show centered notification on the current monitor
 function _showNotification(msg) {
   let text = new St.Label({
@@ -192,7 +197,7 @@ function _showNotification(msg) {
       Math.floor(monitor.height / 2 - text.height / 2)
     );
 
-    Mainloop.timeout_add(1500, () => {
+    Mainloop.timeout_add(NOTIFICATION_TIMEOUT_MILLIS, () => {
       Tweener.addTween(text, {
         opacity: 0,
         time: 2,
@@ -232,7 +237,7 @@ function _showOrUpdateNotification(msg) {
         Math.floor(monitor.height / 2 - text.height / 2)
       );
 
-      Mainloop.timeout_add(1500, () => {
+      Mainloop.timeout_add(NOTIFICATION_TIMEOUT_MILLIS, () => {
         if (!inhibitor) {
           Tweener.addTween(text, {
             opacity: 0,
@@ -256,7 +261,7 @@ function _showOrUpdateNotification(msg) {
 
 // Dismiss notification
 function _fadeOutNotification() {
-  Mainloop.timeout_add(1500, () => {
+  Mainloop.timeout_add(NOTIFICATION_TIMEOUT_MILLIS, () => {
     inhibitor = false;
 
     Tweener.addTween(notificationText, {
@@ -593,6 +598,10 @@ let EruptionMenuButton = GObject.registerClass(
         "button-release-event",
         this._brightnessSliderChangeCompleted.bind(this)
       );
+      brightnessSlider.connect(
+        "scroll-event",
+        this._brightnessSliderScrolled.bind(this)
+      );
 
       item.add(icon);
       item.add_child(brightnessSlider);
@@ -633,6 +642,16 @@ let EruptionMenuButton = GObject.registerClass(
       });
 
       call_counter_on_slider_changed++;
+    }
+
+    _brightnessSliderScrolled() {
+      if (brightnessSliderTimeout) {
+        Mainloop.source_remove(brightnessSliderTimeout);
+      }
+
+      brightnessSliderTimeout = Mainloop.timeout_add(NOTIFICATION_TIMEOUT_MILLIS, () => {
+        _fadeOutNotification();
+      });
     }
 
     _brightnessSliderChangeCompleted() {
