@@ -52,7 +52,7 @@ function buildPrefsWidget() {
 	return widget;
 }
 
-const PrefsWidget = GObject.registerClass(
+var PrefsWidget = GObject.registerClass(
 	class PrefsWidget extends Gtk.ScrolledWindow {
 
 		_init(params) {

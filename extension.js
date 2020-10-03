@@ -22,7 +22,9 @@ const {
 	Gio,
 	GLib,
 	GObject,
+	Gtk,
 	Shell,
+	Clutter,
 	St
 } = imports.gi;
 const ExtensionUtils = imports.misc.extensionUtils;
@@ -30,7 +32,6 @@ const Util = imports.misc.util;
 const Lang = imports.lang;
 const Main = imports.ui.main;
 const Mainloop = imports.mainloop;
-const Tweener = imports.ui.tweener;
 const PanelMenu = imports.ui.panelMenu;
 const PopupMenu = imports.ui.popupMenu;
 const Slider = imports.ui.slider;
@@ -38,155 +39,209 @@ const Signals = imports.signals;
 const ByteArray = imports.byteArray;
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();
+const Preferences = Me.imports.prefs;
 
 // Global constants
 const NOTIFICATION_TIMEOUT_MILLIS = 1500;
+const NOTIFICATION_ANIMATION_MILLIS = 500;
 const PROCESS_POLL_TIMEOUT_MILLIS = 3000;
 const PROCESS_SPAWN_WAIT_MILLIS = 800;
+
+const DEFAULT_SLOT_NAMES = ['Profile Slot 1', 'Profile Slot 2', 'Profile Slot 3', 'Profile Slot 4'];
+
+// The following D-Bus Ifaces are auto generated with the command
+// `dbus-send --system --dest=org.eruption --type=method_call --print-reply /org/eruption/<path> \
+//  org.freedesktop.DBus.Introspectable.Introspect`
 
 // D-Bus interface specification: Slots
 const eruptionSlotIface = `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
 <node name="/org/eruption/slot">
-	<interface name="org.eruption.Slot">
-		<method name="SwitchSlot">
-			<arg name="slot" type="t" direction="in"/>
-			<arg name="status" type="b" direction="out"/>
-		</method>
-		<property name="ActiveSlot" type="t" access="read">
-			<annotation name="org.freedesktop.DBus.Property.EmitsChangedSignal" value="const"/>
-		</property>
-		<signal name="ActiveSlotChanged">
-			<arg name="new slot" type="t"/>
-		</signal>
-	</interface>
-	<interface name="org.freedesktop.DBus.Introspectable">
-		<method name="Introspect">
-			<arg name="xml_data" type="s" direction="out"/>
-		</method>
-	</interface>
-	<interface name="org.freedesktop.DBus.Properties">
-		<method name="Get">
-			<arg name="interface_name" type="s" direction="in"/>
-			<arg name="property_name" type="s" direction="in"/>
-			<arg name="value" type="v" direction="out"/>
-		</method>
-		<method name="GetAll">
-			<arg name="interface_name" type="s" direction="in"/>
-			<arg name="props" type="a{sv}" direction="out"/>
-		</method>
-		<method name="Set">
-			<arg name="interface_name" type="s" direction="in"/>
-			<arg name="property_name" type="s" direction="in"/>
-			<arg name="value" type="v" direction="in"/>
-		</method>
-		<signal name="PropertiesChanged">
-			<arg name="interface_name" type="s"/>
-			<arg name="changed_properties" type="a{sv}"/>
-			<arg name="invalidated_properties" type="as"/>
-		</signal>
-	</interface>
+  <interface name="org.eruption.Slot">
+    <method name="GetSlotProfiles">
+      <arg name="values" type="as" direction="out"/>
+    </method>
+    <method name="SwitchSlot">
+      <arg name="slot" type="t" direction="in"/>
+      <arg name="status" type="b" direction="out"/>
+    </method>
+    <property name="ActiveSlot" type="t" access="read">
+      <annotation name="org.freedesktop.DBus.Property.EmitsChangedSignal" value="const"/>
+    </property>
+    <property name="SlotNames" type="as" access="readwrite"/>
+    <signal name="ActiveSlotChanged">
+      <arg name="new slot" type="t"/>
+    </signal>
+  </interface>
+  <interface name="org.freedesktop.DBus.Introspectable">
+    <method name="Introspect">
+      <arg name="xml_data" type="s" direction="out"/>
+    </method>
+  </interface>
+  <interface name="org.freedesktop.DBus.Properties">
+    <method name="Get">
+      <arg name="interface_name" type="s" direction="in"/>
+      <arg name="property_name" type="s" direction="in"/>
+      <arg name="value" type="v" direction="out"/>
+    </method>
+    <method name="GetAll">
+      <arg name="interface_name" type="s" direction="in"/>
+      <arg name="props" type="a{sv}" direction="out"/>
+    </method>
+    <method name="Set">
+      <arg name="interface_name" type="s" direction="in"/>
+      <arg name="property_name" type="s" direction="in"/>
+      <arg name="value" type="v" direction="in"/>
+    </method>
+    <signal name="PropertiesChanged">
+      <arg name="interface_name" type="s"/>
+      <arg name="changed_properties" type="a{sv}"/>
+      <arg name="invalidated_properties" type="as"/>
+    </signal>
+  </interface>
 </node>`.trim();
 
 // D-Bus interface specification: Profiles
 const eruptionProfileIface = `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
 <node name="/org/eruption/profile">
-	<interface name="org.eruption.Profile">
-		<method name="EnumProfiles">
-			<arg name="profiles" type="a(ss)" direction="out"/>
-		</method>
-		<method name="SwitchProfile">
-			<arg name="filename" type="s" direction="in"/>
-			<arg name="status" type="b" direction="out"/>
-		</method>
-		<property name="ActiveProfile" type="s" access="read">
-			<annotation name="org.freedesktop.DBus.Property.EmitsChangedSignal" value="const"/>
-		</property>
-		<signal name="ActiveProfileChanged">
-			<arg name="new profile name" type="s"/>
-		</signal>
-		<signal name="ProfilesChanged"/>
-	</interface>
-	<interface name="org.freedesktop.DBus.Introspectable">
-		<method name="Introspect">
-			<arg name="xml_data" type="s" direction="out"/>
-		</method>
-	</interface>
-	<interface name="org.freedesktop.DBus.Properties">
-		<method name="Get">
-			<arg name="interface_name" type="s" direction="in"/>
-			<arg name="property_name" type="s" direction="in"/>
-			<arg name="value" type="v" direction="out"/>
-		</method>
-		<method name="GetAll">
-			<arg name="interface_name" type="s" direction="in"/>
-			<arg name="props" type="a{sv}" direction="out"/>
-		</method>
-		<method name="Set">
-			<arg name="interface_name" type="s" direction="in"/>
-			<arg name="property_name" type="s" direction="in"/>
-			<arg name="value" type="v" direction="in"/>
-		</method>
-		<signal name="PropertiesChanged">
-			<arg name="interface_name" type="s"/>
-			<arg name="changed_properties" type="a{sv}"/>
-			<arg name="invalidated_properties" type="as"/>
-		</signal>
-	</interface>
+  <interface name="org.eruption.Profile">
+    <method name="EnumProfiles">
+      <arg name="profiles" type="a(ss)" direction="out"/>
+    </method>
+    <method name="SwitchProfile">
+      <arg name="filename" type="s" direction="in"/>
+      <arg name="status" type="b" direction="out"/>
+    </method>
+    <property name="ActiveProfile" type="s" access="read">
+      <annotation name="org.freedesktop.DBus.Property.EmitsChangedSignal" value="const"/>
+    </property>
+    <signal name="ActiveProfileChanged">
+      <arg name="new profile name" type="s"/>
+    </signal>
+    <signal name="ProfilesChanged"/>
+  </interface>
+  <interface name="org.freedesktop.DBus.Introspectable">
+    <method name="Introspect">
+      <arg name="xml_data" type="s" direction="out"/>
+    </method>
+  </interface>
+  <interface name="org.freedesktop.DBus.Properties">
+    <method name="Get">
+      <arg name="interface_name" type="s" direction="in"/>
+      <arg name="property_name" type="s" direction="in"/>
+      <arg name="value" type="v" direction="out"/>
+    </method>
+    <method name="GetAll">
+      <arg name="interface_name" type="s" direction="in"/>
+      <arg name="props" type="a{sv}" direction="out"/>
+    </method>
+    <method name="Set">
+      <arg name="interface_name" type="s" direction="in"/>
+      <arg name="property_name" type="s" direction="in"/>
+      <arg name="value" type="v" direction="in"/>
+    </method>
+    <signal name="PropertiesChanged">
+      <arg name="interface_name" type="s"/>
+      <arg name="changed_properties" type="a{sv}"/>
+      <arg name="invalidated_properties" type="as"/>
+    </signal>
+  </interface>
 </node>`.trim();
 
 // D-Bus interface specification: Runtime configuration
 const eruptionConfigIface = `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
 <node name="/org/eruption/config">
-	<interface name="org.eruption.Config">
-		<property name="Brightness" type="x" access="readwrite"/>
-		<property name="EnableSfx" type="b" access="readwrite"/>
-	</interface>
-	<interface name="org.freedesktop.DBus.Introspectable">
-		<method name="Introspect">
-			<arg name="xml_data" type="s" direction="out"/>
-		</method>
-	</interface>
-	<interface name="org.freedesktop.DBus.Properties">
-		<method name="Get">
-			<arg name="interface_name" type="s" direction="in"/>
-			<arg name="property_name" type="s" direction="in"/>
-			<arg name="value" type="v" direction="out"/>
-		</method>
-		<method name="GetAll">
-			<arg name="interface_name" type="s" direction="in"/>
-			<arg name="props" type="a{sv}" direction="out"/>
-		</method>
-		<method name="Set">
-			<arg name="interface_name" type="s" direction="in"/>
-			<arg name="property_name" type="s" direction="in"/>
-			<arg name="value" type="v" direction="in"/>
-		</method>
-		<signal name="PropertiesChanged">
-			<arg name="interface_name" type="s"/>
-			<arg name="changed_properties" type="a{sv}"/>
-			<arg name="invalidated_properties" type="as"/>
-		</signal>
-	</interface>
+  <interface name="org.eruption.Config">
+    <method name="WriteFile">
+      <arg name="filename" type="s" direction="in"/>
+      <arg name="data" type="s" direction="in"/>
+      <arg name="status" type="b" direction="out"/>
+    </method>
+    <property name="Brightness" type="x" access="readwrite"/>
+    <property name="EnableSfx" type="b" access="readwrite"/>
+  </interface>
+  <interface name="org.freedesktop.DBus.Introspectable">
+    <method name="Introspect">
+      <arg name="xml_data" type="s" direction="out"/>
+    </method>
+  </interface>
+  <interface name="org.freedesktop.DBus.Properties">
+    <method name="Get">
+      <arg name="interface_name" type="s" direction="in"/>
+      <arg name="property_name" type="s" direction="in"/>
+      <arg name="value" type="v" direction="out"/>
+    </method>
+    <method name="GetAll">
+      <arg name="interface_name" type="s" direction="in"/>
+      <arg name="props" type="a{sv}" direction="out"/>
+    </method>
+    <method name="Set">
+      <arg name="interface_name" type="s" direction="in"/>
+      <arg name="property_name" type="s" direction="in"/>
+      <arg name="value" type="v" direction="in"/>
+    </method>
+    <signal name="PropertiesChanged">
+      <arg name="interface_name" type="s"/>
+      <arg name="changed_properties" type="a{sv}"/>
+      <arg name="invalidated_properties" type="as"/>
+    </signal>
+  </interface>
+</node>`.trim();
+
+const eruptionStatusIface = `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<node name="/org/eruption/status">
+  <interface name="org.eruption.Status">
+    <method name="GetLedColors">
+      <arg name="values" type="a(yyyy)" direction="out"/>
+    </method>
+    <property name="Running" type="b" access="read"/>
+  </interface>
+  <interface name="org.freedesktop.DBus.Introspectable">
+    <method name="Introspect">
+      <arg name="xml_data" type="s" direction="out"/>
+    </method>
+  </interface>
+  <interface name="org.freedesktop.DBus.Properties">
+    <method name="Get">
+      <arg name="interface_name" type="s" direction="in"/>
+      <arg name="property_name" type="s" direction="in"/>
+      <arg name="value" type="v" direction="out"/>
+    </method>
+    <method name="GetAll">
+      <arg name="interface_name" type="s" direction="in"/>
+      <arg name="props" type="a{sv}" direction="out"/>
+    </method>
+    <method name="Set">
+      <arg name="interface_name" type="s" direction="in"/>
+      <arg name="property_name" type="s" direction="in"/>
+      <arg name="value" type="v" direction="in"/>
+    </method>
+    <signal name="PropertiesChanged">
+      <arg name="interface_name" type="s"/>
+      <arg name="changed_properties" type="a{sv}"/>
+      <arg name="invalidated_properties" type="as"/>
+    </signal>
+  </interface>
 </node>`.trim();
 
 // D-Bus proxy
-var eruptionSlot, eruptionProfile, eruptionConfig;
+var eruptionSlot, eruptionProfile, eruptionConfig, eruptionStatus;
 
 // Panel menu button
-var eruptionMenuButton;
+var connected = false;
+var previous_state = null;
+var instance = null,
+	eruptionMenuButton;
 
 // Global state
 var activeSlot,
-	activeProfile = new Array(),
+	slotNames = DEFAULT_SLOT_NAMES,
+	activeProfile = [],
 	savedProfile,
-	enableSfx, enableNetFxAmbient, brightness;
+	enableSfx, enableNetFxAmbient, brightness = 100;
 
 // Since we don't want to show the brightness indicator after startup
 // we need to track the number of calls
 var call_counter_on_slider_changed = 0;
-
-// used to fade out notifications after the brightness slider has been changed
-var brightnessSliderTimeout;
 
 function getSettings() {
 	let GioSSS = Gio.SettingsSchemaSource;
@@ -207,13 +262,16 @@ function getSettings() {
 
 // Show centered notification on the current monitor
 function _showNotification(msg) {
-	let text = new St.Label({
-		style_class: "notification-label",
-		text: msg
-	});
 	let monitor = Main.layoutManager.currentMonitor;
 
 	if (monitor) {
+		let text = new St.Label({
+			style_class: "notification-label",
+			text: msg
+		});
+
+		notificationText = text;
+
 		text.opacity = 255;
 
 		Main.uiGroup.add_actor(text);
@@ -223,14 +281,15 @@ function _showNotification(msg) {
 		);
 
 		Mainloop.timeout_add(NOTIFICATION_TIMEOUT_MILLIS, () => {
-			Tweener.addTween(text, {
-				opacity: 0,
-				time: 2,
-				transition: "easeInOut",
-				onComplete: () => {
-					Main.uiGroup.remove_actor(text);
-				}
-			});
+			if (notificationText) {
+				notificationText.ease_property('opacity', 0, {
+					duration: NOTIFICATION_ANIMATION_MILLIS,
+					mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+					onComplete: () => {
+						Main.uiGroup.remove_actor(notificationText);
+					}
+				});
+			}
 		});
 	} else {
 		call_counter_on_slider_changed = 0;
@@ -239,19 +298,20 @@ function _showNotification(msg) {
 
 // Global support variables for _showOrUpdateNotification()
 var notificationText;
-var inhibitor = false;
+var notificationTimeouts = [];
 
 // Show centered notification on the current monitor
 // The notification is faded out conditionally
 function _showOrUpdateNotification(msg) {
 	if (!notificationText) {
-		let text = new St.Label({
-			style_class: "notification-label",
-			text: msg
-		});
 		let monitor = Main.layoutManager.currentMonitor;
 
 		if (monitor) {
+			let text = new St.Label({
+				style_class: "notification-label",
+				text: msg
+			});
+
 			notificationText = text;
 
 			text.opacity = 255;
@@ -262,42 +322,52 @@ function _showOrUpdateNotification(msg) {
 				Math.floor(monitor.height / 2 - text.height / 2)
 			);
 
-			Mainloop.timeout_add(NOTIFICATION_TIMEOUT_MILLIS, () => {
-				if (!inhibitor) {
-					Tweener.addTween(text, {
-						opacity: 0,
-						time: 2,
-						transition: "easeInOut",
-						onComplete: () => {
-							notificationText = null;
-							Main.uiGroup.remove_actor(text);
-						}
-					});
-				}
-			});
+			notificationTimeouts.push(Mainloop.timeout_add(NOTIFICATION_TIMEOUT_MILLIS, () => {
+				notificationText.ease_property('opacity', 0, {
+					duration: NOTIFICATION_ANIMATION_MILLIS,
+					mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+					onComplete: () => {
+						Main.uiGroup.remove_actor(notificationText);
+						notificationText = null;
+					}
+				});
+			}));
 		} else {
 			call_counter_on_slider_changed = 0;
 		}
 	} else {
 		notificationText.text = msg;
-		inhibitor = true;
+
+		notificationTimeouts.forEach(timeout => Mainloop.source_remove(timeout));
+
+		notificationTimeouts.push(Mainloop.timeout_add(NOTIFICATION_TIMEOUT_MILLIS, () => {
+			notificationText.ease_property('opacity', 0, {
+				duration: NOTIFICATION_ANIMATION_MILLIS,
+				mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+				onComplete: () => {
+					Main.uiGroup.remove_actor(notificationText);
+					notificationText = null;
+
+					notificationTimeouts = [];
+				}
+			});
+		}));
 	}
 }
 
 // Programmatically dismiss the notification overlay
 function _fadeOutNotification() {
 	Mainloop.timeout_add(NOTIFICATION_TIMEOUT_MILLIS, () => {
-		inhibitor = false;
-
-		Tweener.addTween(notificationText, {
-			opacity: 0,
-			time: 2,
-			transition: "easeInOut",
-			onComplete: () => {
-				Main.uiGroup.remove_actor(notificationText);
-				notificationText = null;
-			}
-		});
+		if (notificationText) {
+			notificationText.ease_property('opacity', 0, {
+				duration: NOTIFICATION_ANIMATION_MILLIS,
+				mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+				onComplete: () => {
+					Main.uiGroup.remove_actor(notificationText);
+					notificationText = null;
+				}
+			});
+		}
 	});
 }
 
@@ -331,6 +401,7 @@ function _getNetFxHostName() {
 	try {
 		result = getSettings().get_string("netfx-host-name");
 	} catch (e) {
+		log(e.message);
 		_showNotification(e.message);
 	}
 
@@ -344,6 +415,7 @@ function _getNetFxPort() {
 	try {
 		result = getSettings().get_int("netfx-port-number");
 	} catch (e) {
+		log(e.message);
 		_showNotification(e.message);
 	}
 
@@ -362,10 +434,29 @@ function isNetFxAmbientRunning() {
 			return true;
 		}
 	} catch (e) {
-		_showNotification(e);
+		log(e.message);
+		_showNotification(e.message);
 	}
 
 	return false;
+}
+
+// Returns `true` if the Eruption GUI is executable
+function isEruptionGuiAvailable() {
+	// TODO: Implement this
+	return false;
+}
+
+// Execute Eruption GUI
+function runEruptionGui() {
+	try {
+		let cmdline = "/usr/bin/eruption-gui";
+
+		let _result = Util.spawn([`${cmdline}`]);
+	} catch (e) {
+		log(e.message);
+		_showNotification(e.message);
+	}
 }
 
 // Get the profile name from a given .profile filename
@@ -405,6 +496,28 @@ class Profile {
 	}
 }
 
+var CustomPopupMenuItem = GObject.registerClass(
+	class CustomPopupMenuItem extends PopupMenu.PopupBaseMenuItem {
+		_init(text, cb, params) {
+			super._init(params);
+
+			this.label = new St.Label({
+				text: text,
+			});
+			this.add_child(this.label);
+
+			this._callback = cb;
+
+			this.connect("activate", this._activate.bind(this));
+		}
+
+		_activate(_menuItem, cb, _event) {
+			log(this.label.text);
+			return this._callback(this);
+		}
+	}
+);
+
 var SlotMenuItem = GObject.registerClass(
 	class SlotMenuItem extends PopupMenu.PopupBaseMenuItem {
 		_init(slot, params) {
@@ -414,10 +527,12 @@ var SlotMenuItem = GObject.registerClass(
 				icon_name: "radio-checked-symbolic",
 				style_class: "checkmark-slot"
 			});
+
 			this.label = new St.Label({
-				text: "Slot " + (slot + 1),
+				text: slotNames[slot],
 				style_class: 'slot-label'
 			});
+
 			this.add_child(this.checkmark);
 			this.add_child(this.label);
 
@@ -438,7 +553,8 @@ var SlotMenuItem = GObject.registerClass(
 				try {
 					eruptionSlot.SwitchSlotSync(this._slot);
 				} catch (e) {
-					_showNotification(e.message);
+					log(e.message);
+					_showNotification("Could not switch slots! Is the Eruption daemon running?");
 				}
 			}
 		}
@@ -459,9 +575,11 @@ var ProfileMenuItem = GObject.registerClass(
 				icon_name: "radio-checked-symbolic",
 				style_class: "checkmark"
 			});
+
 			this.label = new St.Label({
 				text: profile.get_name()
 			});
+
 			this.add_child(this.checkmark);
 			this.add_child(this.label);
 
@@ -481,7 +599,8 @@ var ProfileMenuItem = GObject.registerClass(
 			try {
 				eruptionProfile.SwitchProfileSync(this._profile.get_filename());
 			} catch (e) {
-				_showNotification(e.message);
+				log(e.message);
+				_showNotification("Could not switch profiles! Is the Eruption daemon running?");
 			}
 		}
 
@@ -500,10 +619,20 @@ let EruptionMenuButton = GObject.registerClass(
 				const EruptionSlotProxy = Gio.DBusProxy.makeProxyWrapper(
 					eruptionSlotIface
 				);
+
 				eruptionSlot = new EruptionSlotProxy(
 					Gio.DBus.system,
 					"org.eruption",
-					"/org/eruption/slot"
+					"/org/eruption/slot",
+					(proxy, error) => {
+						if (error) {
+							log(error.message);
+							return;
+						}
+
+						proxy.connect("g-properties-changed", this._sync_slot.bind(this));
+						this._sync_slot(proxy);
+					}
 				);
 
 				this._active_slot_changed_id = eruptionSlot.connectSignal(
@@ -511,11 +640,10 @@ let EruptionMenuButton = GObject.registerClass(
 					this._activeSlotChanged.bind(this)
 				);
 
-				activeSlot = eruptionSlot.ActiveSlot;
-
 				const EruptionProfileProxy = Gio.DBusProxy.makeProxyWrapper(
 					eruptionProfileIface
 				);
+
 				eruptionProfile = new EruptionProfileProxy(
 					Gio.DBus.system,
 					"org.eruption",
@@ -526,6 +654,7 @@ let EruptionMenuButton = GObject.registerClass(
 					"ActiveProfileChanged",
 					this._activeProfileChanged.bind(this)
 				);
+
 				this._profiles_changed_id = eruptionProfile.connectSignal(
 					"ProfilesChanged",
 					this._profilesChanged.bind(this)
@@ -546,20 +675,40 @@ let EruptionMenuButton = GObject.registerClass(
 							return;
 						}
 
-						proxy.connect("g-properties-changed", this._sync.bind(this));
-						this._sync(proxy);
+						proxy.connect("g-properties-changed", this._sync_config.bind(this));
+						this._sync_config(proxy);
+					}
+				);
+
+				const EruptionStatusProxy = Gio.DBusProxy.makeProxyWrapper(
+					eruptionStatusIface
+				);
+
+				eruptionStatus = new EruptionStatusProxy(
+					Gio.DBus.system,
+					"org.eruption",
+					"/org/eruption/status",
+					(proxy, error) => {
+						if (error) {
+							log(error.message);
+							return;
+						}
+
+						proxy.connect("g-properties-changed", this._sync_status.bind(this));
+						this._sync_status(proxy);
 					}
 				);
 			} catch (e) {
-				global.log("Error: " + e.message);
-				_showNotification("Error: " + e.message);
+				log(e.message);
+				_showNotification(e.message);
 			}
 
 			let hbox = new St.BoxLayout({
 				style_class: "panel-status-menu-box"
 			});
+
 			this.icon = new St.Icon({
-				icon_name: "keyboard-brightness",
+				icon_name: connected ? "keyboard-brightness" : "gtk-no",
 				style_class: "status-icon-notify system-status-icon"
 			});
 
@@ -574,123 +723,126 @@ let EruptionMenuButton = GObject.registerClass(
 			super._onDestroy();
 		}
 
+		updateIcon() {
+			this.icon.icon_name = connected ? "keyboard-brightness" : "gtk-no";
+		}
+
 		populateMenu(config) {
-			this.menu.removeAll();
+			try {
+				this.menu.removeAll();
 
-			// initialize to sane defaults
-			if (config === undefined) {
-				config = {
-					active_slot: activeSlot,
-					active_item: undefined
-				}
-			}
-
-			// create user slots items
-			for (let i = 0; i < 4; i++) {
-				let slot = new SlotMenuItem(i)
-				if (i == activeSlot) {
-					slot.setToggleState(true);
+				// initialize to sane defaults
+				if (config === undefined) {
+					config = {
+						active_slot: activeSlot,
+						active_item: undefined
+					}
 				}
 
-				this.menu.addMenuItem(slot);
-			}
+				// create user slots items
+				for (let i = 0; i < 4; i++) {
+					let slot = new SlotMenuItem(i)
+					if (i == activeSlot) {
+						slot.setToggleState(true);
+					}
 
-			// add separator
-			let separator = new PopupMenu.PopupSeparatorMenuItem();
-			this.menu.addMenuItem(separator);
-
-			// add sub-menu
-			this.profiles_sub = new PopupMenu.PopupSubMenuMenuItem('Profiles');
-			this.menu.addMenuItem(this.profiles_sub);
-
-			let active_profile =
-				config.active_item === undefined ? eruptionProfile.ActiveProfile : config.active_item;
-
-			// add profiles radio menu items
-			let result = eruptionProfile.EnumProfilesSync();
-			result[0].forEach(profile => {
-				let item = new ProfileMenuItem(new Profile(profile[0], profile[1]));
-				if (active_profile.localeCompare(profile[1]) === 0) {
-					item.setToggleState(true);
+					this.menu.addMenuItem(slot);
 				}
 
-				this.profiles_sub.menu.addMenuItem(item);
-			});
+				// add separator
+				let separator = new PopupMenu.PopupSeparatorMenuItem();
+				this.menu.addMenuItem(separator);
 
-			// add separator
-			separator = new PopupMenu.PopupSeparatorMenuItem();
-			this.menu.addMenuItem(separator);
+				// add sub-menu
+				this.profiles_sub = new PopupMenu.PopupSubMenuMenuItem('Profiles');
+				this.menu.addMenuItem(this.profiles_sub);
 
-			// add controls for the global configuration options of eruption
-			let enableNetFxAmbientItem = new PopupMenu.PopupSwitchMenuItem("NetworkFX Ambient Effect", false);
-			this._enableNetFxAmbientItem = enableNetFxAmbientItem;
-			enableNetFxAmbientItem.connect("activate", event => {
-				enableNetFxAmbient = !enableNetFxAmbient;
+				try {
+					let active_profile =
+						config.active_item === undefined ? eruptionProfile.ActiveProfile : config.active_item;
 
-				if (enableNetFxAmbient) {
-					savedProfile = activeProfile[activeSlot];
-				}
-
-				_toggleNetFxAmbient(enableNetFxAmbient);
-
-				if (enableNetFxAmbient) {
-					Mainloop.timeout_add(PROCESS_POLL_TIMEOUT_MILLIS, () => {
-						if (enableNetFxAmbient && !isNetFxAmbientRunning()) {
-							// eruption-netfx process terminated, update our internal state
-							enableNetFxAmbient = false;
-							this.populateMenu();
+					// add profiles radio menu items
+					let result = eruptionProfile.EnumProfilesSync();
+					result[0].forEach(profile => {
+						let item = new ProfileMenuItem(new Profile(profile[0], profile[1]));
+						if (active_profile.localeCompare(profile[1]) === 0) {
+							item.setToggleState(true);
 						}
 
-						return true; // keep timer enabled
+						this.profiles_sub.menu.addMenuItem(item);
 					});
+				} catch (e) {
+					log("Could not enumerate profiles: " + e.message);
 				}
-			});
-			enableNetFxAmbientItem.setToggleState(enableNetFxAmbient);
-			this.menu.addMenuItem(enableNetFxAmbientItem);
 
-			let enableSfxItem = new PopupMenu.PopupSwitchMenuItem("SoundFX Audio Effects", false);
-			this._enableSfxItem = enableSfxItem;
-			enableSfxItem.connect("activate", event => {
-				enableSfx = !enableSfx;
-				eruptionConfig.EnableSfx = enableSfx;
-			});
-			enableSfxItem.setToggleState(enableSfx);
-			this.menu.addMenuItem(enableSfxItem);
+				// add separator
+				separator = new PopupMenu.PopupSeparatorMenuItem();
+				this.menu.addMenuItem(separator);
 
-			// add brightness slider
-			let item = new PopupMenu.PopupBaseMenuItem();
-			let icon = new St.Icon({
-				icon_name: "keyboard-brightness",
-				style_class: "menu-icon"
-			});
+				// add Eruption GUI menu item
+				if (isEruptionGuiAvailable()) {
+					this.guiItem = new CustomPopupMenuItem('Eruption GUI…', (_item) => {
+						runEruptionGui();
+					});
+					this.menu.addMenuItem(this.guiItem);
+				}
 
-			let brightnessSlider = new Slider.Slider(0);
-			this._brightnessSlider = brightnessSlider;
-			brightnessSlider.value = brightness / 100;
-			brightnessSlider.connect(
-				"notify::value",
-				this._brightnessSliderChanged.bind(this)
-			);
-			brightnessSlider.connect(
-				"button-release-event",
-				this._brightnessSliderChangeCompleted.bind(this)
-			);
-			brightnessSlider.connect(
-				"scroll-event",
-				this._brightnessSliderScrolled.bind(this)
-			);
+				// add separator
+				separator = new PopupMenu.PopupSeparatorMenuItem();
+				this.menu.addMenuItem(separator);
 
-			item.add(icon);
-			item.add_child(brightnessSlider);
+				// add controls for the global configuration options of eruption
+				let enableNetFxAmbientItem = new PopupMenu.PopupSwitchMenuItem("NetworkFX Ambient Effect", false);
+				this._enableNetFxAmbientItem = enableNetFxAmbientItem;
+				enableNetFxAmbientItem.connect("activate", this._toggleNetFx.bind(this));
+				enableNetFxAmbientItem.setToggleState(enableNetFxAmbient);
+				this.menu.addMenuItem(enableNetFxAmbientItem);
 
-			item.connect("button-press-event", (actor, event) => {
-				return brightnessSlider.startDragging(event);
-			});
-			item.connect("key-press-event", (actor, event) => {
-				return brightnessSlider.emit("key-press-event", event);
-			});
+				let enableSfxItem = new PopupMenu.PopupSwitchMenuItem("SoundFX Audio Effects", false);
+				this._enableSfxItem = enableSfxItem;
+				enableSfxItem.connect("activate", event => {
+					enableSfx = !enableSfx;
+					eruptionConfig.EnableSfx = enableSfx;
+				});
 
-			this.menu.addMenuItem(item);
+				enableSfxItem.setToggleState(enableSfx);
+				this.menu.addMenuItem(enableSfxItem);
+
+				// add brightness slider
+				let item = new PopupMenu.PopupBaseMenuItem();
+				let icon = new St.Icon({
+					icon_name: "keyboard-brightness",
+					style_class: "menu-icon"
+				});
+
+				let brightnessSlider = new Slider.Slider(0);
+				this._brightnessSlider = brightnessSlider;
+				brightnessSlider.value = brightness / 100;
+				brightnessSlider.connect(
+					"notify::value",
+					this._brightnessSliderChanged.bind(this)
+				);
+
+				brightnessSlider.connect(
+					"button-release-event",
+					this._brightnessSliderChangeCompleted.bind(this)
+				);
+
+				item.add(icon);
+				item.add_child(brightnessSlider);
+
+				item.connect("button-press-event", (actor, event) => {
+					return brightnessSlider.startDragging(event);
+				});
+
+				item.connect("key-press-event", (actor, event) => {
+					return brightnessSlider.emit("key-press-event", event);
+				});
+
+				this.menu.addMenuItem(item);
+			} catch (e) {
+				log("Internal error: " + e.message);
+			}
 		}
 
 		uncheckAllSlotCheckmarks() {
@@ -703,6 +855,28 @@ let EruptionMenuButton = GObject.registerClass(
 			this.menu._getMenuItems().forEach(elem => {
 				if (elem instanceof ProfileMenuItem) elem.setToggleState(false);
 			});
+		}
+
+		_toggleNetFx() {
+			enableNetFxAmbient = !enableNetFxAmbient;
+
+			if (enableNetFxAmbient) {
+				savedProfile = activeProfile[activeSlot];
+			}
+
+			_toggleNetFxAmbient(enableNetFxAmbient);
+
+			if (enableNetFxAmbient) {
+				Mainloop.timeout_add(PROCESS_POLL_TIMEOUT_MILLIS, () => {
+					if (enableNetFxAmbient && !isNetFxAmbientRunning()) {
+						// eruption-netfx process terminated, update our internal state
+						enableNetFxAmbient = false;
+						this.populateMenu();
+					}
+
+					return true; // keep timer enabled
+				});
+			}
 		}
 
 		_brightnessSliderChanged() {
@@ -719,16 +893,6 @@ let EruptionMenuButton = GObject.registerClass(
 			});
 
 			call_counter_on_slider_changed++;
-		}
-
-		_brightnessSliderScrolled() {
-			if (brightnessSliderTimeout) {
-				Mainloop.source_remove(brightnessSliderTimeout);
-			}
-
-			brightnessSliderTimeout = Mainloop.timeout_add(NOTIFICATION_TIMEOUT_MILLIS, () => {
-				_fadeOutNotification();
-			});
 		}
 
 		_brightnessSliderChangeCompleted() {
@@ -762,14 +926,60 @@ let EruptionMenuButton = GObject.registerClass(
 			eruptionMenuButton.populateMenu();
 		}
 
-		_sync(proxy) {
-			enableSfx = proxy.EnableSfx;
-			this._enableSfxItem.setToggleState(enableSfx);
+		_sync_slot(proxy) {
+			try {
+				if (proxy.SlotNames) {
+					activeSlot = proxy.ActiveSlot;
+					slotNames = proxy.SlotNames;
 
-			brightness = proxy.Brightness;
-			this._brightnessSlider.value = brightness / 100;
+					eruptionMenuButton.populateMenu();
+				}
+			} catch (e) {
+				log("Internal error: " + e.message);
+			}
+		}
 
-			// _showNotification("Brightness: " + brightness + "%");
+		_sync_config(proxy) {
+			try {
+				if (this._enableSfxItem) {
+					enableSfx = proxy.EnableSfx;
+
+					this._enableSfxItem.setToggleState(enableSfx);
+				}
+
+				if (this._brightnessSlider) {
+					brightness = proxy.Brightness;
+					if (brightness == null || brightness < 0 || brightness > 100)
+						brightness = 100;
+
+					this._brightnessSlider.value = brightness / 100;
+				}
+			} catch (e) {
+				log("Internal error: " + e.message);
+			}
+		}
+
+		_sync_status(proxy) {
+			try {
+				this._eruption_running = proxy.Running;
+				1
+
+				if (previous_state != this._eruption_running) {
+					if (this._eruption_running) {
+						// we (re-)gained the connection to the Eruption daemon
+						log("Connected to Eruption");
+					}
+
+					connected = this._eruption_running;
+					eruptionMenuButton.updateIcon();
+
+					previous_state = this._eruption_running;
+				} else {
+					previous_state = this._eruption_running;
+				}
+			} catch (e) {
+				log("Internal error: " + e.message);
+			}
 		}
 	}
 );
@@ -786,8 +996,14 @@ class ProfileSwitcherExtension {
 		Main.panel.menuManager.removeMenu(eruptionMenuButton.menu);
 		eruptionMenuButton.destroy();
 	}
+
+	reload() {
+		this.disable();
+		this.enable();
+	}
 }
 
 function init() {
-	return new ProfileSwitcherExtension();
+	instance = new ProfileSwitcherExtension();
+	return instance;
 }
