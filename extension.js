@@ -264,6 +264,18 @@ function getSettings() {
 function _showNotification(msg) {
 	let monitor = Main.layoutManager.currentMonitor;
 
+	// be sure to not overlay multiple notifications
+	// hide any other visible notification first
+	if (notificationText) {
+		notificationText.ease_property('opacity', 0, {
+			duration: NOTIFICATION_ANIMATION_MILLIS,
+			mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+			onComplete: () => {
+				Main.uiGroup.remove_actor(notificationText);
+			}
+		});
+	}
+
 	if (monitor) {
 		let text = new St.Label({
 			style_class: "notification-label",
@@ -292,12 +304,12 @@ function _showNotification(msg) {
 			}
 		});
 	} else {
-		call_counter_on_slider_changed = 0;
+		// call_counter_on_slider_changed = 0;
 	}
 }
 
 // Global support variables for _showOrUpdateNotification()
-var notificationText;
+var notificationText = null;
 var notificationTimeouts = [];
 
 // Show centered notification on the current monitor
@@ -333,7 +345,7 @@ function _showOrUpdateNotification(msg) {
 				});
 			}));
 		} else {
-			call_counter_on_slider_changed = 0;
+			// call_counter_on_slider_changed = 0;
 		}
 	} else {
 		notificationText.text = msg;
@@ -381,7 +393,9 @@ function _toggleNetFxAmbient(enable) {
 			Util.spawn(["/usr/bin/eruption-netfx", _getNetFxHostName(), _getNetFxPort().toString(), "ambient"]);
 		});
 	} else {
-		eruptionProfile.SwitchProfileSync(savedProfile);
+		if (savedProfile) {
+			eruptionProfile.SwitchProfileSync(savedProfile);
+		}
 
 		Util.spawn(["/usr/bin/pkill", "eruption-netfx"]);
 	}
@@ -867,15 +881,19 @@ let EruptionMenuButton = GObject.registerClass(
 			_toggleNetFxAmbient(enableNetFxAmbient);
 
 			if (enableNetFxAmbient) {
-				Mainloop.timeout_add(PROCESS_POLL_TIMEOUT_MILLIS, () => {
+				this._processPollSource = Mainloop.timeout_add(PROCESS_POLL_TIMEOUT_MILLIS, () => {
 					if (enableNetFxAmbient && !isNetFxAmbientRunning()) {
 						// eruption-netfx process terminated, update our internal state
 						enableNetFxAmbient = false;
 						this.populateMenu();
+
+						return false;
 					}
 
 					return true; // keep timer enabled
 				});
+			} else {
+				Mainloop.source_remove(this._processPollSource);
 			}
 		}
 
@@ -962,7 +980,6 @@ let EruptionMenuButton = GObject.registerClass(
 		_sync_status(proxy) {
 			try {
 				this._eruption_running = proxy.Running;
-				1
 
 				if (previous_state != this._eruption_running) {
 					if (this._eruption_running) {
