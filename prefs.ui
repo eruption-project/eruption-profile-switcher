@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.36.0 
+<!-- Generated with glade 3.38.1 
 
 Eruption Profile Switcher - Eruption Profile Switcher Gnome Shell Extension
 Copyright (C) 2019-2020 The Eruption Development Team
@@ -31,51 +31,52 @@ Author: x3n0m0rph59@gmail.com
   <object class="GtkAdjustment" id="adjustment_port">
     <property name="upper">65535</property>
     <property name="value">2359</property>
-    <property name="step_increment">1</property>
-    <property name="page_increment">10</property>
+    <property name="step-increment">1</property>
+    <property name="page-increment">10</property>
   </object>
   <object class="GtkNotebook" id="main_prefs">
     <property name="visible">True</property>
-    <property name="can_focus">True</property>
+    <property name="can-focus">True</property>
     <child>
+      <!-- n-columns=3 n-rows=5 -->
       <object class="GtkGrid">
         <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="margin_start">8</property>
-        <property name="margin_end">8</property>
-        <property name="margin_top">8</property>
-        <property name="margin_bottom">8</property>
-        <property name="row_spacing">8</property>
+        <property name="can-focus">False</property>
+        <property name="margin-start">8</property>
+        <property name="margin-end">8</property>
+        <property name="margin-top">8</property>
+        <property name="margin-bottom">8</property>
+        <property name="row-spacing">8</property>
         <child>
           <object class="GtkLabel">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="halign">end</property>
-            <property name="margin_end">8</property>
+            <property name="margin-end">8</property>
             <property name="label" translatable="yes">Host Name</property>
           </object>
           <packing>
-            <property name="left_attach">0</property>
-            <property name="top_attach">1</property>
+            <property name="left-attach">0</property>
+            <property name="top-attach">1</property>
           </packing>
         </child>
         <child>
           <object class="GtkLabel">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="halign">end</property>
-            <property name="margin_end">8</property>
+            <property name="margin-end">8</property>
             <property name="label" translatable="yes">Port Number</property>
           </object>
           <packing>
-            <property name="left_attach">0</property>
-            <property name="top_attach">2</property>
+            <property name="left-attach">0</property>
+            <property name="top-attach">2</property>
           </packing>
         </child>
         <child>
           <object class="GtkSpinButton" id="port_number">
             <property name="visible">True</property>
-            <property name="can_focus">True</property>
+            <property name="can-focus">True</property>
             <property name="hexpand">True</property>
             <property name="text" translatable="yes">2359</property>
             <property name="adjustment">adjustment_port</property>
@@ -83,14 +84,14 @@ Author: x3n0m0rph59@gmail.com
             <signal name="value-changed" handler="on_port_number_value_changed" swapped="no"/>
           </object>
           <packing>
-            <property name="left_attach">1</property>
-            <property name="top_attach">2</property>
+            <property name="left-attach">1</property>
+            <property name="top-attach">2</property>
           </packing>
         </child>
         <child>
           <object class="GtkAccelLabel">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="halign">start</property>
             <property name="label" translatable="yes">Eruption NetworkFX</property>
             <attributes>
@@ -98,22 +99,72 @@ Author: x3n0m0rph59@gmail.com
             </attributes>
           </object>
           <packing>
-            <property name="left_attach">0</property>
-            <property name="top_attach">0</property>
+            <property name="left-attach">0</property>
+            <property name="top-attach">0</property>
           </packing>
         </child>
         <child>
           <object class="GtkEntry" id="host_name">
             <property name="visible">True</property>
-            <property name="can_focus">True</property>
+            <property name="can-focus">True</property>
             <property name="hexpand">True</property>
             <property name="text" translatable="yes">localhost</property>
             <signal name="changed" handler="on_host_name_changed" swapped="no"/>
           </object>
           <packing>
-            <property name="left_attach">1</property>
-            <property name="top_attach">1</property>
+            <property name="left-attach">1</property>
+            <property name="top-attach">1</property>
           </packing>
+        </child>
+        <child>
+          <object class="GtkAccelLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">start</property>
+            <property name="label" translatable="yes">User Interface</property>
+            <attributes>
+              <attribute name="weight" value="bold"/>
+            </attributes>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">3</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="enable_notifications">
+            <property name="label" translatable="yes">Show notifications on profile change</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="draw-indicator">True</property>
+            <signal name="toggled" handler="on_enable_notifications_toggled" swapped="no"/>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">4</property>
+          </packing>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
         </child>
         <child>
           <placeholder/>
@@ -123,17 +174,17 @@ Author: x3n0m0rph59@gmail.com
     <child type="tab">
       <object class="GtkLabel">
         <property name="visible">True</property>
-        <property name="can_focus">False</property>
+        <property name="can-focus">False</property>
         <property name="label" translatable="yes">Settings</property>
       </object>
       <packing>
-        <property name="tab_fill">False</property>
+        <property name="tab-fill">False</property>
       </packing>
     </child>
     <child>
       <object class="GtkLabel">
         <property name="visible">True</property>
-        <property name="can_focus">False</property>
+        <property name="can-focus">False</property>
         <property name="label" translatable="yes">Eruption Profile Switcher
 GNOME Shell Extension
 
@@ -150,12 +201,12 @@ x3n0m0rph59@gmail.com</property>
     <child type="tab">
       <object class="GtkLabel">
         <property name="visible">True</property>
-        <property name="can_focus">False</property>
+        <property name="can-focus">False</property>
         <property name="label" translatable="yes">About</property>
       </object>
       <packing>
         <property name="position">1</property>
-        <property name="tab_fill">False</property>
+        <property name="tab-fill">False</property>
       </packing>
     </child>
     <child>

@@ -262,61 +262,20 @@ function getSettings() {
 
 // Show centered notification on the current monitor
 function _showNotification(msg) {
-	let monitor = Main.layoutManager.currentMonitor;
-
-	// be sure to not overlay multiple notifications
-	// hide any other visible notification first
-	if (notificationText) {
-		notificationText.ease_property('opacity', 0, {
-			duration: NOTIFICATION_ANIMATION_MILLIS,
-			mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-			onComplete: () => {
-				Main.uiGroup.remove_actor(notificationText);
-			}
-		});
-	}
-
-	if (monitor) {
-		let text = new St.Label({
-			style_class: "notification-label",
-			text: msg
-		});
-
-		notificationText = text;
-
-		text.opacity = 255;
-
-		Main.uiGroup.add_actor(text);
-		text.set_position(
-			Math.floor(monitor.width / 2 - text.width / 2),
-			Math.floor(monitor.height / 2 - text.height / 2)
-		);
-
-		Mainloop.timeout_add(NOTIFICATION_TIMEOUT_MILLIS, () => {
-			if (notificationText) {
-				notificationText.ease_property('opacity', 0, {
-					duration: NOTIFICATION_ANIMATION_MILLIS,
-					mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-					onComplete: () => {
-						Main.uiGroup.remove_actor(notificationText);
-					}
-				});
-			}
-		});
-	} else {
-		// call_counter_on_slider_changed = 0;
-	}
-}
-
-// Global support variables for _showOrUpdateNotification()
-var notificationText = null;
-var notificationTimeouts = [];
-
-// Show centered notification on the current monitor
-// The notification is faded out conditionally
-function _showOrUpdateNotification(msg) {
-	if (!notificationText) {
+	if (_notificationsEnabled()) {
 		let monitor = Main.layoutManager.currentMonitor;
+
+		// be sure to not overlay multiple notifications
+		// hide any other visible notification first
+		if (notificationText) {
+			notificationText.ease_property('opacity', 0, {
+				duration: NOTIFICATION_ANIMATION_MILLIS,
+				mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+				onComplete: () => {
+					Main.uiGroup.remove_actor(notificationText);
+				}
+			});
+		}
 
 		if (monitor) {
 			let text = new St.Label({
@@ -334,7 +293,89 @@ function _showOrUpdateNotification(msg) {
 				Math.floor(monitor.height / 2 - text.height / 2)
 			);
 
+			Mainloop.timeout_add(NOTIFICATION_TIMEOUT_MILLIS, () => {
+				if (notificationText) {
+					notificationText.ease_property('opacity', 0, {
+						duration: NOTIFICATION_ANIMATION_MILLIS,
+						mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+						onComplete: () => {
+							Main.uiGroup.remove_actor(notificationText);
+						}
+					});
+				}
+			});
+		} else {
+			// call_counter_on_slider_changed = 0;
+		}
+	}
+}
+
+// Global support variables for _showOrUpdateNotification()
+var notificationText = null;
+var notificationTimeouts = [];
+
+// Show centered notification on the current monitor
+// The notification is faded out conditionally
+function _showOrUpdateNotification(msg) {
+	if (_notificationsEnabled()) {
+		if (!notificationText) {
+			let monitor = Main.layoutManager.currentMonitor;
+
+			if (monitor) {
+				let text = new St.Label({
+					style_class: "notification-label",
+					text: msg
+				});
+
+				notificationText = text;
+
+				text.opacity = 255;
+
+				Main.uiGroup.add_actor(text);
+				text.set_position(
+					Math.floor(monitor.width / 2 - text.width / 2),
+					Math.floor(monitor.height / 2 - text.height / 2)
+				);
+
+				notificationTimeouts.push(Mainloop.timeout_add(NOTIFICATION_TIMEOUT_MILLIS, () => {
+					notificationText.ease_property('opacity', 0, {
+						duration: NOTIFICATION_ANIMATION_MILLIS,
+						mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+						onComplete: () => {
+							Main.uiGroup.remove_actor(notificationText);
+							notificationText = null;
+						}
+					});
+				}));
+			} else {
+				// call_counter_on_slider_changed = 0;
+			}
+		} else {
+			notificationText.text = msg;
+
+			notificationTimeouts.forEach(timeout => Mainloop.source_remove(timeout));
+
 			notificationTimeouts.push(Mainloop.timeout_add(NOTIFICATION_TIMEOUT_MILLIS, () => {
+				notificationText.ease_property('opacity', 0, {
+					duration: NOTIFICATION_ANIMATION_MILLIS,
+					mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+					onComplete: () => {
+						Main.uiGroup.remove_actor(notificationText);
+						notificationText = null;
+
+						notificationTimeouts = [];
+					}
+				});
+			}));
+		}
+	}
+}
+
+// Programmatically dismiss the notification overlay
+function _fadeOutNotification() {
+	if (_notificationsEnabled()) {
+		Mainloop.timeout_add(NOTIFICATION_TIMEOUT_MILLIS, () => {
+			if (notificationText) {
 				notificationText.ease_property('opacity', 0, {
 					duration: NOTIFICATION_ANIMATION_MILLIS,
 					mode: Clutter.AnimationMode.EASE_OUT_QUAD,
@@ -343,44 +384,9 @@ function _showOrUpdateNotification(msg) {
 						notificationText = null;
 					}
 				});
-			}));
-		} else {
-			// call_counter_on_slider_changed = 0;
-		}
-	} else {
-		notificationText.text = msg;
-
-		notificationTimeouts.forEach(timeout => Mainloop.source_remove(timeout));
-
-		notificationTimeouts.push(Mainloop.timeout_add(NOTIFICATION_TIMEOUT_MILLIS, () => {
-			notificationText.ease_property('opacity', 0, {
-				duration: NOTIFICATION_ANIMATION_MILLIS,
-				mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-				onComplete: () => {
-					Main.uiGroup.remove_actor(notificationText);
-					notificationText = null;
-
-					notificationTimeouts = [];
-				}
-			});
-		}));
+			}
+		});
 	}
-}
-
-// Programmatically dismiss the notification overlay
-function _fadeOutNotification() {
-	Mainloop.timeout_add(NOTIFICATION_TIMEOUT_MILLIS, () => {
-		if (notificationText) {
-			notificationText.ease_property('opacity', 0, {
-				duration: NOTIFICATION_ANIMATION_MILLIS,
-				mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-				onComplete: () => {
-					Main.uiGroup.remove_actor(notificationText);
-					notificationText = null;
-				}
-			});
-		}
-	});
 }
 
 // Enable or disable the NetworkFX Ambient effect
@@ -406,6 +412,20 @@ function _toggleNetFxAmbient(enable) {
 function _switchAwayFromNetfxAmbient() {
 	_toggleNetFxAmbient(false);
 	enableNetFxAmbient = false;
+}
+
+// Returns whether notifications should be displayed
+function _notificationsEnabled() {
+	let result = false;
+
+	try {
+		result = getSettings().get_boolean("notifications");
+	} catch (e) {
+		log(e.message);
+		// _showNotification(e.message);
+	}
+
+	return result;
 }
 
 // Returns the configured hostname

@@ -71,6 +71,10 @@ var PrefsWidget = GObject.registerClass(
 
 				on_port_number_value_changed(w) {
 					getSettings().set_int("netfx-port-number", w.get_value_as_int());
+				},
+
+				on_enable_notifications_toggled(w) {
+					getSettings().set_boolean("notifications", w.get_active());
 				}
 			};
 
@@ -82,5 +86,6 @@ var PrefsWidget = GObject.registerClass(
 
 			builder.get_object("host_name").text = getSettings().get_string("netfx-host-name");
 			builder.get_object("port_number").value = getSettings().get_int("netfx-port-number");
+			builder.get_object("enable_notifications").set_active(getSettings().get_boolean("notifications"));
 		}
 	});

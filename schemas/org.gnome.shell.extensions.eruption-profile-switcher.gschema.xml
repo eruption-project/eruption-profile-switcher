@@ -4,6 +4,12 @@
   <schema id="org.gnome.shell.extensions.eruption-profile-switcher"
     path="/org/gnome/shell/extensions/eruption-profile-switcher/">
 
+    <key type="b" name="notifications">
+      <default>false</default>
+      <summary>Enable notifications</summary>
+      <description>Enable notifications</description>
+    </key>
+
     <key type="s" name="netfx-host-name">
       <default>"localhost"</default>
       <summary>NetworkFX Host Name</summary>
