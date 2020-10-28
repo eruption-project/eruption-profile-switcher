@@ -151,13 +151,11 @@ const eruptionProfileIface = `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS O
 const eruptionConfigIface = `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
 <node name="/org/eruption/config">
   <interface name="org.eruption.Config">
-    <method name="WriteFile">
-      <arg name="filename" type="s" direction="in"/>
-      <arg name="data" type="s" direction="in"/>
-      <arg name="status" type="b" direction="out"/>
-    </method>
     <property name="Brightness" type="x" access="readwrite"/>
     <property name="EnableSfx" type="b" access="readwrite"/>
+    <signal name="BrightnessChanged">
+      <arg name="current brightness" type="x"/>
+    </signal>
   </interface>
   <interface name="org.freedesktop.DBus.Introspectable">
     <method name="Introspect">
@@ -714,6 +712,11 @@ let EruptionMenuButton = GObject.registerClass(
 					}
 				);
 
+				this._brightness_changed_id = eruptionConfig.connectSignal(
+					"BrightnessChanged",
+					this._brightnessChanged.bind(this)
+				);
+
 				const EruptionStatusProxy = Gio.DBusProxy.makeProxyWrapper(
 					eruptionStatusIface
 				);
@@ -918,7 +921,8 @@ let EruptionMenuButton = GObject.registerClass(
 		}
 
 		_brightnessSliderChanged() {
-			Mainloop.timeout_add(1, () => {
+			// debounce slider
+			Mainloop.timeout_add(100, () => {
 				let percent = this._brightnessSlider.value * 100;
 
 				brightness = percent;
@@ -935,6 +939,17 @@ let EruptionMenuButton = GObject.registerClass(
 
 		_brightnessSliderChangeCompleted() {
 			_fadeOutNotification();
+		}
+
+		// D-Bus signal, emitted when the daemon registered modification of the LED brightness
+		_brightnessChanged(proxy, sender, [object]) {
+			if (this._brightnessSlider) {
+				brightness = object;
+				if (brightness == null || brightness < 0 || brightness > 100)
+					brightness = 100;
+
+				this._brightnessSlider.value = brightness / 100;
+			}
 		}
 
 		// D-Bus signal, emitted when the daemon changed its active slot
