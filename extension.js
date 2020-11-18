@@ -679,7 +679,16 @@ let EruptionMenuButton = GObject.registerClass(
 				eruptionProfile = new EruptionProfileProxy(
 					Gio.DBus.system,
 					"org.eruption",
-					"/org/eruption/profile"
+					"/org/eruption/profile",
+					(proxy, error) => {
+						if (error) {
+							log(error.message);
+							return;
+						}
+
+						proxy.connect("g-properties-changed", this._sync_profile.bind(this));
+						this._sync_profile(proxy);
+					}
 				);
 
 				this._active_profile_changed_id = eruptionProfile.connectSignal(
@@ -691,8 +700,6 @@ let EruptionMenuButton = GObject.registerClass(
 					"ProfilesChanged",
 					this._profilesChanged.bind(this)
 				);
-
-				activeProfile[activeSlot] = eruptionProfile.ActiveProfile;
 
 				const EruptionConfigProxy = Gio.DBusProxy.makeProxyWrapper(
 					eruptionConfigIface
@@ -769,7 +776,7 @@ let EruptionMenuButton = GObject.registerClass(
 				this.menu.removeAll();
 
 				// initialize to sane defaults
-				if (config === undefined) {
+				if (!config) {
 					config = {
 						active_slot: activeSlot,
 						active_item: undefined
@@ -822,11 +829,11 @@ let EruptionMenuButton = GObject.registerClass(
 						runEruptionGui();
 					});
 					this.menu.addMenuItem(this.guiItem);
-				}
 
-				// add separator
-				separator = new PopupMenu.PopupSeparatorMenuItem();
-				this.menu.addMenuItem(separator);
+					// add separator
+					separator = new PopupMenu.PopupSeparatorMenuItem();
+					this.menu.addMenuItem(separator);
+				}
 
 				// add controls for the global configuration options of eruption
 				let enableNetFxAmbientItem = new PopupMenu.PopupSwitchMenuItem("NetworkFX Ambient Effect", false);
@@ -955,6 +962,7 @@ let EruptionMenuButton = GObject.registerClass(
 		// D-Bus signal, emitted when the daemon changed its active slot
 		_activeSlotChanged(proxy, sender, [object]) {
 			activeSlot = object;
+
 			eruptionMenuButton.populateMenu({
 				active_slot: object
 			});
@@ -981,9 +989,26 @@ let EruptionMenuButton = GObject.registerClass(
 
 		_sync_slot(proxy) {
 			try {
-				if (proxy.SlotNames) {
+				if (proxy.ActiveSlot != null) {
 					activeSlot = proxy.ActiveSlot;
+
+					eruptionMenuButton.populateMenu();
+				}
+
+				if (proxy.SlotNames != null) {
 					slotNames = proxy.SlotNames;
+
+					eruptionMenuButton.populateMenu();
+				}
+			} catch (e) {
+				log("Internal error: " + e.message);
+			}
+		}
+
+		_sync_profile(proxy) {
+			try {
+				if (proxy.ActiveProfile != null && activeSlot != null) {
+					activeProfile[activeSlot] = proxy.ActiveProfile;
 
 					eruptionMenuButton.populateMenu();
 				}
@@ -994,13 +1019,13 @@ let EruptionMenuButton = GObject.registerClass(
 
 		_sync_config(proxy) {
 			try {
-				if (this._enableSfxItem) {
+				if (this._enableSfxItem != null) {
 					enableSfx = proxy.EnableSfx;
 
 					this._enableSfxItem.setToggleState(enableSfx);
 				}
 
-				if (this._brightnessSlider) {
+				if (this._brightnessSlider != null) {
 					brightness = proxy.Brightness;
 					if (brightness == null || brightness < 0 || brightness > 100)
 						brightness = 100;
