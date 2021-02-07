@@ -191,6 +191,9 @@ const eruptionStatusIface = `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Ob
     <method name="GetLedColors">
       <arg name="values" type="a(yyyy)" direction="out"/>
     </method>
+    <method name="GetManagedDevices">
+      <arg name="values" type="a(qq)" direction="out"/>
+    </method>
     <property name="Running" type="b" access="read"/>
   </interface>
   <interface name="org.freedesktop.DBus.Introspectable">
@@ -394,7 +397,7 @@ function _toggleNetFxAmbient(enable) {
 		eruptionProfile.SwitchProfileSync("netfx.profile");
 
 		Mainloop.timeout_add(PROCESS_SPAWN_WAIT_MILLIS, () => {
-			Util.spawn(["/usr/bin/eruption-netfx", _getNetFxHostName(), _getNetFxPort().toString(), "ambient"]);
+			Util.spawn(["/usr/bin/eruption-netfx", _getNetFxKeyboardModel(), _getNetFxHostName(), _getNetFxPort().toString(), "ambient"]);
 		});
 	} else {
 		if (savedProfile) {
@@ -424,6 +427,19 @@ function _notificationsEnabled() {
 	}
 
 	return result;
+}
+
+// Returns the model of the managed keyboard suitable for
+// use with the eruption-netfx client
+function _getNetFxKeyboardModel() {
+	let managed_devices = eruptionStatus.GetManagedDevicesSync()[0];
+
+	let vid = managed_devices[0][0].toString(16);
+	let pid = managed_devices[0][1].toString(16);
+
+	let model = `${vid}:${pid}`;
+
+	return model;
 }
 
 // Returns the configured hostname
@@ -475,8 +491,7 @@ function isNetFxAmbientRunning() {
 
 // Returns `true` if the Eruption GUI is executable
 function isEruptionGuiAvailable() {
-	// TODO: Implement this
-	return false;
+	return true;
 }
 
 // Execute Eruption GUI
