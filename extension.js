@@ -98,7 +98,8 @@ const eruptionSlotIface = `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Obje
       <arg name="invalidated_properties" type="as"/>
     </signal>
   </interface>
-</node>`.trim();
+</node>
+`.trim();
 
 // D-Bus interface specification: Profiles
 const eruptionProfileIface = `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
@@ -106,6 +107,13 @@ const eruptionProfileIface = `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS O
   <interface name="org.eruption.Profile">
     <method name="EnumProfiles">
       <arg name="profiles" type="a(ss)" direction="out"/>
+    </method>
+    <method name="SetParameter">
+      <arg name="profile_file" type="s" direction="in"/>
+      <arg name="script_file" type="s" direction="in"/>
+      <arg name="param_name" type="s" direction="in"/>
+      <arg name="value" type="s" direction="in"/>
+      <arg name="status" type="b" direction="out"/>
     </method>
     <method name="SwitchProfile">
       <arg name="filename" type="s" direction="in"/>
@@ -151,6 +159,11 @@ const eruptionProfileIface = `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS O
 const eruptionConfigIface = `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
 <node name="/org/eruption/config">
   <interface name="org.eruption.Config">
+    <method name="WriteFile">
+      <arg name="filename" type="s" direction="in"/>
+      <arg name="data" type="s" direction="in"/>
+      <arg name="status" type="b" direction="out"/>
+    </method>
     <property name="Brightness" type="x" access="readwrite"/>
     <property name="EnableSfx" type="b" access="readwrite"/>
     <signal name="BrightnessChanged">
@@ -576,7 +589,7 @@ var SlotMenuItem = GObject.registerClass(
 			});
 
 			this.label = new St.Label({
-				text: slotNames[slot],
+				text: slotNames[slot] ?? DEFAULT_SLOT_NAMES[slot],
 				style_class: 'slot-label'
 			});
 
