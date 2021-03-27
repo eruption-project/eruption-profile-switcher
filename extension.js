@@ -407,7 +407,7 @@ function _fadeOutNotification() {
 // Switch the profile to `netfx.profile` and start or kill the `eruption-netfx` process
 function _toggleNetFxAmbient(enable) {
 	if (enable) {
-		eruptionProfile.SwitchProfileSync("netfx.profile");
+		eruptionProfile.SwitchProfileSync("/var/lib/eruption/profiles/netfx.profile");
 
 		Mainloop.timeout_add(PROCESS_SPAWN_WAIT_MILLIS, () => {
 			Util.spawn(["/usr/bin/eruption-netfx", _getNetFxKeyboardModel(), _getNetFxHostName(), _getNetFxPort().toString(), "ambient"]);
@@ -956,8 +956,10 @@ let EruptionMenuButton = GObject.registerClass(
 		}
 
 		_brightnessSliderChanged() {
+			Mainloop.source_remove(this._brightnessSliderSource);
+
 			// debounce slider
-			Mainloop.timeout_add(100, () => {
+			this._brightnessSliderSource = Mainloop.timeout_add(100, () => {
 				let percent = this._brightnessSlider.value * 100;
 
 				brightness = percent;
