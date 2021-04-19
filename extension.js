@@ -98,8 +98,7 @@ const eruptionSlotIface = `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Obje
       <arg name="invalidated_properties" type="as"/>
     </signal>
   </interface>
-</node>
-`.trim();
+</node>`.trim();
 
 // D-Bus interface specification: Profiles
 const eruptionProfileIface = `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
@@ -159,6 +158,12 @@ const eruptionProfileIface = `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS O
 const eruptionConfigIface = `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
 <node name="/org/eruption/config">
   <interface name="org.eruption.Config">
+    <method name="Ping">
+      <arg name="status" type="b" direction="out"/>
+    </method>
+    <method name="PingPrivileged">
+      <arg name="status" type="b" direction="out"/>
+    </method>
     <method name="WriteFile">
       <arg name="filename" type="s" direction="in"/>
       <arg name="data" type="s" direction="in"/>
@@ -205,7 +210,7 @@ const eruptionStatusIface = `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Ob
       <arg name="values" type="a(yyyy)" direction="out"/>
     </method>
     <method name="GetManagedDevices">
-      <arg name="values" type="a(qq)" direction="out"/>
+      <arg name="values" type="(a(qq)a(qq)a(qq))" direction="out"/>
     </method>
     <property name="Running" type="b" access="read"/>
   </interface>
@@ -447,8 +452,8 @@ function _notificationsEnabled() {
 function _getNetFxKeyboardModel() {
 	let managed_devices = eruptionStatus.GetManagedDevicesSync()[0];
 
-	let vid = managed_devices[0][0].toString(16);
-	let pid = managed_devices[0][1].toString(16);
+	let vid = managed_devices[0][0][0].toString(16);
+	let pid = managed_devices[0][0][1].toString(16);
 
 	let model = `${vid}:${pid}`;
 
@@ -588,8 +593,13 @@ var SlotMenuItem = GObject.registerClass(
 				style_class: "checkmark-slot"
 			});
 
+			let slot_name = DEFAULT_SLOT_NAMES[slot];
+			if (slotNames[slot]) {
+				slot_name = slotNames[slot];
+			}
+
 			this.label = new St.Label({
-				text: slotNames[slot] ?? DEFAULT_SLOT_NAMES[slot],
+				text: slot_name,
 				style_class: 'slot-label'
 			});
 
@@ -837,7 +847,7 @@ let EruptionMenuButton = GObject.registerClass(
 					let result = eruptionProfile.EnumProfilesSync();
 					result[0].forEach(profile => {
 						let item = new ProfileMenuItem(new Profile(profile[0], profile[1]));
-						if (active_profile.localeCompare(profile[1]) === 0) {
+						if (active_profile && active_profile.localeCompare(profile[1]) === 0) {
 							item.setToggleState(true);
 						}
 
@@ -959,7 +969,7 @@ let EruptionMenuButton = GObject.registerClass(
 			Mainloop.source_remove(this._brightnessSliderSource);
 
 			// debounce slider
-			this._brightnessSliderSource = Mainloop.timeout_add(100, () => {
+			this._brightnessSliderSource = Mainloop.timeout_add(25, () => {
 				let percent = this._brightnessSlider.value * 100;
 
 				brightness = percent;
