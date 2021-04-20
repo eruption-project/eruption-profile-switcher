@@ -509,7 +509,23 @@ function isNetFxAmbientRunning() {
 
 // Returns `true` if the Eruption GUI is executable
 function isEruptionGuiAvailable() {
-	return true;
+	try {
+		let cmdline = "/usr/bin/eruption-gui";
+
+		let file = Gio.File.new_for_path(cmdline);
+		let file_info = file.query_info("standard::*", Gio.FileQueryInfoFlags.NONE, null);
+
+		let file_type = file_info.get_file_type();
+
+		if (file_type == Gio.FileType.REGULAR || file_type == Gio.FileType.SYMBOLIC_LINK) {
+			return true;
+		} else {
+			return false;
+		}
+	} catch (e) {
+		log(e.message);
+		return false;
+	}
 }
 
 // Execute Eruption GUI
