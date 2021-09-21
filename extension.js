@@ -323,29 +323,15 @@ var activeSlot,
 	activeProfile = [],
 	savedProfile,
 	enableSfx, enableNetFxAmbient, brightness = 100,
-	deviceStatus = [];
+	deviceStatus = [],
+	status_poll_source;
+
+var settings;
 
 
 // Since we don't want to show the brightness indicator after startup
 // we need to track the number of calls
 var call_counter_on_slider_changed = 0;
-
-function getSettings() {
-	let GioSSS = Gio.SettingsSchemaSource;
-	let schemaSource = GioSSS.new_from_directory(
-		Me.dir.get_child("schemas").get_path(),
-		GioSSS.get_default(),
-		false
-	);
-	let schemaObj = schemaSource.lookup(
-		'org.gnome.shell.extensions.eruption-profile-switcher', true);
-	if (!schemaObj) {
-		throw new Error('cannot find schemas');
-	}
-	return new Gio.Settings({
-		settings_schema: schemaObj
-	});
-}
 
 // Show centered notification on the current monitor
 function _showNotification(msg) {
@@ -506,7 +492,7 @@ function _notificationsEnabled() {
 	let result = false;
 
 	try {
-		result = getSettings().get_boolean("notifications");
+		result = settings.get_boolean("notifications");
 	} catch (e) {
 		log(e.message);
 		// _showNotification(e.message);
@@ -533,7 +519,7 @@ function _getNetFxHostName() {
 	let result = "localhost";
 
 	try {
-		result = getSettings().get_string("netfx-host-name");
+		result = settings.get_string("netfx-host-name");
 	} catch (e) {
 		log(e.message);
 		_showNotification(e.message);
@@ -547,7 +533,7 @@ function _getNetFxPort() {
 	let result = 2359;
 
 	try {
-		result = getSettings().get_int("netfx-port-number");
+		result = settings.get_int("netfx-port-number");
 	} catch (e) {
 		log(e.message);
 		_showNotification(e.message);
@@ -609,7 +595,7 @@ function runEruptionGui() {
 }
 
 // Find the name of a supported device from the SUPPORTED_DEVICES table, using USB IDs
-function get_device_name(usb_vid, usb_pid) {
+function _getDeviceName(usb_vid, usb_pid) {
 	const device = SUPPORTED_DEVICES.find((e) => e.usb_vid == usb_vid && e.usb_pid == usb_pid);
 	if (device != undefined) {
 		return `${device.make} ${device.model}`;
@@ -899,14 +885,27 @@ let EruptionMenuButton = GObject.registerClass(
 					}
 				);
 
-				// if (getSettings().get_boolean("show-battery-level") ||
-				// 	getSettings().get_boolean("show-signal-strength")) {
-					Mainloop.timeout_add(STATUS_POLL_TIMEOUT_MILLIS, () => {
+				if (settings.get_boolean("show-battery-level") ||
+					settings.get_boolean("show-signal-strength")) {
+
+					if (status_poll_source !== undefined && status_poll_source !== null) {
+						Mainloop.source_remove(status_poll_source);
+						status_poll_source = null;
+					}
+
+					status_poll_source = Mainloop.timeout_add(STATUS_POLL_TIMEOUT_MILLIS, () => {
 						this._sync_device(eruptionDevice);
 
 						return true; // keep timer enabled
 					});
-				// }
+				} else if (!settings.get_boolean("show-battery-level") &&
+						   !settings.get_boolean("show-signal-strength")) {
+					// all indicators have been disabled
+					if (status_poll_source !== undefined && status_poll_source !== null) {
+						Mainloop.source_remove(status_poll_source);
+						status_poll_source = null;
+					}
+				}
 			} catch (e) {
 				log(e.message);
 				_showNotification(e.message);
@@ -1001,11 +1000,17 @@ let EruptionMenuButton = GObject.registerClass(
 							runEruptionGui();
 						});
 						this.menu.addMenuItem(this.guiItem);
-
-						// add separator
-						separator = new PopupMenu.PopupSeparatorMenuItem();
-						this.menu.addMenuItem(separator);
 					}
+
+					// add preferences menu item
+					const prefs_item = new CustomPopupMenuItem('Preferences…', (_item) => {
+						ExtensionUtils.openPrefs();
+					});
+					this.menu.addMenuItem(prefs_item);
+
+					// add separator
+					separator = new PopupMenu.PopupSeparatorMenuItem();
+					this.menu.addMenuItem(separator);
 
 					// add controls for the global configuration options of eruption
 					let enableNetFxAmbientItem = new PopupMenu.PopupSwitchMenuItem("NetworkFX Ambient Effect", false);
@@ -1080,11 +1085,11 @@ let EruptionMenuButton = GObject.registerClass(
 
 				const label = new St.Label({
 					style_class: "menu-item-label",
-					text: `${get_device_name(device.usb_vid, device.usb_pid)}`,
+					text: `${_getDeviceName(device.usb_vid, device.usb_pid)}`,
 				});
 
 				// signal strength indicator
-				if (getSettings().get_boolean("show-signal-strength")) {
+				if (settings.get_boolean("show-signal-strength")) {
 					const signal_strength = device.status["signal-strength-percent"];
 					if (signal_strength !== undefined ) {
 						var icon_name = "network-cellular-signal-none-symbolic";
@@ -1146,7 +1151,7 @@ let EruptionMenuButton = GObject.registerClass(
 				}
 
 				// battery level indicator
-				if (getSettings().get_boolean("show-battery-level")) {
+				if (settings.get_boolean("show-battery-level")) {
 					const battery_level = device.status["battery-level-percent"];
 					if (battery_level !== undefined ) {
 						var icon_name = "battery-missing-symbolic";
@@ -1419,11 +1424,16 @@ class ProfileSwitcherExtension {
 	constructor() {}
 
 	enable() {
+		settings = ExtensionUtils.getSettings();
+
 		eruptionMenuButton = new EruptionMenuButton();
 		Main.panel.addToStatusArea("eruption-menu", eruptionMenuButton, 1, "right");
 	}
 
 	disable() {
+		Mainloop.source_remove(status_poll_source);
+		status_poll_source = null;
+
 		Main.panel.menuManager.removeMenu(eruptionMenuButton.menu);
 		eruptionMenuButton.destroy();
 	}

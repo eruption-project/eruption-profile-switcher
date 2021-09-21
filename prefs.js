@@ -27,26 +27,13 @@ const {
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
+var settings;
+
 var hostName, portNumber;
 
-function getSettings() {
-	let GioSSS = Gio.SettingsSchemaSource;
-	let schemaSource = GioSSS.new_from_directory(
-		Me.dir.get_child("schemas").get_path(),
-		GioSSS.get_default(),
-		false
-	);
-	let schemaObj = schemaSource.lookup(
-		'org.gnome.shell.extensions.eruption-profile-switcher', true);
-	if (!schemaObj) {
-		throw new Error('cannot find schemas');
-	}
-	return new Gio.Settings({
-		settings_schema: schemaObj
-	});
+function init() {
+	settings = ExtensionUtils.getSettings();
 }
-
-function init() {}
 
 function buildPrefsWidget() {
 	let builder = new Gtk.Builder();
@@ -62,11 +49,11 @@ function buildPrefsWidget() {
 					Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
 
 
-	builder.get_object("host_name").text = getSettings().get_string("netfx-host-name");
-	builder.get_object("port_number").value = getSettings().get_int("netfx-port-number");
-	builder.get_object("enable_notifications").set_active(getSettings().get_boolean("notifications"));
-	builder.get_object("show_battery_level").set_active(getSettings().get_boolean("show-battery-level"));
-	builder.get_object("show_signal_strength").set_active(getSettings().get_boolean("show-signal-strength"));
+	builder.get_object("host_name").text = settings.get_string("netfx-host-name");
+	builder.get_object("port_number").value = settings.get_int("netfx-port-number");
+	builder.get_object("enable_notifications").set_active(settings.get_boolean("notifications"));
+	builder.get_object("show_battery_level").set_active(settings.get_boolean("show-battery-level"));
+	builder.get_object("show_signal_strength").set_active(settings.get_boolean("show-signal-strength"));
 
     return builder.get_object('main_prefs');
 }
@@ -96,22 +83,26 @@ const MyBuilderScope = GObject.registerClass({
     }
 
 	on_host_name_changed(w) {
-		getSettings().set_string("netfx-host-name", w.text);
+		settings.set_string("netfx-host-name", w.text);
 	}
 
 	on_port_number_value_changed(w) {
-		getSettings().set_int("netfx-port-number", w.get_value_as_int());
+		settings.set_int("netfx-port-number", w.get_value_as_int());
 	}
 
 	on_enable_notifications_toggled(w) {
-		getSettings().set_boolean("notifications", w.get_active());
+		settings.set_boolean("notifications", w.get_active());
 	}
 
 	on_show_battery_level_toggled(w) {
-		getSettings().set_boolean("show-battery-level", w.get_active());
+		settings.set_boolean("show-battery-level", w.get_active());
+
+		eruptionMenuButton.populateMenu();
 	}
 
 	on_show_signal_strength_toggled(w) {
-		getSettings().set_boolean("show-signal-strength", w.get_active());
+		settings.set_boolean("show-signal-strength", w.get_active());
+
+		eruptionMenuButton.populateMenu();
 	}
 });

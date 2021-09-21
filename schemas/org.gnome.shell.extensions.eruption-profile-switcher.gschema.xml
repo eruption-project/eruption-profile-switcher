@@ -24,13 +24,13 @@
 
     <key type="b" name="show-battery-level">
       <default>true</default>
-      <summary>Show battery level indicator where applicable</summary>
+      <summary>Show a battery level indicator where applicable</summary>
       <description></description>
     </key>
 
     <key type="b" name="show-signal-strength">
       <default>false</default>
-      <summary>Show signal strength indicator for wireless devices</summary>
+      <summary>Show a signal strength indicator for each wireless device</summary>
       <description></description>
     </key>
   </schema>
