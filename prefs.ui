@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.38.1 
+<!-- Generated with glade 3.38.2 
 
 Eruption Profile Switcher - Eruption Profile Switcher Gnome Shell Extension
 Copyright (C) 2019-2021 The Eruption Development Team
@@ -38,40 +38,53 @@ Author: x3n0m0rph59@gmail.com
     <property name="visible">True</property>
     <property name="can-focus">True</property>
     <child>
-      <!-- n-columns=3 n-rows=5 -->
-      <object class="GtkGrid">
+      <!-- n-columns=3 n-rows=7 -->
+      <object class="GtkBox">
         <property name="visible">True</property>
-        <property name="can-focus">False</property>
         <property name="margin-start">8</property>
         <property name="margin-end">8</property>
         <property name="margin-top">8</property>
         <property name="margin-bottom">8</property>
-        <property name="row-spacing">8</property>
+        <property name="orientation">vertical</property>
+        <property name="hexpand">1</property>
+        <property name="vexpand">1</property>
         <child>
           <object class="GtkLabel">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="halign">end</property>
-            <property name="margin-end">8</property>
+            <property name="halign">start</property>
+            <property name="label" translatable="yes">Eruption NetworkFX</property>
+            <attributes>
+              <attribute name="weight" value="bold"/>
+            </attributes>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="halign">start</property>
+            <property name="margin-top">8</property>
             <property name="label" translatable="yes">Host Name</property>
           </object>
-          <packing>
-            <property name="left-attach">0</property>
-            <property name="top-attach">1</property>
-          </packing>
+        </child>
+        <child>
+          <object class="GtkEntry" id="host_name">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="hexpand">True</property>
+            <property name="text" translatable="yes">localhost</property>
+            <signal name="changed" handler="on_host_name_changed" swapped="no"/>
+          </object>
         </child>
         <child>
           <object class="GtkLabel">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="halign">end</property>
-            <property name="margin-end">8</property>
+            <property name="halign">start</property>
+            <property name="margin-top">8</property>
             <property name="label" translatable="yes">Port Number</property>
           </object>
-          <packing>
-            <property name="left-attach">0</property>
-            <property name="top-attach">2</property>
-          </packing>
         </child>
         <child>
           <object class="GtkSpinButton" id="port_number">
@@ -83,53 +96,18 @@ Author: x3n0m0rph59@gmail.com
             <property name="value">2359</property>
             <signal name="value-changed" handler="on_port_number_value_changed" swapped="no"/>
           </object>
-          <packing>
-            <property name="left-attach">1</property>
-            <property name="top-attach">2</property>
-          </packing>
         </child>
         <child>
-          <object class="GtkAccelLabel">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="halign">start</property>
-            <property name="label" translatable="yes">Eruption NetworkFX</property>
-            <attributes>
-              <attribute name="weight" value="bold"/>
-            </attributes>
-          </object>
-          <packing>
-            <property name="left-attach">0</property>
-            <property name="top-attach">0</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkEntry" id="host_name">
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="hexpand">True</property>
-            <property name="text" translatable="yes">localhost</property>
-            <signal name="changed" handler="on_host_name_changed" swapped="no"/>
-          </object>
-          <packing>
-            <property name="left-attach">1</property>
-            <property name="top-attach">1</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkAccelLabel">
+          <object class="GtkLabel">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">start</property>
             <property name="label" translatable="yes">User Interface</property>
+            <property name="margin-top">8</property>
             <attributes>
               <attribute name="weight" value="bold"/>
             </attributes>
           </object>
-          <packing>
-            <property name="left-attach">0</property>
-            <property name="top-attach">3</property>
-          </packing>
         </child>
         <child>
           <object class="GtkCheckButton" id="enable_notifications">
@@ -137,13 +115,38 @@ Author: x3n0m0rph59@gmail.com
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">False</property>
-            <property name="draw-indicator">True</property>
             <signal name="toggled" handler="on_enable_notifications_toggled" swapped="no"/>
           </object>
-          <packing>
-            <property name="left-attach">1</property>
-            <property name="top-attach">4</property>
-          </packing>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="show_battery_level">
+            <property name="label" translatable="yes">Show a battery level indicator in the popup menu</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <signal name="toggled" handler="on_show_battery_level_toggled" swapped="no"/>
+          </object>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="show_signal_strength">
+            <property name="label" translatable="yes">Show a signal strength indicator in the popup menu</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <signal name="toggled" handler="on_show_signal_strength_toggled" swapped="no"/>
+          </object>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
         </child>
         <child>
           <placeholder/>
@@ -177,9 +180,6 @@ Author: x3n0m0rph59@gmail.com
         <property name="can-focus">False</property>
         <property name="label" translatable="yes">Settings</property>
       </object>
-      <packing>
-        <property name="tab-fill">False</property>
-      </packing>
     </child>
     <child>
       <object class="GtkLabel">
@@ -194,9 +194,6 @@ The Eruption Development Team
 Authors:
 x3n0m0rph59@gmail.com</property>
       </object>
-      <packing>
-        <property name="position">1</property>
-      </packing>
     </child>
     <child type="tab">
       <object class="GtkLabel">
@@ -204,10 +201,6 @@ x3n0m0rph59@gmail.com</property>
         <property name="can-focus">False</property>
         <property name="label" translatable="yes">About</property>
       </object>
-      <packing>
-        <property name="position">1</property>
-        <property name="tab-fill">False</property>
-      </packing>
     </child>
     <child>
       <placeholder/>

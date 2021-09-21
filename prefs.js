@@ -21,8 +21,10 @@
 const {
 	GObject,
 	Gio,
-	Gtk
+	Gtk,
+	Gdk
 } = imports.gi;
+const ExtensionUtils = imports.misc.extensionUtils;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 var hostName, portNumber;
@@ -47,45 +49,69 @@ function getSettings() {
 function init() {}
 
 function buildPrefsWidget() {
-	let widget = new PrefsWidget();
-	widget.show_all();
-	return widget;
+	let builder = new Gtk.Builder();
+
+    builder.set_scope(new MyBuilderScope());
+    // builder.set_translation_domain('gettext-domain');
+    builder.add_from_file(Me.dir.get_path() + '/prefs.ui');
+
+	let provider = new Gtk.CssProvider();
+
+	provider.load_from_path(Me.dir.get_path() + '/stylesheet.css');
+	Gtk.StyleContext.add_provider_for_display(Gdk.Display.get_default(), provider,
+					Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
+
+
+	builder.get_object("host_name").text = getSettings().get_string("netfx-host-name");
+	builder.get_object("port_number").value = getSettings().get_int("netfx-port-number");
+	builder.get_object("enable_notifications").set_active(getSettings().get_boolean("notifications"));
+	builder.get_object("show_battery_level").set_active(getSettings().get_boolean("show-battery-level"));
+	builder.get_object("show_signal_strength").set_active(getSettings().get_boolean("show-signal-strength"));
+
+    return builder.get_object('main_prefs');
 }
 
-var PrefsWidget = GObject.registerClass(
-	class PrefsWidget extends Gtk.ScrolledWindow {
+const PrefsWidget = GObject.registerClass({
+    GTypeName: 'PrefsWidget',
+    Template: Me.dir.get_child('prefs.ui').get_uri(),
+}, class PrefsWidget extends Gtk.Box {
 
-		_init(params) {
-			super._init(params);
+    _init(params = {}) {
+        super._init(params);
+    }
+});
 
-			let builder = new Gtk.Builder();
-			// builder.set_translation_domain('eruption-profile-switcher');
-			builder.add_from_file(Me.path + '/prefs.ui');
+const MyBuilderScope = GObject.registerClass({
+    Implements: [Gtk.BuilderScope],
+}, class MyBuilderScope extends GObject.Object {
 
-			this.connect("destroy", Gtk.main_quit);
+    vfunc_create_closure(builder, handlerName, flags, connectObject) {
+        if (flags & Gtk.BuilderClosureFlags.SWAPPED)
+            throw new Error('Unsupported template signal flag "swapped"');
 
-			let SignalHandler = {
-				on_host_name_changed(w) {
-					getSettings().set_string("netfx-host-name", w.text);
-				},
+        if (typeof this[handlerName] === 'undefined')
+            throw new Error(`${handlerName} is undefined`);
 
-				on_port_number_value_changed(w) {
-					getSettings().set_int("netfx-port-number", w.get_value_as_int());
-				},
+        return this[handlerName].bind(connectObject || this);
+    }
 
-				on_enable_notifications_toggled(w) {
-					getSettings().set_boolean("notifications", w.get_active());
-				}
-			};
+	on_host_name_changed(w) {
+		getSettings().set_string("netfx-host-name", w.text);
+	}
 
-			builder.connect_signals_full((builder, object, signal, handler) => {
-				object.connect(signal, SignalHandler[handler].bind(this));
-			});
+	on_port_number_value_changed(w) {
+		getSettings().set_int("netfx-port-number", w.get_value_as_int());
+	}
 
-			this.add(builder.get_object('main_prefs'));
+	on_enable_notifications_toggled(w) {
+		getSettings().set_boolean("notifications", w.get_active());
+	}
 
-			builder.get_object("host_name").text = getSettings().get_string("netfx-host-name");
-			builder.get_object("port_number").value = getSettings().get_int("netfx-port-number");
-			builder.get_object("enable_notifications").set_active(getSettings().get_boolean("notifications"));
-		}
-	});
+	on_show_battery_level_toggled(w) {
+		getSettings().set_boolean("show-battery-level", w.get_active());
+	}
+
+	on_show_signal_strength_toggled(w) {
+		getSettings().set_boolean("show-signal-strength", w.get_active());
+	}
+});

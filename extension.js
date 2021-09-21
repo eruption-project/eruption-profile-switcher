@@ -39,15 +39,50 @@ const Signals = imports.signals;
 const ByteArray = imports.byteArray;
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const Preferences = Me.imports.prefs;
 
 // Global constants
 const NOTIFICATION_TIMEOUT_MILLIS = 1500;
 const NOTIFICATION_ANIMATION_MILLIS = 500;
+const STATUS_POLL_TIMEOUT_MILLIS = 1000;
 const PROCESS_POLL_TIMEOUT_MILLIS = 3000;
 const PROCESS_SPAWN_WAIT_MILLIS = 800;
 
 const DEFAULT_SLOT_NAMES = ['Profile Slot 1', 'Profile Slot 2', 'Profile Slot 3', 'Profile Slot 4'];
+
+// Eruption - Version: 0.1.23 - list of supported devices
+const SUPPORTED_DEVICES = [
+	{ make: "ROCCAT", model: "Vulcan 100/12x",       usb_vid: 0x1e7d, usb_pid: 0x3098 },
+	{ make: "ROCCAT", model: "Vulcan 100/12x",       usb_vid: 0x1e7d, usb_pid: 0x307a },
+
+	{ make: "ROCCAT", model: "Vulcan Pro",           usb_vid: 0x1e7d, usb_pid: 0x30f7 },
+
+	{ make: "ROCCAT", model: "Vulcan TKL",           usb_vid: 0x1e7d, usb_pid: 0x2fee },
+
+	{ make: "ROCCAT", model: "Vulcan Pro TKL",       usb_vid: 0x1e7d, usb_pid: 0x311a },
+
+	{ make: "Corsair", model: "Corsair STRAFE Gaming Keyboard", usb_vid: 0x1b1c, usb_pid: 0x1b15 },
+
+	{ make: "ROCCAT", model: "Kone Aimo",            usb_vid: 0x1e7d, usb_pid: 0x2e27 },
+
+	{ make: "ROCCAT", model: "Kone Aimo Remastered", usb_vid: 0x1e7d, usb_pid: 0x2e2c },
+
+	{ make: "ROCCAT", model: "Kone XTD Mouse",       usb_vid: 0x1e7d, usb_pid: 0x2e22 },
+
+	{ make: "ROCCAT", model: "Kone Pure Ultra",      usb_vid: 0x1e7d, usb_pid: 0x2dd2 },
+
+	{ make: "ROCCAT", model: "Burst Pro",            usb_vid: 0x1e7d, usb_pid: 0x2de1 },
+
+	{ make: "ROCCAT", model: "Kain 200/202 AIMO",    usb_vid: 0x1e7d, usb_pid: 0x2d5f },
+	{ make: "ROCCAT", model: "Kain 200/202 AIMO",    usb_vid: 0x1e7d, usb_pid: 0x2d60 },
+
+	{ make: "ROCCAT", model: "Kova AIMO",            usb_vid: 0x1e7d, usb_pid: 0x2cf1 },
+	{ make: "ROCCAT", model: "Kova AIMO",            usb_vid: 0x1e7d, usb_pid: 0x2cf3 },
+
+	{ make: "ROCCAT", model: "Nyth",                 usb_vid: 0x1e7d, usb_pid: 0x2e7c },
+	{ make: "ROCCAT", model: "Nyth",                 usb_vid: 0x1e7d, usb_pid: 0x2e7d },
+
+	{ make: "ROCCAT/Turtle Beach", model: "Elo 7.1 Air", usb_vid: 0x1e7d, usb_pid: 0x3a37 }
+];
 
 // The following D-Bus Ifaces are auto generated with the command
 // `dbus-send --system --dest=org.eruption --type=method_call --print-reply /org/eruption/<path> \
@@ -203,6 +238,7 @@ const eruptionConfigIface = `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Ob
   </interface>
 </node>`.trim();
 
+// D-Bus interface specification: Status
 const eruptionStatusIface = `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
 <node name="/org/eruption/status">
   <interface name="org.eruption.Status">
@@ -242,8 +278,38 @@ const eruptionStatusIface = `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Ob
   </interface>
 </node>`.trim();
 
+// D-Bus interface specification: Device
+const eruptionDeviceIface = `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<node name="/org/eruption/devices">
+  <interface name="org.eruption.Device">
+    <method name="GetDeviceConfig">
+      <arg name="device" type="t" direction="in"/>
+      <arg name="param" type="s" direction="in"/>
+      <arg name="value" type="s" direction="out"/>
+    </method>
+    <method name="GetDeviceStatus">
+      <arg name="device" type="t" direction="in"/>
+      <arg name="status" type="s" direction="out"/>
+    </method>
+    <method name="GetManagedDevices">
+      <arg name="values" type="(a(qq)a(qq)a(qq))" direction="out"/>
+    </method>
+    <method name="SetDeviceConfig">
+      <arg name="device" type="t" direction="in"/>
+      <arg name="param" type="s" direction="in"/>
+      <arg name="value" type="s" direction="in"/>
+      <arg name="status" type="b" direction="out"/>
+    </method>
+  </interface>
+  <interface name="org.freedesktop.DBus.Introspectable">
+    <method name="Introspect">
+      <arg name="xml_data" type="s" direction="out"/>
+    </method>
+  </interface>
+</node>`.trim()
+
 // D-Bus proxy
-var eruptionSlot, eruptionProfile, eruptionConfig, eruptionStatus;
+var eruptionSlot, eruptionProfile, eruptionConfig, eruptionStatus, eruptionDevice;
 
 // Panel menu button
 var connected = false;
@@ -256,7 +322,9 @@ var activeSlot,
 	slotNames = DEFAULT_SLOT_NAMES,
 	activeProfile = [],
 	savedProfile,
-	enableSfx, enableNetFxAmbient, brightness = 100;
+	enableSfx, enableNetFxAmbient, brightness = 100,
+	deviceStatus = [];
+
 
 // Since we don't want to show the brightness indicator after startup
 // we need to track the number of calls
@@ -540,6 +608,16 @@ function runEruptionGui() {
 	}
 }
 
+// Find the name of a supported device from the SUPPORTED_DEVICES table, using USB IDs
+function get_device_name(usb_vid, usb_pid) {
+	const device = SUPPORTED_DEVICES.find((e) => e.usb_vid == usb_vid && e.usb_pid == usb_pid);
+	if (device != undefined) {
+		return `${device.make} ${device.model}`;
+	} else {
+		return "<Unknown Device>";
+	}
+}
+
 // Get the profile name from a given .profile filename
 function _profileFileToName(filename) {
 	let name = ["<unknown>"];
@@ -796,6 +874,39 @@ let EruptionMenuButton = GObject.registerClass(
 						this._sync_status(proxy);
 					}
 				);
+
+				this._status_changed_id = eruptionStatus.connectSignal(
+					"StatusChanged",
+					this._statusChanged.bind(this)
+				);
+
+				const EruptionDeviceProxy = Gio.DBusProxy.makeProxyWrapper(
+					eruptionDeviceIface
+				);
+
+				eruptionDevice = new EruptionDeviceProxy(
+					Gio.DBus.system,
+					"org.eruption",
+					"/org/eruption/devices",
+					(proxy, error) => {
+						if (error) {
+							log(error.message);
+							return;
+						}
+
+						proxy.connect("g-properties-changed", this._sync_device.bind(this));
+						this._sync_device(proxy);
+					}
+				);
+
+				// if (getSettings().get_boolean("show-battery-level") ||
+				// 	getSettings().get_boolean("show-signal-strength")) {
+					Mainloop.timeout_add(STATUS_POLL_TIMEOUT_MILLIS, () => {
+						this._sync_device(eruptionDevice);
+
+						return true; // keep timer enabled
+					});
+				// }
 			} catch (e) {
 				log(e.message);
 				_showNotification(e.message);
@@ -814,6 +925,7 @@ let EruptionMenuButton = GObject.registerClass(
 			hbox.add_child(PopupMenu.arrowIcon(St.Side.BOTTOM));
 			this.add_child(hbox);
 
+			this._statusMenuItems = [];
 			this.populateMenu();
 		}
 
@@ -827,120 +939,275 @@ let EruptionMenuButton = GObject.registerClass(
 
 		populateMenu(config) {
 			try {
-				this.menu.removeAll();
-
 				// initialize to sane defaults
 				if (!config) {
 					config = {
 						active_slot: activeSlot,
-						active_item: undefined
+						active_item: undefined,
+						status_only: false
 					}
 				}
 
-				// create user slots items
-				for (let i = 0; i < 4; i++) {
-					let slot = new SlotMenuItem(i)
-					if (i == activeSlot) {
-						slot.setToggleState(true);
-					}
-
-					this.menu.addMenuItem(slot);
+				if (config.status_only === null || config.status_only === undefined) {
+					config.status_only = false;
 				}
 
-				// add separator
-				let separator = new PopupMenu.PopupSeparatorMenuItem();
-				this.menu.addMenuItem(separator);
+				if (!config.status_only) {
+					this.menu.removeAll();
 
-				// add sub-menu
-				this.profiles_sub = new PopupMenu.PopupSubMenuMenuItem('Profiles');
-				this.menu.addMenuItem(this.profiles_sub);
-
-				try {
-					let active_profile =
-						config.active_item === undefined ? eruptionProfile.ActiveProfile : config.active_item;
-
-					// add profiles radio menu items
-					let result = eruptionProfile.EnumProfilesSync();
-					result[0].forEach(profile => {
-						let item = new ProfileMenuItem(new Profile(profile[0], profile[1]));
-						if (active_profile && active_profile.localeCompare(profile[1]) === 0) {
-							item.setToggleState(true);
+					// create user slots items
+					for (let i = 0; i < 4; i++) {
+						let slot = new SlotMenuItem(i)
+						if (i == activeSlot) {
+							slot.setToggleState(true);
 						}
 
-						this.profiles_sub.menu.addMenuItem(item);
-					});
-				} catch (e) {
-					log("Could not enumerate profiles: " + e.message);
-				}
+						this.menu.addMenuItem(slot);
+					}
 
-				// add separator
-				separator = new PopupMenu.PopupSeparatorMenuItem();
-				this.menu.addMenuItem(separator);
+					// add separator
+					let separator = new PopupMenu.PopupSeparatorMenuItem();
+					this.menu.addMenuItem(separator);
 
-				// add Eruption GUI menu item
-				if (isEruptionGuiAvailable()) {
-					this.guiItem = new CustomPopupMenuItem('Eruption GUI…', (_item) => {
-						runEruptionGui();
-					});
-					this.menu.addMenuItem(this.guiItem);
+					// add sub-menu
+					this.profiles_sub = new PopupMenu.PopupSubMenuMenuItem('Profiles');
+					this.menu.addMenuItem(this.profiles_sub);
+
+					try {
+						let active_profile =
+							config.active_item === undefined ? eruptionProfile.ActiveProfile : config.active_item;
+
+						// add profiles radio menu items
+						let result = eruptionProfile.EnumProfilesSync();
+						result[0].forEach(profile => {
+							let item = new ProfileMenuItem(new Profile(profile[0], profile[1]));
+							if (active_profile && active_profile.localeCompare(profile[1]) === 0) {
+								item.setToggleState(true);
+							}
+
+							this.profiles_sub.menu.addMenuItem(item);
+						});
+					} catch (e) {
+						log("Could not enumerate profiles: " + e.message);
+					}
 
 					// add separator
 					separator = new PopupMenu.PopupSeparatorMenuItem();
 					this.menu.addMenuItem(separator);
+
+					// add Eruption GUI menu item
+					if (isEruptionGuiAvailable()) {
+						this.guiItem = new CustomPopupMenuItem('Eruption GUI…', (_item) => {
+							runEruptionGui();
+						});
+						this.menu.addMenuItem(this.guiItem);
+
+						// add separator
+						separator = new PopupMenu.PopupSeparatorMenuItem();
+						this.menu.addMenuItem(separator);
+					}
+
+					// add controls for the global configuration options of eruption
+					let enableNetFxAmbientItem = new PopupMenu.PopupSwitchMenuItem("NetworkFX Ambient Effect", false);
+					this._enableNetFxAmbientItem = enableNetFxAmbientItem;
+					enableNetFxAmbientItem.connect("activate", this._toggleNetFx.bind(this));
+					enableNetFxAmbientItem.setToggleState(enableNetFxAmbient);
+					this.menu.addMenuItem(enableNetFxAmbientItem);
+
+					let enableSfxItem = new PopupMenu.PopupSwitchMenuItem("SoundFX Audio Effects", false);
+					this._enableSfxItem = enableSfxItem;
+					enableSfxItem.connect("activate", event => {
+						enableSfx = !enableSfx;
+						eruptionConfig.EnableSfx = enableSfx;
+					});
+
+					enableSfxItem.setToggleState(enableSfx);
+					this.menu.addMenuItem(enableSfxItem);
+
+					// add brightness slider
+					let item = new PopupMenu.PopupBaseMenuItem();
+					let icon = new St.Icon({
+						icon_name: "keyboard-brightness",
+						style_class: "menu-icon"
+					});
+
+					let brightnessSlider = new Slider.Slider(0);
+					this._brightnessSlider = brightnessSlider;
+					brightnessSlider.value = brightness / 100;
+					brightnessSlider.connect(
+						"notify::value",
+						this._brightnessSliderChanged.bind(this)
+					);
+
+					brightnessSlider.connect(
+						"button-release-event",
+						this._brightnessSliderChangeCompleted.bind(this)
+					);
+
+					item.add(icon);
+					item.add_child(brightnessSlider);
+
+					item.connect("button-press-event", (actor, event) => {
+						return brightnessSlider.startDragging(event);
+					});
+
+					item.connect("key-press-event", (actor, event) => {
+						return brightnessSlider.emit("key-press-event", event);
+					});
+
+					this.menu.addMenuItem(item);
+
+					this.populateStatusMenuItems();
+
+				} else {
+					this.populateStatusMenuItems();
 				}
-
-				// add controls for the global configuration options of eruption
-				let enableNetFxAmbientItem = new PopupMenu.PopupSwitchMenuItem("NetworkFX Ambient Effect", false);
-				this._enableNetFxAmbientItem = enableNetFxAmbientItem;
-				enableNetFxAmbientItem.connect("activate", this._toggleNetFx.bind(this));
-				enableNetFxAmbientItem.setToggleState(enableNetFxAmbient);
-				this.menu.addMenuItem(enableNetFxAmbientItem);
-
-				let enableSfxItem = new PopupMenu.PopupSwitchMenuItem("SoundFX Audio Effects", false);
-				this._enableSfxItem = enableSfxItem;
-				enableSfxItem.connect("activate", event => {
-					enableSfx = !enableSfx;
-					eruptionConfig.EnableSfx = enableSfx;
-				});
-
-				enableSfxItem.setToggleState(enableSfx);
-				this.menu.addMenuItem(enableSfxItem);
-
-				// add brightness slider
-				let item = new PopupMenu.PopupBaseMenuItem();
-				let icon = new St.Icon({
-					icon_name: "keyboard-brightness",
-					style_class: "menu-icon"
-				});
-
-				let brightnessSlider = new Slider.Slider(0);
-				this._brightnessSlider = brightnessSlider;
-				brightnessSlider.value = brightness / 100;
-				brightnessSlider.connect(
-					"notify::value",
-					this._brightnessSliderChanged.bind(this)
-				);
-
-				brightnessSlider.connect(
-					"button-release-event",
-					this._brightnessSliderChangeCompleted.bind(this)
-				);
-
-				item.add(icon);
-				item.add_child(brightnessSlider);
-
-				item.connect("button-press-event", (actor, event) => {
-					return brightnessSlider.startDragging(event);
-				});
-
-				item.connect("key-press-event", (actor, event) => {
-					return brightnessSlider.emit("key-press-event", event);
-				});
-
-				this.menu.addMenuItem(item);
 			} catch (e) {
 				log("Internal error: " + e.message);
 			}
+		}
+
+		populateStatusMenuItems() {
+			this._statusMenuItems.forEach((item) => item.destroy());
+			this._statusMenuItems = [];
+
+			var separator_added = false;
+
+			deviceStatus.map((device, index) => {
+				var indicators = 0;
+
+				const item = new PopupMenu.PopupBaseMenuItem();
+
+				const label = new St.Label({
+					style_class: "menu-item-label",
+					text: `${get_device_name(device.usb_vid, device.usb_pid)}`,
+				});
+
+				// signal strength indicator
+				if (getSettings().get_boolean("show-signal-strength")) {
+					const signal_strength = device.status["signal-strength-percent"];
+					if (signal_strength !== undefined ) {
+						var icon_name = "network-cellular-signal-none-symbolic";
+
+						if (signal_strength >= 100) {
+							icon_name = "network-cellular-signal-excellent-symbolic";
+						} else if (signal_strength >= 90) {
+							icon_name = "network-cellular-signal-excellent-symbolic";
+						} else if (signal_strength >= 80) {
+							icon_name = "network-cellular-signal-good-symbolic";
+						} else if (signal_strength >= 70) {
+							icon_name = "network-cellular-signal-good-symbolic";
+						} else if (signal_strength >= 60) {
+							icon_name = "network-cellular-signal-good-symbolic";
+						} else if (signal_strength >= 50) {
+							icon_name = "network-cellular-signal-ok-symbolic";
+						} else if (signal_strength >= 40) {
+							icon_name = "network-cellular-signal-ok-symbolic";
+						} else if (signal_strength >= 30) {
+							icon_name = "network-cellular-signal-weak-symbolic";
+						} else if (signal_strength >= 20) {
+							icon_name = "network-cellular-signal-weak-symbolic";
+						} else if (signal_strength >= 10) {
+							icon_name = "network-cellular-signal-weak-symbolic";
+						} else {
+							icon_name = "network-cellular-signal-none-symbolic";
+						}
+
+						const icon = new St.Icon({
+							icon_name: icon_name,
+							style_class: "menu-icon"
+						});
+
+						const level_label = new St.Label({
+							style_class: "menu-item-label",
+							text: `${signal_strength}%`,
+						});
+
+						item.add_child(icon);
+						item.add_child(level_label);
+
+						indicators += 1;
+					} else {
+						// place spacer
+
+						// const icon = new St.Icon({
+						// 	icon_name: 'none-symbolic',
+						// 	style_class: "menu-icon"
+						// });
+
+						// const level_label = new St.Label({
+						// 	style: "menu-item-label",
+						// 	text: `------`,
+						// });
+
+						// item.add_child(icon);
+						// item.add_child(level_label);
+					}
+				}
+
+				// battery level indicator
+				if (getSettings().get_boolean("show-battery-level")) {
+					const battery_level = device.status["battery-level-percent"];
+					if (battery_level !== undefined ) {
+						var icon_name = "battery-missing-symbolic";
+
+						if (battery_level >= 100) {
+							icon_name = "battery-level-100-symbolic";
+						} else if (battery_level >= 90) {
+							icon_name = "battery-level-90-symbolic";
+						} else if (battery_level >= 80) {
+							icon_name = "battery-level-80-symbolic";
+						} else if (battery_level >= 70) {
+							icon_name = "battery-level-70-symbolic";
+						} else if (battery_level >= 60) {
+							icon_name = "battery-level-60-symbolic";
+						} else if (battery_level >= 50) {
+							icon_name = "battery-level-50-symbolic";
+						} else if (battery_level >= 40) {
+							icon_name = "battery-level-40-symbolic";
+						} else if (battery_level >= 30) {
+							icon_name = "battery-level-30-symbolic";
+						} else if (battery_level >= 20) {
+							icon_name = "battery-level-20-symbolic";
+						} else if (battery_level >= 10) {
+							icon_name = "battery-level-10-symbolic";
+						} else {
+							icon_name = "battery-empty-symbolic";
+						}
+
+						const icon = new St.Icon({
+							icon_name: icon_name,
+							style_class: "menu-icon"
+						});
+
+						const level_label = new St.Label({
+							style_class: "menu-item-label",
+							text: `${battery_level}%`,
+						});
+
+						item.add_child(icon);
+						item.add_child(level_label);
+
+						indicators += 1;
+					}
+				}
+
+				if (indicators > 0) {
+					// add separator
+					if (!separator_added) {
+						separator_added = true;
+
+						const separator = new PopupMenu.PopupSeparatorMenuItem();
+						this.menu.addMenuItem(separator);
+						this._statusMenuItems.push(separator);
+					}
+
+					item.add_child(label);
+
+					this.menu.addMenuItem(item);
+					this._statusMenuItems.push(item);
+				}
+			});
 		}
 
 		uncheckAllSlotCheckmarks() {
@@ -1002,6 +1269,11 @@ let EruptionMenuButton = GObject.registerClass(
 
 		_brightnessSliderChangeCompleted() {
 			_fadeOutNotification();
+		}
+
+		// D-Bus signal, emitted when the daemon registered modification of a connected devices' status
+		_statusChanged(proxy, sender, [object]) {
+			this.populateMenu();
 		}
 
 		// D-Bus signal, emitted when the daemon registered modification of the LED brightness
@@ -1110,6 +1382,32 @@ let EruptionMenuButton = GObject.registerClass(
 				} else {
 					previous_state = this._eruption_running;
 				}
+			} catch (e) {
+				log("Internal error: " + e.message);
+			}
+		}
+
+		_sync_device(proxy) {
+			try {
+				var devices = proxy.GetManagedDevicesSync()[0];
+				devices = [].concat(devices[0], devices[1], devices[2]);
+
+				deviceStatus = [];
+				devices.map((device, index) => {
+					const vid = device[0];
+					const pid = device[1];
+
+					try {
+						const stat = proxy.GetDeviceStatusSync(index);
+						const device_status = JSON.parse(stat);
+
+						deviceStatus.push({ status: device_status, usb_vid: vid, usb_pid: pid });
+
+						this.populateMenu({ status_only: true });
+					} catch (e) {
+						log("Could not query device status: " + e.message);
+					}
+				});
 			} catch (e) {
 				log("Internal error: " + e.message);
 			}

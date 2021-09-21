@@ -2,13 +2,10 @@
   "description": "Runtime profile switcher for the Eruption Linux input and LED driver for keyboards, mice and other devices",
   "name": "Eruption Profile Switcher",
   "shell-version": [
-    "3.34",
-    "3.36",
-    "3.38",
     "40.beta",
     "40"
   ],
   "url": "https://github.com/X3n0m0rph59/eruption-profile-switcher",
   "uuid": "eruption-profile-switcher@x3n0m0rph59.org",
-  "version": 15
+  "version": 16
 }
