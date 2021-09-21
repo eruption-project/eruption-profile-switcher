@@ -8,4 +8,5 @@ brightness of the keyboard, and it allows to enable or disable sound effects. It
 signal strength and battery levels where applicable.
 
 ![screenshot-01.png](assets/screenshot-01.jpg)
+
 ![screenshot-02.png](assets/screenshot-02.jpg)
