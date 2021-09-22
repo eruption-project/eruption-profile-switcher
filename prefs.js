@@ -31,12 +31,11 @@ var settings;
 
 var hostName, portNumber;
 
-function init() {
-	settings = ExtensionUtils.getSettings();
-}
+function init() {}
 
 function buildPrefsWidget() {
 	let builder = new Gtk.Builder();
+
 
     builder.set_scope(new MyBuilderScope());
     // builder.set_translation_domain('gettext-domain');
@@ -48,6 +47,7 @@ function buildPrefsWidget() {
 	Gtk.StyleContext.add_provider_for_display(Gdk.Display.get_default(), provider,
 					Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
 
+	settings = ExtensionUtils.getSettings();
 
 	builder.get_object("host_name").text = settings.get_string("netfx-host-name");
 	builder.get_object("port_number").value = settings.get_int("netfx-port-number");

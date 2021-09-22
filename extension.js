@@ -47,7 +47,8 @@ const STATUS_POLL_TIMEOUT_MILLIS = 1000;
 const PROCESS_POLL_TIMEOUT_MILLIS = 3000;
 const PROCESS_SPAWN_WAIT_MILLIS = 800;
 
-const DEFAULT_SLOT_NAMES = ['Profile Slot 1', 'Profile Slot 2', 'Profile Slot 3', 'Profile Slot 4'];
+const DEFAULT_SLOT_NAMES = ['Profile Slot 1', 'Profile Slot 2',
+							'Profile Slot 3', 'Profile Slot 4'];
 
 // Eruption - Version: 0.1.23 - list of supported devices
 const SUPPORTED_DEVICES = [
@@ -309,7 +310,8 @@ const eruptionDeviceIface = `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Ob
 </node>`.trim()
 
 // D-Bus proxy
-var eruptionSlot, eruptionProfile, eruptionConfig, eruptionStatus, eruptionDevice;
+var eruptionSlot, eruptionProfile, eruptionConfig,
+	eruptionStatus, eruptionDevice;
 
 // Panel menu button
 var connected = false;
@@ -469,7 +471,8 @@ function _toggleNetFxAmbient(enable) {
 		eruptionProfile.SwitchProfileSync("/var/lib/eruption/profiles/netfx.profile");
 
 		Mainloop.timeout_add(PROCESS_SPAWN_WAIT_MILLIS, () => {
-			Util.spawn(["/usr/bin/eruption-netfx", _getNetFxKeyboardModel(), _getNetFxHostName(), _getNetFxPort().toString(), "ambient"]);
+			Util.spawn(["/usr/bin/eruption-netfx", _getNetFxKeyboardModel(), _getNetFxHostName(),
+					   _getNetFxPort().toString(), "ambient"]);
 		});
 	} else {
 		if (savedProfile) {
@@ -571,7 +574,8 @@ function isEruptionGuiAvailable() {
 
 		let file_type = file_info.get_file_type();
 
-		if (file_type == Gio.FileType.REGULAR || file_type == Gio.FileType.SYMBOLIC_LINK) {
+		if (file_type == Gio.FileType.REGULAR ||
+			file_type == Gio.FileType.SYMBOLIC_LINK) {
 			return true;
 		} else {
 			return false;
@@ -869,7 +873,6 @@ let EruptionMenuButton = GObject.registerClass(
 				const EruptionDeviceProxy = Gio.DBusProxy.makeProxyWrapper(
 					eruptionDeviceIface
 				);
-
 				eruptionDevice = new EruptionDeviceProxy(
 					Gio.DBus.system,
 					"org.eruption",
@@ -1065,6 +1068,7 @@ let EruptionMenuButton = GObject.registerClass(
 					this.populateStatusMenuItems();
 
 				} else {
+					// only update the device status area of the menu
 					this.populateStatusMenuItems();
 				}
 			} catch (e) {
