@@ -29,7 +29,6 @@ const {
 } = imports.gi;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Util = imports.misc.util;
-const Lang = imports.lang;
 const Main = imports.ui.main;
 const Mainloop = imports.mainloop;
 const PanelMenu = imports.ui.panelMenu;
