@@ -97,12 +97,16 @@ const MyBuilderScope = GObject.registerClass({
 	on_show_battery_level_toggled(w) {
 		settings.set_boolean("show-battery-level", w.get_active());
 
-		eruptionMenuButton.populateMenu();
+		if (eruptionMenuButton) {
+			eruptionMenuButton.populateMenu();
+		}
 	}
 
 	on_show_signal_strength_toggled(w) {
 		settings.set_boolean("show-signal-strength", w.get_active());
 
-		eruptionMenuButton.populateMenu();
+		if (eruptionMenuButton) {
+			eruptionMenuButton.populateMenu();
+		}
 	}
 });

@@ -326,7 +326,8 @@ var activeSlot,
 	savedProfile,
 	enableSfx, enableNetFxAmbient, brightness = 100,
 	deviceStatus = [],
-	status_poll_source;
+	status_poll_source,
+	status_poll_source_toplevel;
 
 var settings;
 
@@ -764,6 +765,38 @@ var ProfileMenuItem = GObject.registerClass(
 	}
 );
 
+function _batteryLevelIcon(battery_level) {
+	var icon_name = "battery-missing-symbolic";
+
+	if (battery_level !== undefined ) {
+		if (battery_level >= 100) {
+			icon_name = "battery-level-100-symbolic";
+		} else if (battery_level >= 90) {
+			icon_name = "battery-level-90-symbolic";
+		} else if (battery_level >= 80) {
+			icon_name = "battery-level-80-symbolic";
+		} else if (battery_level >= 70) {
+			icon_name = "battery-level-70-symbolic";
+		} else if (battery_level >= 60) {
+			icon_name = "battery-level-60-symbolic";
+		} else if (battery_level >= 50) {
+			icon_name = "battery-level-50-symbolic";
+		} else if (battery_level >= 40) {
+			icon_name = "battery-level-40-symbolic";
+		} else if (battery_level >= 30) {
+			icon_name = "battery-level-30-symbolic";
+		} else if (battery_level >= 20) {
+			icon_name = "battery-level-20-symbolic";
+		} else if (battery_level >= 10) {
+			icon_name = "battery-level-10-symbolic";
+		} else {
+			icon_name = "battery-empty-symbolic";
+		}
+	}
+
+	return icon_name;
+}
+
 let EruptionMenuButton = GObject.registerClass(
 	class ProfilesMenuButton extends PanelMenu.Button {
 		_init() {
@@ -1157,32 +1190,9 @@ let EruptionMenuButton = GObject.registerClass(
 				// battery level indicator
 				if (settings.get_boolean("show-battery-level")) {
 					const battery_level = device.status["battery-level-percent"];
-					if (battery_level !== undefined ) {
-						var icon_name = "battery-missing-symbolic";
 
-						if (battery_level >= 100) {
-							icon_name = "battery-level-100-symbolic";
-						} else if (battery_level >= 90) {
-							icon_name = "battery-level-90-symbolic";
-						} else if (battery_level >= 80) {
-							icon_name = "battery-level-80-symbolic";
-						} else if (battery_level >= 70) {
-							icon_name = "battery-level-70-symbolic";
-						} else if (battery_level >= 60) {
-							icon_name = "battery-level-60-symbolic";
-						} else if (battery_level >= 50) {
-							icon_name = "battery-level-50-symbolic";
-						} else if (battery_level >= 40) {
-							icon_name = "battery-level-40-symbolic";
-						} else if (battery_level >= 30) {
-							icon_name = "battery-level-30-symbolic";
-						} else if (battery_level >= 20) {
-							icon_name = "battery-level-20-symbolic";
-						} else if (battery_level >= 10) {
-							icon_name = "battery-level-10-symbolic";
-						} else {
-							icon_name = "battery-empty-symbolic";
-						}
+					if (battery_level !== undefined) {
+						const icon_name = _batteryLevelIcon(device.status["battery-level-percent"]);
 
 						const icon = new St.Icon({
 							icon_name: icon_name,
@@ -1199,6 +1209,7 @@ let EruptionMenuButton = GObject.registerClass(
 
 						indicators += 1;
 					}
+
 				}
 
 				if (indicators > 0) {
@@ -1424,6 +1435,87 @@ let EruptionMenuButton = GObject.registerClass(
 	}
 );
 
+/* let IndicatorMenuButton = GObject.registerClass(
+	class IndicatorMenuButton extends PanelMenu.Button {
+		_init() {
+			this._device = 1;
+
+			super._init(0.0, _(`${_getDeviceName()}`));
+
+			let hbox = new St.BoxLayout({
+				style_class: "panel-status-menu-box"
+			});
+
+			const icon = new St.Icon({
+				icon_name: "battery-missing-symbolic",
+				style_class: "system-status-icon"
+			});
+
+			const level_label = new St.Label({
+				style_class: "indicator-item-label",
+				text: ``,
+			});
+
+			this.icon = icon;
+			this.label = level_label;
+
+			hbox.add_child(icon);
+
+			// battery level indicator
+			//if (settings.get_boolean("show-battery-level") && deviceStatus[this._device] !== undefined) {
+			if (deviceStatus[this._device] !== undefined) {
+				const battery_level = deviceStatus[this._device].status["battery-level-percent"];
+				const icon_name = _batteryLevelIcon(deviceStatus[this._device].status["battery-level-percent"]);
+
+				const icon = new St.Icon({
+					icon_name: icon_name,
+					style_class: "system-status-icon"
+				});
+
+				const level_label = new St.Label({
+					style_class: "indicator-item-label",
+					text: `${battery_level}%`,
+				});
+
+				this.icon = icon;
+				this.label = level_label;
+
+				indicators += 1;
+			}
+			//}
+
+			this.add_child(hbox);
+		}
+
+		update() {
+			const battery_level = deviceStatus[this._device].status["battery-level-percent"];
+			const icon_name = _batteryLevelIcon(deviceStatus[this._device].status["battery-level-percent"]);
+
+			this.icon.icon_name = icon_name;
+			this.label.text = `${battery_level}%`;
+		}
+
+		_getDeviceName() {
+			return "Device";
+		}
+	}
+); */
+
+function _placeIndicators() {
+	// battery level indicator
+	/* if (settings.get_boolean("show-battery-level")) {
+		const indicatorMenuButton = new IndicatorMenuButton(1);
+		Main.panel.addToStatusArea("eruption-indicators", indicatorMenuButton, 2, "right");
+
+
+		let status_poll_source_toplevel = Mainloop.timeout_add(STATUS_POLL_TIMEOUT_MILLIS, () => {
+			indicatorMenuButton.update();
+
+			return true; // keep timer enabled
+		});
+	} */
+}
+
 class ProfileSwitcherExtension {
 	constructor() {}
 
@@ -1432,9 +1524,14 @@ class ProfileSwitcherExtension {
 
 		eruptionMenuButton = new EruptionMenuButton();
 		Main.panel.addToStatusArea("eruption-menu", eruptionMenuButton, 1, "right");
+
+		_placeIndicators();
 	}
 
 	disable() {
+		Mainloop.source_remove(status_poll_source_toplevel);
+		status_poll_source_toplevel = null;
+
 		Mainloop.source_remove(status_poll_source);
 		status_poll_source = null;
 
