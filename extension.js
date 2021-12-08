@@ -40,7 +40,7 @@ const ByteArray = imports.byteArray;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 // Global constants
-const NOTIFICATION_TIMEOUT_MILLIS = 1500;
+const NOTIFICATION_TIMEOUT_MILLIS = 500;
 const NOTIFICATION_ANIMATION_MILLIS = 500;
 const STATUS_POLL_TIMEOUT_MILLIS = 1000;
 const PROCESS_POLL_TIMEOUT_MILLIS = 3000;
@@ -71,6 +71,8 @@ const SUPPORTED_DEVICES = [
 	{ make: "ROCCAT", model: "Kone Pure Ultra",      usb_vid: 0x1e7d, usb_pid: 0x2dd2 },
 
 	{ make: "ROCCAT", model: "Burst Pro",            usb_vid: 0x1e7d, usb_pid: 0x2de1 },
+
+	{ make: "ROCCAT", model: "Kone Pro Air",            usb_vid: 0x1e7d, usb_pid: 0x2c8e },
 
 	{ make: "ROCCAT", model: "Kain 200/202 AIMO",    usb_vid: 0x1e7d, usb_pid: 0x2d5f },
 	{ make: "ROCCAT", model: "Kain 200/202 AIMO",    usb_vid: 0x1e7d, usb_pid: 0x2d60 },
