@@ -40,9 +40,8 @@ const ByteArray = imports.byteArray;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 // Global constants
-const NOTIFICATION_TIMEOUT_MILLIS = 500;
+const NOTIFICATION_TIMEOUT_MILLIS = 1200;
 const NOTIFICATION_ANIMATION_MILLIS = 500;
-const STATUS_POLL_TIMEOUT_MILLIS = 1000;
 const PROCESS_POLL_TIMEOUT_MILLIS = 3000;
 const PROCESS_SPAWN_WAIT_MILLIS = 800;
 
@@ -51,45 +50,47 @@ const DEFAULT_SLOT_NAMES = ['Profile Slot 1', 'Profile Slot 2',
 
 // Eruption - Version: 0.1.23 - list of supported devices
 const SUPPORTED_DEVICES = [
-	{ make: "ROCCAT", model: "Vulcan 100/12x",       usb_vid: 0x1e7d, usb_pid: 0x3098 },
-	{ make: "ROCCAT", model: "Vulcan 100/12x",       usb_vid: 0x1e7d, usb_pid: 0x307a },
+	{ make: "ROCCAT", model: "Vulcan 100/12x",       usb_vid: 0x1e7d, usb_pid: 0x3098, has_status: false },
+	{ make: "ROCCAT", model: "Vulcan 100/12x",       usb_vid: 0x1e7d, usb_pid: 0x307a, has_status: false },
 
-	{ make: "ROCCAT", model: "Vulcan Pro",           usb_vid: 0x1e7d, usb_pid: 0x30f7 },
+	{ make: "ROCCAT", model: "Vulcan Pro",           usb_vid: 0x1e7d, usb_pid: 0x30f7, has_status: false },
 
-	{ make: "ROCCAT", model: "Vulcan TKL",           usb_vid: 0x1e7d, usb_pid: 0x2fee },
+	{ make: "ROCCAT", model: "Vulcan TKL",           usb_vid: 0x1e7d, usb_pid: 0x2fee, has_status: false },
 
-	{ make: "ROCCAT", model: "Vulcan Pro TKL",       usb_vid: 0x1e7d, usb_pid: 0x311a },
+	{ make: "ROCCAT", model: "Vulcan Pro TKL",       usb_vid: 0x1e7d, usb_pid: 0x311a, has_status: false },
 
-	{ make: "Corsair", model: "Corsair STRAFE Gaming Keyboard", usb_vid: 0x1b1c, usb_pid: 0x1b15 },
+	{ make: "ROCCAT", model: "Magma",       		 usb_vid: 0x1e7d, usb_pid: 0x3124, has_status: false },
 
-	{ make: "ROCCAT", model: "Kone Aimo",            usb_vid: 0x1e7d, usb_pid: 0x2e27 },
+	{ make: "Corsair", model: "Corsair STRAFE Gaming Keyboard", usb_vid: 0x1b1c, usb_pid: 0x1b15, has_status: false },
 
-	{ make: "ROCCAT", model: "Kone Aimo Remastered", usb_vid: 0x1e7d, usb_pid: 0x2e2c },
+	{ make: "ROCCAT", model: "Kone Aimo",            usb_vid: 0x1e7d, usb_pid: 0x2e27, has_status: false },
 
-	{ make: "ROCCAT", model: "Kone XTD Mouse",       usb_vid: 0x1e7d, usb_pid: 0x2e22 },
+	{ make: "ROCCAT", model: "Kone Aimo Remastered", usb_vid: 0x1e7d, usb_pid: 0x2e2c, has_status: false },
 
-	{ make: "ROCCAT", model: "Kone Pure Ultra",      usb_vid: 0x1e7d, usb_pid: 0x2dd2 },
+	{ make: "ROCCAT", model: "Kone XTD Mouse",       usb_vid: 0x1e7d, usb_pid: 0x2e22, has_status: false },
 
-	{ make: "ROCCAT", model: "Burst Pro",            usb_vid: 0x1e7d, usb_pid: 0x2de1 },
+	{ make: "ROCCAT", model: "Kone Pure Ultra",      usb_vid: 0x1e7d, usb_pid: 0x2dd2, has_status: false },
 
-	{ make: "ROCCAT", model: "Kone Pro Air",            usb_vid: 0x1e7d, usb_pid: 0x2c8e },
+	{ make: "ROCCAT", model: "Burst Pro",            usb_vid: 0x1e7d, usb_pid: 0x2de1, has_status: false },
 
-	{ make: "ROCCAT", model: "Kain 200/202 AIMO",    usb_vid: 0x1e7d, usb_pid: 0x2d5f },
-	{ make: "ROCCAT", model: "Kain 200/202 AIMO",    usb_vid: 0x1e7d, usb_pid: 0x2d60 },
+	{ make: "ROCCAT", model: "Kone Pro Air",            usb_vid: 0x1e7d, usb_pid: 0x2c8e, has_status: false },
 
-	{ make: "ROCCAT", model: "Kova AIMO",            usb_vid: 0x1e7d, usb_pid: 0x2cf1 },
-	{ make: "ROCCAT", model: "Kova AIMO",            usb_vid: 0x1e7d, usb_pid: 0x2cf3 },
+	{ make: "ROCCAT", model: "Kain 200/202 AIMO",    usb_vid: 0x1e7d, usb_pid: 0x2d5f, has_status: true },
+	{ make: "ROCCAT", model: "Kain 200/202 AIMO",    usb_vid: 0x1e7d, usb_pid: 0x2d60, has_status: true },
 
-	{ make: "ROCCAT", model: "Kova 2016",            usb_vid: 0x1e7d, usb_pid: 0x2cee },
-	{ make: "ROCCAT", model: "Kova 2016",            usb_vid: 0x1e7d, usb_pid: 0x2cef },
-	{ make: "ROCCAT", model: "Kova 2016",            usb_vid: 0x1e7d, usb_pid: 0x2cf0 },
+	{ make: "ROCCAT", model: "Kova AIMO",            usb_vid: 0x1e7d, usb_pid: 0x2cf1, has_status: false },
+	{ make: "ROCCAT", model: "Kova AIMO",            usb_vid: 0x1e7d, usb_pid: 0x2cf3, has_status: false },
 
-	{ make: "ROCCAT", model: "Nyth",                 usb_vid: 0x1e7d, usb_pid: 0x2e7c },
-	{ make: "ROCCAT", model: "Nyth",                 usb_vid: 0x1e7d, usb_pid: 0x2e7d },
+	{ make: "ROCCAT", model: "Kova 2016",            usb_vid: 0x1e7d, usb_pid: 0x2cee, has_status: false },
+	{ make: "ROCCAT", model: "Kova 2016",            usb_vid: 0x1e7d, usb_pid: 0x2cef, has_status: false },
+	{ make: "ROCCAT", model: "Kova 2016",            usb_vid: 0x1e7d, usb_pid: 0x2cf0, has_status: false },
 
-	{ make: "ROCCAT/Turtle Beach", model: "Elo 7.1 Air", usb_vid: 0x1e7d, usb_pid: 0x3a37 },
+	{ make: "ROCCAT", model: "Nyth",                 usb_vid: 0x1e7d, usb_pid: 0x2e7c, has_status: false },
+	{ make: "ROCCAT", model: "Nyth",                 usb_vid: 0x1e7d, usb_pid: 0x2e7d, has_status: false },
 
-	{ make: "ROCCAT", model: "Sense AIMO XXL", usb_vid: 0x1e7d, usb_pid: 0x343b }
+	{ make: "ROCCAT/Turtle Beach", model: "Elo 7.1 Air", usb_vid: 0x1e7d, usb_pid: 0x3a37, has_status: true },
+
+	{ make: "ROCCAT", model: "Sense AIMO XXL", usb_vid: 0x1e7d, usb_pid: 0x343b, has_status: false }
 ];
 
 // The following D-Bus Ifaces are auto generated with the command
@@ -112,7 +113,7 @@ const eruptionSlotIface = `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Obje
     </property>
     <property name="SlotNames" type="as" access="readwrite"/>
     <signal name="ActiveSlotChanged">
-      <arg name="new slot" type="t"/>
+      <arg name="slot" type="t"/>
     </signal>
   </interface>
   <interface name="org.freedesktop.DBus.Introspectable">
@@ -165,7 +166,7 @@ const eruptionProfileIface = `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS O
       <annotation name="org.freedesktop.DBus.Property.EmitsChangedSignal" value="const"/>
     </property>
     <signal name="ActiveProfileChanged">
-      <arg name="new profile name" type="s"/>
+      <arg name="profile_name" type="s"/>
     </signal>
     <signal name="ProfilesChanged"/>
   </interface>
@@ -215,7 +216,7 @@ const eruptionConfigIface = `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Ob
     <property name="Brightness" type="x" access="readwrite"/>
     <property name="EnableSfx" type="b" access="readwrite"/>
     <signal name="BrightnessChanged">
-      <arg name="current brightness" type="x"/>
+      <arg name="brightness" type="x"/>
     </signal>
   </interface>
   <interface name="org.freedesktop.DBus.Introspectable">
@@ -308,11 +309,36 @@ const eruptionDeviceIface = `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Ob
       <arg name="value" type="s" direction="in"/>
       <arg name="status" type="b" direction="out"/>
     </method>
+    <property name="DeviceStatus" type="s" access="read"/>
+    <signal name="DeviceStatusChanged">
+      <arg name="status" type="s"/>
+    </signal>
   </interface>
   <interface name="org.freedesktop.DBus.Introspectable">
     <method name="Introspect">
       <arg name="xml_data" type="s" direction="out"/>
     </method>
+  </interface>
+  <interface name="org.freedesktop.DBus.Properties">
+    <method name="Get">
+      <arg name="interface_name" type="s" direction="in"/>
+      <arg name="property_name" type="s" direction="in"/>
+      <arg name="value" type="v" direction="out"/>
+    </method>
+    <method name="GetAll">
+      <arg name="interface_name" type="s" direction="in"/>
+      <arg name="props" type="a{sv}" direction="out"/>
+    </method>
+    <method name="Set">
+      <arg name="interface_name" type="s" direction="in"/>
+      <arg name="property_name" type="s" direction="in"/>
+      <arg name="value" type="v" direction="in"/>
+    </method>
+    <signal name="PropertiesChanged">
+      <arg name="interface_name" type="s"/>
+      <arg name="changed_properties" type="a{sv}"/>
+      <arg name="invalidated_properties" type="as"/>
+    </signal>
   </interface>
 </node>`.trim()
 
@@ -343,22 +369,22 @@ var settings;
 // we need to track the number of calls
 var call_counter_on_slider_changed = 0;
 
+// Global support variables for _showNotification()
+var notificationText = null;
+var pending_timeout = null;
+
 // Show centered notification on the current monitor
 function _showNotification(msg) {
 	if (_notificationsEnabled()) {
-		let monitor = Main.layoutManager.currentMonitor;
+		if (pending_timeout !== null) {
+			Mainloop.source_remove(pending_timeout)
+			pending_timeout = null;
 
-		// be sure to not overlay multiple notifications
-		// hide any other visible notification first
-		if (notificationText) {
-			notificationText.ease_property('opacity', 0, {
-				duration: NOTIFICATION_ANIMATION_MILLIS,
-				mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-				onComplete: () => {
-					Main.uiGroup.remove_actor(notificationText);
-				}
-			});
+			Main.uiGroup.remove_actor(notificationText);
+			notificationText = null;
 		}
+
+		let monitor = Main.layoutManager.currentMonitor;
 
 		if (monitor) {
 			let text = new St.Label({
@@ -376,80 +402,19 @@ function _showNotification(msg) {
 				Math.floor(monitor.height / 2 - text.height / 2)
 			);
 
-			Mainloop.timeout_add(NOTIFICATION_TIMEOUT_MILLIS, () => {
+			pending_timeout = Mainloop.timeout_add(NOTIFICATION_TIMEOUT_MILLIS, () => {
 				if (notificationText) {
 					notificationText.ease_property('opacity', 0, {
 						duration: NOTIFICATION_ANIMATION_MILLIS,
 						mode: Clutter.AnimationMode.EASE_OUT_QUAD,
 						onComplete: () => {
 							Main.uiGroup.remove_actor(notificationText);
+
+							pending_timeout = null;
 						}
 					});
 				}
 			});
-		} else {
-			// call_counter_on_slider_changed = 0;
-		}
-	}
-}
-
-// Global support variables for _showOrUpdateNotification()
-var notificationText = null;
-var notificationTimeouts = [];
-
-// Show centered notification on the current monitor
-// The notification is faded out conditionally
-function _showOrUpdateNotification(msg) {
-	if (_notificationsEnabled()) {
-		if (!notificationText) {
-			let monitor = Main.layoutManager.currentMonitor;
-
-			if (monitor) {
-				let text = new St.Label({
-					style_class: "notification-label",
-					text: msg
-				});
-
-				notificationText = text;
-
-				text.opacity = 255;
-
-				Main.uiGroup.add_actor(text);
-				text.set_position(
-					Math.floor(monitor.width / 2 - text.width / 2),
-					Math.floor(monitor.height / 2 - text.height / 2)
-				);
-
-				notificationTimeouts.push(Mainloop.timeout_add(NOTIFICATION_TIMEOUT_MILLIS, () => {
-					notificationText.ease_property('opacity', 0, {
-						duration: NOTIFICATION_ANIMATION_MILLIS,
-						mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-						onComplete: () => {
-							Main.uiGroup.remove_actor(notificationText);
-							notificationText = null;
-						}
-					});
-				}));
-			} else {
-				// call_counter_on_slider_changed = 0;
-			}
-		} else {
-			notificationText.text = msg;
-
-			notificationTimeouts.forEach(timeout => Mainloop.source_remove(timeout));
-
-			notificationTimeouts.push(Mainloop.timeout_add(NOTIFICATION_TIMEOUT_MILLIS, () => {
-				notificationText.ease_property('opacity', 0, {
-					duration: NOTIFICATION_ANIMATION_MILLIS,
-					mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-					onComplete: () => {
-						Main.uiGroup.remove_actor(notificationText);
-						notificationText = null;
-
-						notificationTimeouts = [];
-					}
-				});
-			}));
 		}
 	}
 }
@@ -928,27 +893,10 @@ let EruptionMenuButton = GObject.registerClass(
 					}
 				);
 
-				if (settings.get_boolean("show-battery-level") ||
-					settings.get_boolean("show-signal-strength")) {
-
-					if (status_poll_source !== undefined && status_poll_source !== null) {
-						Mainloop.source_remove(status_poll_source);
-						status_poll_source = null;
-					}
-
-					status_poll_source = Mainloop.timeout_add(STATUS_POLL_TIMEOUT_MILLIS, () => {
-						this._sync_device(eruptionDevice);
-
-						return true; // keep timer enabled
-					});
-				} else if (!settings.get_boolean("show-battery-level") &&
-						   !settings.get_boolean("show-signal-strength")) {
-					// all indicators have been disabled
-					if (status_poll_source !== undefined && status_poll_source !== null) {
-						Mainloop.source_remove(status_poll_source);
-						status_poll_source = null;
-					}
-				}
+				this._device_status_changed_id = eruptionDevice.connectSignal(
+					"DeviceStatusChanged",
+					this._deviceStatusChanged.bind(this)
+				);
 			} catch (e) {
 				log(e.message);
 				_showNotification(e.message);
@@ -1135,6 +1083,7 @@ let EruptionMenuButton = GObject.registerClass(
 				// signal strength indicator
 				if (settings.get_boolean("show-signal-strength")) {
 					const signal_strength = device.status["signal-strength-percent"];
+
 					if (signal_strength !== undefined ) {
 						var icon_name = "network-cellular-signal-none-symbolic";
 
@@ -1287,7 +1236,7 @@ let EruptionMenuButton = GObject.registerClass(
 
 				// don't show notification directly after startup
 				if (call_counter_on_slider_changed > 1) {
-					_showOrUpdateNotification("Brightness: " + brightness.toFixed(0) + "%");
+					_showNotification("Brightness: " + brightness.toFixed(0) + "%");
 				}
 			});
 
@@ -1340,6 +1289,18 @@ let EruptionMenuButton = GObject.registerClass(
 		_profilesChanged(_proxy, sender, [object]) {
 			//_showNotification("Eruption profiles updated");
 			eruptionMenuButton.populateMenu();
+		}
+
+		// D-Bus signal, emitted when the status of a managed device has changed
+		_deviceStatusChanged(_proxy, sender, [object]) {
+			try {
+				if (object !== null) {
+					deviceStatus = JSON.parse(object);
+					this.populateMenu({ status_only: true });
+				}
+			} catch (e) {
+				log("Internal error: " + e.message);
+			}
 		}
 
 		_sync_slot(proxy) {
@@ -1416,25 +1377,8 @@ let EruptionMenuButton = GObject.registerClass(
 
 		_sync_device(proxy) {
 			try {
-				var devices = proxy.GetManagedDevicesSync()[0];
-				devices = [].concat(devices[0], devices[1], devices[2]);
-
-				deviceStatus = [];
-				devices.map((device, index) => {
-					const vid = device[0];
-					const pid = device[1];
-
-					try {
-						const stat = proxy.GetDeviceStatusSync(index);
-						const device_status = JSON.parse(stat);
-
-						deviceStatus.push({ status: device_status, usb_vid: vid, usb_pid: pid });
-
-						this.populateMenu({ status_only: true });
-					} catch (e) {
-						log("Could not query device status: " + e.message);
-					}
-				});
+				deviceStatus = JSON.parse(proxy.DeviceStatus);
+				this.populateMenu({ status_only: true });
 			} catch (e) {
 				log("Internal error: " + e.message);
 			}
