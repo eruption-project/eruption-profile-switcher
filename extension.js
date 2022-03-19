@@ -428,6 +428,9 @@ function _showNotification(msg) {
 function _fadeOutNotification() {
 	if (_notificationsEnabled()) {
 		fade_out_source = Mainloop.timeout_add(NOTIFICATION_TIMEOUT_MILLIS, () => {
+			Mainloop.source_remove(fade_out_source);
+			fade_out_source = null;
+
 			if (notificationText) {
 				notificationText.ease_property('opacity', 0, {
 					duration: NOTIFICATION_ANIMATION_MILLIS,
