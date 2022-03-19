@@ -411,6 +411,7 @@ function _showNotification(msg) {
 						onComplete: () => {
 							Main.uiGroup.remove_actor(notificationText);
 
+							Mainloop.source_remove(pending_timeout);
 							pending_timeout = null;
 						}
 					});
@@ -423,8 +424,9 @@ function _showNotification(msg) {
 // Programmatically dismiss the notification overlay
 function _fadeOutNotification() {
 	if (_notificationsEnabled()) {
-		const _fadeOutSource = Mainloop.timeout_add(NOTIFICATION_TIMEOUT_MILLIS, () => {
+		let _fadeOutSource = Mainloop.timeout_add(NOTIFICATION_TIMEOUT_MILLIS, () => {
 			Mainloop.source_remove(_fadeOutSource);
+			_fadeOutSource = null;
 
 			if (notificationText) {
 				notificationText.ease_property('opacity', 0, {
@@ -447,8 +449,9 @@ function _toggleNetFxAmbient(enable) {
 	if (enable) {
 		eruptionProfile.SwitchProfileSync("/var/lib/eruption/profiles/netfx.profile");
 
-		const _spawnWaitSource = Mainloop.timeout_add(PROCESS_SPAWN_WAIT_MILLIS, () => {
+		let _spawnWaitSource = Mainloop.timeout_add(PROCESS_SPAWN_WAIT_MILLIS, () => {
 			Mainloop.source_remove(_spawnWaitSource);
+			_spawnWaitSource = null;
 
 			Util.spawn(["/usr/bin/eruption-netfx", _getNetFxKeyboardModel(), _getNetFxHostName(),
 					   _getNetFxPort().toString(), "ambient"]);
@@ -1215,6 +1218,9 @@ let EruptionMenuButton = GObject.registerClass(
 
 			if (enableNetFxAmbient) {
 				this._processPollSource = Mainloop.timeout_add(PROCESS_POLL_TIMEOUT_MILLIS, () => {
+					Mainloop.source_remove(this._processPollSource);
+					this._processPollSource = null;
+
 					if (enableNetFxAmbient && !isNetFxAmbientRunning()) {
 						// eruption-netfx process terminated, update our internal state
 						enableNetFxAmbient = false;
@@ -1227,11 +1233,13 @@ let EruptionMenuButton = GObject.registerClass(
 				});
 			} else {
 				Mainloop.source_remove(this._processPollSource);
+				this._processPollSource = null;
 			}
 		}
 
 		_brightnessSliderChanged() {
 			Mainloop.source_remove(this._brightnessSliderSource);
+			this._brightnessSliderSource = null;
 
 			// debounce slider
 			this._brightnessSliderSource = Mainloop.timeout_add(25, () => {
