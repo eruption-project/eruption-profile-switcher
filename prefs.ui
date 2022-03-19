@@ -2,7 +2,7 @@
 <!-- Generated with glade 3.38.2 
 
 Eruption Profile Switcher - Eruption Profile Switcher Gnome Shell Extension
-Copyright (C) 2019-2021 The Eruption Development Team
+Copyright (C) 2019-2022 The Eruption Development Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -26,7 +26,7 @@ Author: x3n0m0rph59@gmail.com
   <!-- interface-license-type gplv2 -->
   <!-- interface-name Eruption Profile Switcher -->
   <!-- interface-description Eruption Profile Switcher Gnome Shell Extension -->
-  <!-- interface-copyright 2019-2021 The Eruption Development Team -->
+  <!-- interface-copyright 2019-2022 The Eruption Development Team -->
   <!-- interface-authors x3n0m0rph59@gmail.com -->
   <object class="GtkAdjustment" id="adjustment_port">
     <property name="upper">65535</property>
@@ -188,7 +188,7 @@ Author: x3n0m0rph59@gmail.com
         <property name="label" translatable="yes">Eruption Profile Switcher
 GNOME Shell Extension
 
-Copyright (c) 2019-2021
+Copyright (c) 2019-2022
 The Eruption Development Team
 
 Authors:

@@ -73,7 +73,8 @@ const SUPPORTED_DEVICES = [
 
 	{ make: "ROCCAT", model: "Burst Pro",            usb_vid: 0x1e7d, usb_pid: 0x2de1, has_status: false },
 
-	{ make: "ROCCAT", model: "Kone Pro Air",            usb_vid: 0x1e7d, usb_pid: 0x2c8e, has_status: false },
+	{ make: "ROCCAT", model: "Kone Pro Air",         usb_vid: 0x1e7d, usb_pid: 0x2c8e, has_status: true },
+	{ make: "ROCCAT", model: "Kone Pro Air",         usb_vid: 0x1e7d, usb_pid: 0x2c92, has_status: true },
 
 	{ make: "ROCCAT", model: "Kain 200/202 AIMO",    usb_vid: 0x1e7d, usb_pid: 0x2d5f, has_status: true },
 	{ make: "ROCCAT", model: "Kain 200/202 AIMO",    usb_vid: 0x1e7d, usb_pid: 0x2d60, has_status: true },
