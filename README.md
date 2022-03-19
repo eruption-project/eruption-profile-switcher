@@ -13,7 +13,7 @@ Please note that the current `master` branch of this extension requires `Eruptio
 
 | Extension version | supported version of Eruption daemon |
 | ----------------- | ------------------------------------ |
-| since `v22` | requires Eruption >= `0.1.23` |
+| since `v23` | requires Eruption >= `0.1.23` |
 | up to `v19` | requires Eruption <= `0.1.22` |
 
 Please find the installation instructions for this GNOME 4x shell extension here: [INSTALL.md](./INSTALL.md)
