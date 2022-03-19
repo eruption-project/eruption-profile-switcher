@@ -1491,6 +1491,9 @@ class ProfileSwitcherExtension {
 	}
 
 	disable() {
+		Mainloop.source_remove(pending_timeout);
+		pending_timeout = null;
+
 		Mainloop.source_remove(brightness_slider_source);
 		brightness_slider_source = null;
 
