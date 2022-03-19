@@ -423,7 +423,9 @@ function _showNotification(msg) {
 // Programmatically dismiss the notification overlay
 function _fadeOutNotification() {
 	if (_notificationsEnabled()) {
-		Mainloop.timeout_add(NOTIFICATION_TIMEOUT_MILLIS, () => {
+		const _fadeOutSource = Mainloop.timeout_add(NOTIFICATION_TIMEOUT_MILLIS, () => {
+			Mainloop.source_remove(_fadeOutSource);
+
 			if (notificationText) {
 				notificationText.ease_property('opacity', 0, {
 					duration: NOTIFICATION_ANIMATION_MILLIS,
@@ -438,13 +440,16 @@ function _fadeOutNotification() {
 	}
 }
 
+
 // Enable or disable the NetworkFX Ambient effect
 // Switch the profile to `netfx.profile` and start or kill the `eruption-netfx` process
 function _toggleNetFxAmbient(enable) {
 	if (enable) {
 		eruptionProfile.SwitchProfileSync("/var/lib/eruption/profiles/netfx.profile");
 
-		Mainloop.timeout_add(PROCESS_SPAWN_WAIT_MILLIS, () => {
+		const _spawnWaitSource = Mainloop.timeout_add(PROCESS_SPAWN_WAIT_MILLIS, () => {
+			Mainloop.source_remove(_spawnWaitSource);
+
 			Util.spawn(["/usr/bin/eruption-netfx", _getNetFxKeyboardModel(), _getNetFxHostName(),
 					   _getNetFxPort().toString(), "ambient"]);
 		});
