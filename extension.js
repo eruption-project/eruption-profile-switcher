@@ -361,7 +361,9 @@ var activeSlot,
 	enableSfx, enableNetFxAmbient, brightness = 100,
 	deviceStatus = [],
 	status_poll_source,
-	status_poll_source_toplevel;
+	status_poll_source_toplevel,
+	fade_out_source, spawn_wait_source,
+	process_poll_source, brightness_slider_source;
 
 var settings;
 
@@ -373,6 +375,7 @@ var call_counter_on_slider_changed = 0;
 // Global support variables for _showNotification()
 var notificationText = null;
 var pending_timeout = null;
+
 
 // Show centered notification on the current monitor
 function _showNotification(msg) {
@@ -424,10 +427,7 @@ function _showNotification(msg) {
 // Programmatically dismiss the notification overlay
 function _fadeOutNotification() {
 	if (_notificationsEnabled()) {
-		let _fadeOutSource = Mainloop.timeout_add(NOTIFICATION_TIMEOUT_MILLIS, () => {
-			Mainloop.source_remove(_fadeOutSource);
-			_fadeOutSource = null;
-
+		fade_out_source = Mainloop.timeout_add(NOTIFICATION_TIMEOUT_MILLIS, () => {
 			if (notificationText) {
 				notificationText.ease_property('opacity', 0, {
 					duration: NOTIFICATION_ANIMATION_MILLIS,
@@ -449,10 +449,7 @@ function _toggleNetFxAmbient(enable) {
 	if (enable) {
 		eruptionProfile.SwitchProfileSync("/var/lib/eruption/profiles/netfx.profile");
 
-		let _spawnWaitSource = Mainloop.timeout_add(PROCESS_SPAWN_WAIT_MILLIS, () => {
-			Mainloop.source_remove(_spawnWaitSource);
-			_spawnWaitSource = null;
-
+		spawn_wait_source = Mainloop.timeout_add(PROCESS_SPAWN_WAIT_MILLIS, () => {
 			Util.spawn(["/usr/bin/eruption-netfx", _getNetFxKeyboardModel(), _getNetFxHostName(),
 					   _getNetFxPort().toString(), "ambient"]);
 		});
@@ -1217,10 +1214,7 @@ let EruptionMenuButton = GObject.registerClass(
 			_toggleNetFxAmbient(enableNetFxAmbient);
 
 			if (enableNetFxAmbient) {
-				this._processPollSource = Mainloop.timeout_add(PROCESS_POLL_TIMEOUT_MILLIS, () => {
-					Mainloop.source_remove(this._processPollSource);
-					this._processPollSource = null;
-
+				process_poll_source = Mainloop.timeout_add(PROCESS_POLL_TIMEOUT_MILLIS, () => {
 					if (enableNetFxAmbient && !isNetFxAmbientRunning()) {
 						// eruption-netfx process terminated, update our internal state
 						enableNetFxAmbient = false;
@@ -1232,17 +1226,17 @@ let EruptionMenuButton = GObject.registerClass(
 					return true; // keep timer enabled
 				});
 			} else {
-				Mainloop.source_remove(this._processPollSource);
-				this._processPollSource = null;
+				Mainloop.source_remove(process_poll_source);
+				process_poll_source = null;
 			}
 		}
 
 		_brightnessSliderChanged() {
-			Mainloop.source_remove(this._brightnessSliderSource);
-			this._brightnessSliderSource = null;
+			Mainloop.source_remove(brightness_slider_source);
+			brightness_slider_source = null;
 
 			// debounce slider
-			this._brightnessSliderSource = Mainloop.timeout_add(25, () => {
+			brightness_slider_source = Mainloop.timeout_add(25, () => {
 				let percent = this._brightnessSlider.value * 100;
 
 				brightness = percent;
@@ -1494,11 +1488,23 @@ class ProfileSwitcherExtension {
 	}
 
 	disable() {
+		Mainloop.source_remove(brightness_slider_source);
+		brightness_slider_source = null;
+
 		Mainloop.source_remove(status_poll_source_toplevel);
 		status_poll_source_toplevel = null;
 
 		Mainloop.source_remove(status_poll_source);
 		status_poll_source = null;
+
+		Mainloop.source_remove(fade_out_source);
+		fade_out_source = null;
+
+		Mainloop.source_remove(spawn_wait_source);
+		spawn_wait_source = null;
+
+		Mainloop.source_remove(process_poll_source);
+		process_poll_source = null;
 
 		Main.panel.menuManager.removeMenu(eruptionMenuButton.menu);
 		eruptionMenuButton.destroy();
