@@ -48,7 +48,7 @@ const PROCESS_SPAWN_WAIT_MILLIS = 800;
 const DEFAULT_SLOT_NAMES = ['Profile Slot 1', 'Profile Slot 2',
 							'Profile Slot 3', 'Profile Slot 4'];
 
-// Eruption - Version: 0.1.23 - list of supported devices
+// Eruption - Version: 0.1.24 - list of supported devices
 const SUPPORTED_DEVICES = [
 	{ make: "ROCCAT", model: "Vulcan 100/12x",       usb_vid: 0x1e7d, usb_pid: 0x3098, has_status: false },
 	{ make: "ROCCAT", model: "Vulcan 100/12x",       usb_vid: 0x1e7d, usb_pid: 0x307a, has_status: false },
@@ -73,8 +73,10 @@ const SUPPORTED_DEVICES = [
 
 	{ make: "ROCCAT", model: "Burst Pro",            usb_vid: 0x1e7d, usb_pid: 0x2de1, has_status: false },
 
-	{ make: "ROCCAT", model: "Kone Pro Air",         usb_vid: 0x1e7d, usb_pid: 0x2c8e, has_status: true },
+	{ make: "ROCCAT", model: "Kone Pro Air Dongle",  usb_vid: 0x1e7d, usb_pid: 0x2c8e, has_status: true },
 	{ make: "ROCCAT", model: "Kone Pro Air",         usb_vid: 0x1e7d, usb_pid: 0x2c92, has_status: true },
+
+	{ make: "ROCCAT", model: "Kain 100 AIMO",        usb_vid: 0x1e7d, usb_pid: 0x2d00, has_status: false },
 
 	{ make: "ROCCAT", model: "Kain 200/202 AIMO",    usb_vid: 0x1e7d, usb_pid: 0x2d5f, has_status: true },
 	{ make: "ROCCAT", model: "Kain 200/202 AIMO",    usb_vid: 0x1e7d, usb_pid: 0x2d60, has_status: true },
