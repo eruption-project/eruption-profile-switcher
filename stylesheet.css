@@ -1,20 +1,19 @@
 .slot-label {
     font-weight: bold;
-    font-size: larger;
 }
 
 .checkmark-slot {
-	height: 4px;
-	width: 18px;
+	height: 3px;
+	width: 13px;
 }
 
 .checkmark, .menu-icon {
-	height: 4px;
-	width: 18px;
+	height: 3px;
+	width: 13px;
 }
 
 .slider {
-	width: 380px;
+	width: 350px;
 }
 
 .notification-label {
