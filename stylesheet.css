@@ -4,7 +4,6 @@
 }
 
 .checkmark-slot {
-    padding: 1px;
 	height: 4px;
 	width: 18px;
 }
@@ -15,7 +14,7 @@
 }
 
 .slider {
-	width: 180px;
+	width: 380px;
 }
 
 .notification-label {
