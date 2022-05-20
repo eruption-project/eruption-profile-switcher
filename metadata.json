@@ -1,5 +1,5 @@
 {
-  "description": "Runtime profile switcher for the Eruption Linux input and LED driver for keyboards, mice and other devices",
+  "description": "Runtime Profile switcher for the Eruption Realtime RGB LED Driver for Linux",
   "name": "Eruption Profile Switcher",
   "settings-schema": "org.gnome.shell.extensions.eruption-profile-switcher",
   "shell-version": [

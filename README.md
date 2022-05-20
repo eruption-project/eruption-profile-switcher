@@ -1,8 +1,7 @@
 # Eruption Profile Switcher
 
-A GNOME 4x Shell extension that can be used to switch between different
-slots and profiles of the [`Eruption`](https://github.com/X3n0m0rph59/eruption)
-Linux input and LED driver for keyboards, mice and other devices.
+A GNOME 4x Shell extension for switching between different slots and profiles of the
+[`Eruption`](https://github.com/X3n0m0rph59/eruption) realtime RGB LED driver for Linux.
 
 Additionally, it supports setting some global configuration options like
 brightness of the LED illumination, and it allows to enable or disable sound effects.
