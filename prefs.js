@@ -34,8 +34,7 @@ var hostName, portNumber;
 function init() {}
 
 function buildPrefsWidget() {
-	let builder = new Gtk.Builder();
-
+    let builder = new Gtk.Builder();
 
     builder.set_scope(new MyBuilderScope());
     // builder.set_translation_domain('gettext-domain');
