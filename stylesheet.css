@@ -3,13 +3,13 @@
 }
 
 .checkmark-slot {
-	height: 3px;
-	width: 13px;
+    height: 3px;
+    width: 13px;
 }
 
 .checkmark, .menu-icon {
-	height: 3px;
-	width: 13px;
+    height: 3px;
+    width: 13px;
 }
 
 .notification-label {

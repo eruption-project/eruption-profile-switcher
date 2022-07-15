@@ -46,7 +46,7 @@ const PROCESS_POLL_TIMEOUT_MILLIS = 3000;
 const PROCESS_SPAWN_WAIT_MILLIS = 800;
 
 const DEFAULT_SLOT_NAMES = ['Profile Slot 1', 'Profile Slot 2',
-							'Profile Slot 3', 'Profile Slot 4'];
+		  	    'Profile Slot 3', 'Profile Slot 4'];
 
 // Eruption - Version: 0.1.24 - list of supported devices
 const SUPPORTED_DEVICES = [
@@ -59,7 +59,7 @@ const SUPPORTED_DEVICES = [
 
 	{ make: "ROCCAT", model: "Vulcan Pro TKL",       usb_vid: 0x1e7d, usb_pid: 0x311a, has_status: false },
 
-	{ make: "ROCCAT", model: "Magma",       		 usb_vid: 0x1e7d, usb_pid: 0x3124, has_status: false },
+	{ make: "ROCCAT", model: "Magma",       	 usb_vid: 0x1e7d, usb_pid: 0x3124, has_status: false },
 
 	{ make: "Corsair", model: "Corsair STRAFE Gaming Keyboard", usb_vid: 0x1b1c, usb_pid: 0x1b15, has_status: false },
 
@@ -347,13 +347,13 @@ const eruptionDeviceIface = `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Ob
 
 // D-Bus proxy
 var eruptionSlot, eruptionProfile, eruptionConfig,
-	eruptionStatus, eruptionDevice;
+    eruptionStatus, eruptionDevice;
 
 // Panel menu button
 var connected = false;
 var previous_state = null;
 var instance = null,
-	eruptionMenuButton;
+    eruptionMenuButton;
 
 // Global state
 var activeSlot,
