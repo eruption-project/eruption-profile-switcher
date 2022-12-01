@@ -1,5 +1,6 @@
 .slot-label {
     font-weight: bold;
+    font-size: larger;
 }
 
 .checkmark-slot {
@@ -7,7 +8,8 @@
     width: 13px;
 }
 
-.checkmark, .menu-icon {
+.checkmark,
+.menu-icon {
     height: 3px;
     width: 13px;
 }

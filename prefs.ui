@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.38.2 
+<!-- Generated with glade 3.40.0 
 
 Eruption Profile Switcher - Eruption Profile Switcher Gnome Shell Extension
 Copyright (C) 2019-2022 The Eruption Development Team
@@ -22,88 +22,33 @@ Author: x3n0m0rph59@gmail.com
 
 -->
 <interface>
-  <requires lib="gtk+" version="3.22"/>
+  <requires lib="gtk+" version="3.24"/>
   <!-- interface-license-type gplv2 -->
   <!-- interface-name Eruption Profile Switcher -->
   <!-- interface-description Eruption Profile Switcher Gnome Shell Extension -->
   <!-- interface-copyright 2019-2022 The Eruption Development Team -->
   <!-- interface-authors x3n0m0rph59@gmail.com -->
-  <object class="GtkAdjustment" id="adjustment_port">
-    <property name="upper">65535</property>
-    <property name="value">2359</property>
-    <property name="step-increment">1</property>
-    <property name="page-increment">10</property>
-  </object>
   <object class="GtkNotebook" id="main_prefs">
     <property name="visible">True</property>
     <property name="can-focus">True</property>
     <child>
-      <!-- n-columns=3 n-rows=7 -->
       <object class="GtkBox">
         <property name="visible">True</property>
+        <property name="can-focus">False</property>
         <property name="margin-start">8</property>
         <property name="margin-end">8</property>
         <property name="margin-top">8</property>
         <property name="margin-bottom">8</property>
+        <property name="hexpand">True</property>
+        <property name="vexpand">True</property>
         <property name="orientation">vertical</property>
-        <property name="hexpand">1</property>
-        <property name="vexpand">1</property>
-        <child>
-          <object class="GtkLabel">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="halign">start</property>
-            <property name="label" translatable="yes">Eruption NetworkFX</property>
-            <attributes>
-              <attribute name="weight" value="bold"/>
-            </attributes>
-          </object>
-        </child>
-        <child>
-          <object class="GtkLabel">
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="halign">start</property>
-            <property name="margin-top">8</property>
-            <property name="label" translatable="yes">Host Name</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkEntry" id="host_name">
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="hexpand">True</property>
-            <property name="text" translatable="yes">localhost</property>
-            <signal name="changed" handler="on_host_name_changed" swapped="no"/>
-          </object>
-        </child>
         <child>
           <object class="GtkLabel">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">start</property>
             <property name="margin-top">8</property>
-            <property name="label" translatable="yes">Port Number</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkSpinButton" id="port_number">
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="hexpand">True</property>
-            <property name="text" translatable="yes">2359</property>
-            <property name="adjustment">adjustment_port</property>
-            <property name="value">2359</property>
-            <signal name="value-changed" handler="on_port_number_value_changed" swapped="no"/>
-          </object>
-        </child>
-        <child>
-          <object class="GtkLabel">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="halign">start</property>
             <property name="label" translatable="yes">User Interface</property>
-            <property name="margin-top">8</property>
             <attributes>
               <attribute name="weight" value="bold"/>
             </attributes>
@@ -135,42 +80,6 @@ Author: x3n0m0rph59@gmail.com
             <property name="receives-default">False</property>
             <signal name="toggled" handler="on_show_signal_strength_toggled" swapped="no"/>
           </object>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
         </child>
       </object>
     </child>

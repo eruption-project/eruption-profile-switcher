@@ -2,6 +2,11 @@
   "description": "Runtime Profile switcher for the Eruption Realtime RGB LED Driver for Linux",
   "name": "Eruption Profile Switcher",
   "settings-schema": "org.gnome.shell.extensions.eruption-profile-switcher",
+  "session-modes": [
+    "gdm",
+    "user",
+    "unlock-dialog"
+  ],
   "shell-version": [
     "40.beta",
     "40",
@@ -11,5 +16,5 @@
   ],
   "url": "https://github.com/X3n0m0rph59/eruption-profile-switcher",
   "uuid": "eruption-profile-switcher@x3n0m0rph59.org",
-  "version": 25
+  "version": 28
 }

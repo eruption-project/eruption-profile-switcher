@@ -6,12 +6,13 @@ A GNOME 4x Shell extension for switching between different slots and profiles of
 Additionally, it supports setting some global configuration options like
 brightness of the LED illumination, and it allows to enable or disable sound effects.
 
-It even supports showing signal strength and battery levels where applicable.
+It even supports showing signal strength and battery levels where supported/applicable.
 
-Please note that the current `master` branch of this extension requires `Eruption` version >= `0.1.23`.
+Please note that the current `master` branch of this extension requires `Eruption` version >= `0.3.0`.
 
 | Extension version | supported version of Eruption daemon |
 | ----------------- | ------------------------------------ |
+| since `v28` | requires Eruption >= `0.3.0` |
 | since `v23` | requires Eruption >= `0.1.23` |
 | up to `v19` | requires Eruption <= `0.1.22` |
 

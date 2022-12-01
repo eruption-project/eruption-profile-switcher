@@ -29,8 +29,6 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 var settings;
 
-var hostName, portNumber;
-
 function init() {}
 
 function buildPrefsWidget() {
@@ -48,8 +46,6 @@ function buildPrefsWidget() {
 
 	settings = ExtensionUtils.getSettings();
 
-	builder.get_object("host_name").text = settings.get_string("netfx-host-name");
-	builder.get_object("port_number").value = settings.get_int("netfx-port-number");
 	builder.get_object("enable_notifications").set_active(settings.get_boolean("notifications"));
 	builder.get_object("show_battery_level").set_active(settings.get_boolean("show-battery-level"));
 	builder.get_object("show_signal_strength").set_active(settings.get_boolean("show-signal-strength"));
@@ -80,14 +76,6 @@ const MyBuilderScope = GObject.registerClass({
 
         return this[handlerName].bind(connectObject || this);
     }
-
-	on_host_name_changed(w) {
-		settings.set_string("netfx-host-name", w.text);
-	}
-
-	on_port_number_value_changed(w) {
-		settings.set_int("netfx-port-number", w.get_value_as_int());
-	}
 
 	on_enable_notifications_toggled(w) {
 		settings.set_boolean("notifications", w.get_active());
