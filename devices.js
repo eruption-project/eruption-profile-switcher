@@ -1,5 +1,7 @@
 /* devices.js
  *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 2 of the License, or
@@ -13,12 +15,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
 "use strict";
 
-// Eruption - Version: 0.3.0 - list of supported devices
+// Supported devices: Eruption 0.3.0
 var SUPPORTED_DEVICES = [
 	{ make: "ROCCAT", model: "Vulcan 100/12x", usb_vid: 0x1e7d, usb_pid: 0x3098, has_status: false },
 	{ make: "ROCCAT", model: "Vulcan 100/12x", usb_vid: 0x1e7d, usb_pid: 0x307a, has_status: false },

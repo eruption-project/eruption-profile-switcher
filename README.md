@@ -12,7 +12,7 @@ Please note that the current `master` branch of this extension requires `Eruptio
 
 | Extension version | supported version of Eruption daemon |
 | ----------------- | ------------------------------------ |
-| since `v28` | requires Eruption >= `0.3.0` |
+| since `v29` | requires Eruption >= `0.3.0` |
 | since `v23` | requires Eruption >= `0.1.23` |
 | up to `v19` | requires Eruption <= `0.1.22` |
 

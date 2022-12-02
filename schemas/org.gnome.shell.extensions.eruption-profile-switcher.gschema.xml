@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist>
-
-  <schema id="org.gnome.shell.extensions.eruption-profile-switcher"
-    path="/org/gnome/shell/extensions/eruption-profile-switcher/">
+  <schema id="org.gnome.shell.extensions.eruption-profile-switcher" path="/org/gnome/shell/extensions/eruption-profile-switcher/">
 
     <key type="b" name="notifications">
       <default>false</default>
@@ -34,5 +32,4 @@
       <description></description>
     </key>
   </schema>
-
 </schemalist>

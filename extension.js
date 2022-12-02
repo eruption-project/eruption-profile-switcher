@@ -1,5 +1,7 @@
 /* extension.js
  *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 2 of the License, or
@@ -13,7 +15,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
 "use strict";
@@ -49,8 +50,8 @@ const NOTIFICATION_ANIMATION_MILLIS = 500;
 const PROCESS_POLL_TIMEOUT_MILLIS = 3000;
 const PROCESS_SPAWN_WAIT_MILLIS = 800;
 
-const DEFAULT_SLOT_NAMES = ['Profile Slot 1', 'Profile Slot 2',
-	'Profile Slot 3', 'Profile Slot 4'];
+const DEFAULT_SLOT_NAMES = ["Profile Slot 1", "Profile Slot 2",
+	"Profile Slot 3", "Profile Slot 4"];
 
 // D-Bus proxy
 var eruptionSlot, eruptionProfile, eruptionConfig,
@@ -118,7 +119,7 @@ function _showNotification(msg) {
 
 			pending_timeout = Mainloop.timeout_add(NOTIFICATION_TIMEOUT_MILLIS, () => {
 				if (notificationText) {
-					notificationText.ease_property('opacity', 0, {
+					notificationText.ease_property("opacity", 0, {
 						duration: NOTIFICATION_ANIMATION_MILLIS,
 						mode: Clutter.AnimationMode.EASE_OUT_QUAD,
 						onComplete: () => {
@@ -142,7 +143,7 @@ function _fadeOutNotification() {
 			fade_out_source = null;
 
 			if (notificationText) {
-				notificationText.ease_property('opacity', 0, {
+				notificationText.ease_property("opacity", 0, {
 					duration: NOTIFICATION_ANIMATION_MILLIS,
 					mode: Clutter.AnimationMode.EASE_OUT_QUAD,
 					onComplete: () => {
@@ -153,11 +154,6 @@ function _fadeOutNotification() {
 			}
 		});
 	}
-}
-
-// Enable or disable the Ambient effect
-function _toggleAmbientFx(enable) {
-
 }
 
 // Returns whether notifications should be displayed
@@ -321,6 +317,12 @@ var SlotMenuItem = GObject.registerClass(
 				style_class: "checkmark-slot"
 			});
 
+			this.index = new St.Label({
+				text: `${slot + 1}:`,
+				style_class: "slot-index"
+			});
+
+
 			let slot_name = DEFAULT_SLOT_NAMES[slot];
 			if (slotNames[slot]) {
 				slot_name = slotNames[slot];
@@ -328,10 +330,11 @@ var SlotMenuItem = GObject.registerClass(
 
 			this.label = new St.Label({
 				text: slot_name,
-				style_class: 'slot-label'
+				style_class: "slot-label"
 			});
 
 			this.add_child(this.checkmark);
+			this.add_child(this.index);
 			this.add_child(this.label);
 
 			this._slot = slot;
@@ -653,7 +656,7 @@ let EruptionMenuButton = GObject.registerClass(
 					this.menu.addMenuItem(separator);
 
 					// add sub-menu
-					this.profiles_sub = new PopupMenu.PopupSubMenuMenuItem('Profiles');
+					this.profiles_sub = new PopupMenu.PopupSubMenuMenuItem("Select Profile");
 					this.menu.addMenuItem(this.profiles_sub);
 
 					try {
@@ -680,7 +683,7 @@ let EruptionMenuButton = GObject.registerClass(
 
 					// add Pyroclasm UI menu item
 					if (isPyroclasmUiAvailable()) {
-						this.pyroclasmItem = new CustomPopupMenuItem('Pyroclasm UI…', (_item) => {
+						this.pyroclasmItem = new CustomPopupMenuItem("Start Pyroclasm UI…", (_item) => {
 							runPyroclasmUi();
 						});
 						this.menu.addMenuItem(this.pyroclasmItem);
@@ -688,14 +691,14 @@ let EruptionMenuButton = GObject.registerClass(
 
 					// add Eruption GUI menu item
 					if (isEruptionGuiAvailable()) {
-						this.guiItem = new CustomPopupMenuItem('Eruption GUI…', (_item) => {
+						this.guiItem = new CustomPopupMenuItem("Start Eruption GUI…", (_item) => {
 							runEruptionGui();
 						});
 						this.menu.addMenuItem(this.guiItem);
 					}
 
 					// add preferences menu item
-					const prefs_item = new CustomPopupMenuItem('Preferences…', (_item) => {
+					const prefs_item = new CustomPopupMenuItem("Show Preferences…", (_item) => {
 						ExtensionUtils.openPrefs();
 					});
 					this.menu.addMenuItem(prefs_item);
@@ -830,7 +833,7 @@ let EruptionMenuButton = GObject.registerClass(
 						// place spacer
 
 						// const icon = new St.Icon({
-						// 	icon_name: 'none-symbolic',
+						// 	icon_name: "none-symbolic",
 						// 	style_class: "menu-icon"
 						// });
 
@@ -904,16 +907,11 @@ let EruptionMenuButton = GObject.registerClass(
 			brightness_slider_source = null;
 
 			// debounce slider
-			brightness_slider_source = Mainloop.timeout_add(25, () => {
+			brightness_slider_source = Mainloop.timeout_add(15, () => {
 				let percent = this._brightnessSlider.value * 100;
 
 				brightness = percent;
 				eruptionConfig.Brightness = percent;
-
-				// don't show notification directly after startup
-				if (call_counter_on_slider_changed > 1) {
-					_showNotification("Brightness: " + brightness.toFixed(0) + "%");
-				}
 			});
 
 			call_counter_on_slider_changed++;
@@ -988,9 +986,19 @@ let EruptionMenuButton = GObject.registerClass(
 					log(`Device Hotplugged: ${usb_vid}:${usb_pid}; failed: ${failed}`);
 
 					if (!failed) {
-						_showNotification("Device hotplugged");
+						if (usb_vid !== 0 && usb_pid !== 0) {
+							const device_name = _getDeviceName(usb_vid, usb_pid);
+							_showNotification(`Added: ${device_name}`);
+						} else {
+							_showNotification("Device added");
+						}
 					} else {
-						_showNotification("Device removed");
+						if (usb_vid !== 0 && usb_pid !== 0) {
+							const device_name = _getDeviceName(usb_vid, usb_pid);
+							_showNotification(`Removed: ${device_name}`);
+						} else {
+							_showNotification("Device removed");
+						}
 					}
 				}
 			} catch (e) {
@@ -998,19 +1006,25 @@ let EruptionMenuButton = GObject.registerClass(
 			}
 		}
 
-		_sync_fx_proxy(proxy) {
+		_sync_fx_proxy(proxy, _changed, _invalidated) {
 			try {
 				if (proxy.AmbientEffect != null) {
 					enableAmbientFx = proxy.AmbientEffect;
 
 					this._enableAmbientFxItem.setToggleState(enableAmbientFx);
+
+					if (enableAmbientFx) {
+						_showNotification("Ambient Effect enabled");
+					} else {
+						_showNotification("Ambient Effect disabled");
+					}
 				}
 			} catch (e) {
 				log("Internal error: " + e.message);
 			}
 		}
 
-		_sync_slot(proxy) {
+		_sync_slot(proxy, _changed, _invalidated) {
 			try {
 				if (proxy.ActiveSlot != null) {
 					activeSlot = proxy.ActiveSlot;
@@ -1028,7 +1042,7 @@ let EruptionMenuButton = GObject.registerClass(
 			}
 		}
 
-		_sync_profile(proxy) {
+		_sync_profile(proxy, _changed, _invalidated) {
 			try {
 				if (proxy.ActiveProfile != null && activeSlot != null) {
 					activeProfile[activeSlot] = proxy.ActiveProfile;
@@ -1040,27 +1054,35 @@ let EruptionMenuButton = GObject.registerClass(
 			}
 		}
 
-		_sync_config(proxy) {
+		_sync_config(proxy, changed, _invalidated) {
 			try {
-				if (this._enableSfxItem != null) {
+				const [changed_attr_name] = Object.entries(changed.deepUnpack())[0];
+
+				if (changed_attr_name === "EnableSfx" && this._enableSfxItem != null) {
 					enableSfx = proxy.EnableSfx;
 
 					this._enableSfxItem.setToggleState(enableSfx);
-				}
 
-				if (this._brightnessSlider != null) {
+					if (enableSfx) {
+						_showNotification("Audio Effects enabled");
+					} else {
+						_showNotification("Audio Effects disabled");
+					}
+				} else if (changed_attr_name === "Brightness" && this._brightnessSlider != null) {
 					brightness = proxy.Brightness;
 					if (brightness == null || brightness < 0 || brightness > 100)
 						brightness = 100;
 
 					this._brightnessSlider.value = brightness / 100;
+
+					_showNotification("Brightness: " + brightness.toFixed(0) + "%");
 				}
 			} catch (e) {
 				log("Internal error: " + e.message);
 			}
 		}
 
-		_sync_status(proxy) {
+		_sync_status(proxy, _changed, _invalidated) {
 			try {
 				this._eruption_running = proxy.Running;
 
@@ -1082,7 +1104,7 @@ let EruptionMenuButton = GObject.registerClass(
 			}
 		}
 
-		_sync_device(proxy) {
+		_sync_device(proxy, _changed, _invalidated) {
 			try {
 				deviceStatus = JSON.parse(proxy.DeviceStatus);
 				this.populateMenu({ status_only: true });
