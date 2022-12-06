@@ -48,19 +48,67 @@ Author: x3n0m0rph59@gmail.com
             <property name="can-focus">False</property>
             <property name="halign">start</property>
             <property name="margin-top">8</property>
-            <property name="label" translatable="yes">User Interface</property>
+            <property name="label" translatable="yes">Notification Settings</property>
             <attributes>
               <attribute name="weight" value="bold"/>
             </attributes>
           </object>
         </child>
         <child>
-          <object class="GtkCheckButton" id="enable_notifications">
-            <property name="label" translatable="yes">Show notifications</property>
+          <object class="GtkCheckButton" id="enable_notifications_general">
+            <property name="label" translatable="yes">Show general notifications</property>
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">False</property>
-            <signal name="toggled" handler="on_enable_notifications_toggled" swapped="no"/>
+            <signal name="toggled" handler="on_enable_notifications_general_toggled" swapped="no"/>
+          </object>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="enable_notifications_on_profile_switch">
+            <property name="label" translatable="yes">Show notifications on profile switch</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <signal name="toggled" handler="on_enable_notifications_on_profile_switch_toggled" swapped="no"/>
+          </object>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="enable_notifications_on_hotplug">
+            <property name="label" translatable="yes">Show notifications on device hotplug/remove</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <signal name="toggled" handler="on_enable_notifications_on_hotplug_toggled" swapped="no"/>
+          </object>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="enable_notifications_on_settings_change">
+            <property name="label" translatable="yes">Show notifications on settings change</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <signal name="toggled" handler="on_enable_notifications_on_settings_change_toggled" swapped="no"/>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">start</property>
+            <property name="margin-top">16</property>
+            <property name="label" translatable="yes">User Interface Settings</property>
+            <attributes>
+              <attribute name="weight" value="bold"/>
+            </attributes>
+          </object>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="compact_mode">
+            <property name="label" translatable="yes">Compact UI mode</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <signal name="toggled" handler="on_compact_mode_toggled" swapped="no"/>
           </object>
         </child>
         <child>
@@ -79,6 +127,27 @@ Author: x3n0m0rph59@gmail.com
             <property name="can-focus">True</property>
             <property name="receives-default">False</property>
             <signal name="toggled" handler="on_show_signal_strength_toggled" swapped="no"/>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">start</property>
+            <property name="margin-top">16</property>
+            <property name="label" translatable="yes">Additional Settings</property>
+            <attributes>
+              <attribute name="weight" value="bold"/>
+            </attributes>
+          </object>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="show_device_indicators">
+            <property name="label" translatable="yes">Show separate device status indicator icons on the panel</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <signal name="toggled" handler="on_show_device_indicators_toggled" swapped="no"/>
           </object>
         </child>
       </object>

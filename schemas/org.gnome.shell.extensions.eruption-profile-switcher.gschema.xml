@@ -1,12 +1,75 @@
+<!--
+
+ SPDX-License-Identifier: GPL-2.0-or-later
+
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 2 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see<http://www.gnu.org/licenses/>
+-->
+
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist>
   <schema id="org.gnome.shell.extensions.eruption-profile-switcher" path="/org/gnome/shell/extensions/eruption-profile-switcher/">
 
-    <key type="b" name="notifications">
-      <default>false</default>
-      <summary>Enable notifications</summary>
-      <description>Enable notifications</description>
+    <key type="b" name="notifications-general">
+      <default>true</default>
+      <summary>Enable general notifications</summary>
+      <description>Enable general notifications</description>
     </key>
+
+    <key type="b" name="notifications-on-profile-switch">
+      <default>false</default>
+      <summary>Enable notifications on profile switch</summary>
+      <description>Enable notifications on profile switch</description>
+    </key>
+
+    <key type="b" name="notifications-on-hotplug">
+      <default>true</default>
+      <summary>Enable notifications on device hotplug/remove</summary>
+      <description>Enable notifications on device hotplug/remove</description>
+    </key>
+
+    <key type="b" name="notifications-on-settings-change">
+      <default>true</default>
+      <summary>Enable notifications on settings change</summary>
+      <description>Enable notifications on settings change</description>
+    </key>
+
+
+    <key type="b" name="compact-mode">
+      <default>true</default>
+      <summary>Compact UI mode</summary>
+      <description></description>
+    </key>
+
+    <key type="b" name="show-battery-level">
+      <default>true</default>
+      <summary>Show a battery level indicator where applicable</summary>
+      <description>Show a battery level indicator where applicable</description>
+    </key>
+
+    <key type="b" name="show-signal-strength">
+      <default>false</default>
+      <summary>Show a signal strength indicator for each wireless device</summary>
+      <description>Show a signal strength indicator for each wireless device</description>
+    </key>
+
+
+    <key type="b" name="show-device-indicators">
+      <default>true</default>
+      <summary>Show separate device status indicator icons on the panel</summary>
+      <description>Show separate device status indicator icons on the panel</description>
+    </key>
+
 
     <key type="s" name="netfx-host-name">
       <default>"localhost"</default>
@@ -18,18 +81,6 @@
       <default>2359</default>
       <summary>NetworkFX Port Number</summary>
       <description>The NetworkFX Port Number</description>
-    </key>
-
-    <key type="b" name="show-battery-level">
-      <default>true</default>
-      <summary>Show a battery level indicator where applicable</summary>
-      <description></description>
-    </key>
-
-    <key type="b" name="show-signal-strength">
-      <default>false</default>
-      <summary>Show a signal strength indicator for each wireless device</summary>
-      <description></description>
     </key>
   </schema>
 </schemalist>

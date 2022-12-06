@@ -1,5 +1,4 @@
-/* prefs.js
- *
+/*
  * SPDX-License-Identifier: GPL-2.0-or-later
  *
  * This program is free software: you can redistribute it and/or modify
@@ -47,9 +46,16 @@ function buildPrefsWidget() {
 
 	settings = ExtensionUtils.getSettings();
 
-	builder.get_object("enable_notifications").set_active(settings.get_boolean("notifications"));
+	builder.get_object("enable_notifications_general").set_active(settings.get_boolean("notifications-general"));
+	builder.get_object("enable_notifications_on_profile_switch").set_active(settings.get_boolean("notifications-on-profile-switch"));
+	builder.get_object("enable_notifications_on_hotplug").set_active(settings.get_boolean("notifications-on-hotplug"));
+	builder.get_object("enable_notifications_on_settings_change").set_active(settings.get_boolean("notifications-on-settings-change"));
+
+	builder.get_object("compact_mode").set_active(settings.get_boolean("compact-mode"));
 	builder.get_object("show_battery_level").set_active(settings.get_boolean("show-battery-level"));
 	builder.get_object("show_signal_strength").set_active(settings.get_boolean("show-signal-strength"));
+
+	builder.get_object("show_device_indicators").set_active(settings.get_boolean("show-device-indicators"));
 
 	return builder.get_object("main_prefs");
 }
@@ -78,8 +84,24 @@ const MyBuilderScope = GObject.registerClass({
 		return this[handlerName].bind(connectObject || this);
 	}
 
-	on_enable_notifications_toggled(w) {
-		settings.set_boolean("notifications", w.get_active());
+	on_enable_notifications_general_toggled(w) {
+		settings.set_boolean("notifications-general", w.get_active());
+	}
+
+	on_enable_notifications_on_profile_switch_toggled(w) {
+		settings.set_boolean("notifications-on-profile-switch", w.get_active());
+	}
+
+	on_enable_notifications_on_hotplug_toggled(w) {
+		settings.set_boolean("notifications-on-hotplug", w.get_active());
+	}
+
+	on_enable_notifications_on_settings_change_toggled(w) {
+		settings.set_boolean("notifications-on-settings-change", w.get_active());
+	}
+
+	on_compact_mode_toggled(w) {
+		settings.set_boolean("compact-mode", w.get_active());
 	}
 
 	on_show_battery_level_toggled(w) {
@@ -88,5 +110,9 @@ const MyBuilderScope = GObject.registerClass({
 
 	on_show_signal_strength_toggled(w) {
 		settings.set_boolean("show-signal-strength", w.get_active());
+	}
+
+	on_show_device_indicators_toggled(w) {
+		settings.set_boolean("show-device-indicators", w.get_active());
 	}
 });

@@ -1,5 +1,4 @@
-/* stylesheet.css
- *
+/*
  * SPDX-License-Identifier: GPL-2.0-or-later
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,6 +16,40 @@
  *
  */
 
+.popup-menu-item-header {
+    margin-left: 0px;
+    padding-left: 0px;
+
+    font-weight: bold;
+}
+
+.popup-menu-item-current-profile {
+    padding-left: 10px;
+    font-weight: bold;
+}
+
+.popup-menu-item-profiles {
+    font-weight: bold;
+}
+
+.popup-menu-item-profile {
+    margin: 0px;
+    padding-top: 3px;
+    padding-bottom: 3px;
+}
+
+.popup-menu-item-action {
+    /* color: rgba(255, 255, 255, 0.55); */
+}
+
+.popup-menu-item-label {
+    /* color: rgba(255, 255, 255, 0.55); */
+}
+
+.popup-menu-item-status {
+    /* color: rgba(255, 255, 255, 0.55); */
+}
+
 .slot-index {
     font-weight: bold;
     color: rgba(255, 255, 255, 0.25);
@@ -26,13 +59,6 @@
     font-weight: bold;
 }
 
-.checkmark-slot {
-    height: 5px;
-    width: 15px;
-    margin-right: 2px;
-}
-
-.checkmark,
 .menu-icon {
     height: 5px;
     width: 15px;
