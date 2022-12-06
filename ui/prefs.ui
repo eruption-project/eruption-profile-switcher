@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Author: x3n0m0rph59@gmail.com
 
 -->
-<interface>
+<interface domain="eruption-profile-switcher@x3n0m0rph59.org">
   <requires lib="gtk+" version="3.24"/>
   <!-- interface-license-type gplv2 -->
   <!-- interface-name Eruption Profile Switcher -->
@@ -113,7 +113,7 @@ Author: x3n0m0rph59@gmail.com
         </child>
         <child>
           <object class="GtkCheckButton" id="show_battery_level">
-            <property name="label" translatable="yes">Show a battery level indicator in the popup menu</property>
+            <property name="label" translatable="yes">Show battery level indicator</property>
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">False</property>
@@ -122,7 +122,7 @@ Author: x3n0m0rph59@gmail.com
         </child>
         <child>
           <object class="GtkCheckButton" id="show_signal_strength">
-            <property name="label" translatable="yes">Show a signal strength indicator in the popup menu</property>
+            <property name="label" translatable="yes">Show signal strength indicator</property>
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">False</property>
@@ -135,7 +135,7 @@ Author: x3n0m0rph59@gmail.com
             <property name="can-focus">False</property>
             <property name="halign">start</property>
             <property name="margin-top">16</property>
-            <property name="label" translatable="yes">Additional Settings</property>
+            <property name="label" translatable="yes">Additional User Interface Settings</property>
             <attributes>
               <attribute name="weight" value="bold"/>
             </attributes>
@@ -143,7 +143,7 @@ Author: x3n0m0rph59@gmail.com
         </child>
         <child>
           <object class="GtkCheckButton" id="show_device_indicators">
-            <property name="label" translatable="yes">Show separate device status indicator icons on the panel</property>
+            <property name="label" translatable="yes">Show separate device status indicators on the panel</property>
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">False</property>

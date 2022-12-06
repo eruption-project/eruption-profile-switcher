@@ -1,0 +1,184 @@
+# eruption-profile-switcher
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+# Copyright (c) 2019-2023, The Eruption Development Team
+#
+# X3n0m0rph59 <x3n0m0rph59@gmail.com>, 2022.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-12-06 07:28+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: extension.js:455 extension.js:457
+msgid "Could not switch slots! Is the Eruption daemon running?"
+msgstr ""
+
+#: extension.js:491 extension.js:493
+msgid "Could not switch profiles! Is the Eruption daemon running?"
+msgstr ""
+
+#: extension.js:504 extension.js:506
+msgid "Eruption Menu"
+msgstr ""
+
+#: extension.js:716 extension.js:718
+msgid "Slots"
+msgstr ""
+
+#: extension.js:741 extension.js:743
+msgid "Active Profile"
+msgstr ""
+
+#: extension.js:751 extension.js:753
+msgid "<unknown>"
+msgstr ""
+
+#: extension.js:769 extension.js:771
+msgid "Select profile for current slot"
+msgstr ""
+
+#: extension.js:818 extension.js:820
+msgid "Run Pyroclasm UI…"
+msgstr ""
+
+#: extension.js:831 extension.js:833
+msgid "Run Eruption GUI…"
+msgstr ""
+
+#: extension.js:843 extension.js:845
+msgid "Extension preferences…"
+msgstr ""
+
+#: extension.js:858 extension.js:860
+msgid "Ambient Effect"
+msgstr ""
+
+#: extension.js:866 extension.js:868
+msgid "Audio Effects"
+msgstr ""
+
+#: extension.js:1010 extension.js:1012
+msgid "Connected Devices"
+msgstr ""
+
+#: extension.js:1127 extension.js:1129
+msgid "Plugged"
+msgstr ""
+
+#: extension.js:1129 extension.js:1131
+msgid "New device plugged and activated"
+msgstr ""
+
+#: extension.js:1134 extension.js:1136
+msgid "Removed"
+msgstr ""
+
+#: extension.js:1136 extension.js:1138
+msgid "Device removed"
+msgstr ""
+
+#: extension.js:1156 extension.js:1158
+msgid "Ambient Effect enabled"
+msgstr ""
+
+#: extension.js:1158 extension.js:1160
+msgid "Ambient Effect disabled"
+msgstr ""
+
+#: extension.js:1206 extension.js:1208
+msgid "Audio Effects enabled"
+msgstr ""
+
+#: extension.js:1208 extension.js:1210
+msgid "Audio Effects disabled"
+msgstr ""
+
+#: extension.js:1218 extension.js:1220
+msgid "Brightness: "
+msgstr ""
+
+#: prefs.ui:51
+msgid "Notification Settings"
+msgstr ""
+
+#: prefs.ui:64
+msgid "Show general notifications"
+msgstr ""
+
+#: prefs.ui:79
+msgid "Show notifications on profile switch"
+msgstr ""
+
+#: prefs.ui:94
+msgid "Show notifications on device hotplug/remove"
+msgstr ""
+
+#: prefs.ui:109
+msgid "Show notifications on settings change"
+msgstr ""
+
+#: prefs.ui:128
+msgid "User Interface Settings"
+msgstr ""
+
+#: prefs.ui:141
+msgid "Compact UI mode"
+msgstr ""
+
+#: prefs.ui:156
+msgid "Show battery level indicator"
+msgstr ""
+
+#: prefs.ui:171
+msgid "Show signal strength indicator"
+msgstr ""
+
+#: prefs.ui:190
+msgid "Additional User Interface Settings"
+msgstr ""
+
+#: prefs.ui:203
+msgid "Show separate device status indicators on the panel"
+msgstr ""
+
+#: prefs.ui:222
+msgid "Settings"
+msgstr ""
+
+#: prefs.ui:232
+msgid ""
+"Eruption Profile Switcher\n"
+"GNOME Shell Extension\n"
+"\n"
+"Copyright (c) 2019-2023\n"
+"The Eruption Development Team\n"
+"\n"
+"Authors:\n"
+"x3n0m0rph59@gmail.com"
+msgstr ""
+
+#: prefs.ui:249
+msgid "About"
+msgstr ""

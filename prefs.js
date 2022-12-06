@@ -14,9 +14,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
+ * Copyright (c) 2019-2023, The Eruption Development Team
+ *
  */
 
 "use strict";
+
+const Gettext = imports.gettext;
 
 const {
 	GObject,
@@ -27,6 +31,13 @@ const {
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
+// i18n/l10n
+const Domain = Gettext.domain(Me.metadata.uuid);
+
+const _ = Domain.gettext;
+const ngettext = Domain.ngettext;
+
+
 var settings;
 
 function init() { }
@@ -35,7 +46,7 @@ function buildPrefsWidget() {
 	let builder = new Gtk.Builder();
 
 	builder.set_scope(new MyBuilderScope());
-	// builder.set_translation_domain("gettext-domain");
+	// builder.set_translation_domain("eruption-profile-switcher@x3n0m0rph59.org");
 	builder.add_from_file(Me.dir.get_path() + "/prefs.ui");
 
 	let provider = new Gtk.CssProvider();
@@ -102,17 +113,25 @@ const MyBuilderScope = GObject.registerClass({
 
 	on_compact_mode_toggled(w) {
 		settings.set_boolean("compact-mode", w.get_active());
+
+		Me.reload();
 	}
 
 	on_show_battery_level_toggled(w) {
 		settings.set_boolean("show-battery-level", w.get_active());
+
+		Me.reload();
 	}
 
 	on_show_signal_strength_toggled(w) {
 		settings.set_boolean("show-signal-strength", w.get_active());
+
+		Me.reload();
 	}
 
 	on_show_device_indicators_toggled(w) {
 		settings.set_boolean("show-device-indicators", w.get_active());
+
+		Me.reload();
 	}
 });

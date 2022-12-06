@@ -14,9 +14,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
+ * Copyright (c) 2019-2023, The Eruption Development Team
+ *
  */
 
 "use strict";
+
+const Gettext = imports.gettext;
 
 const {
 	Gio,
@@ -42,6 +46,13 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 const DbusInterface = Me.imports.dbus_interface;
 const Devices = Me.imports.devices;
+
+// i18n/l10n
+const Domain = Gettext.domain(Me.metadata.uuid);
+
+const _ = Domain.gettext;
+const ngettext = Domain.ngettext;
+
 
 // Global constants
 const NOTIFICATION_TIMEOUT_MILLIS = 1200;
@@ -348,10 +359,9 @@ function _getDeviceHasStatus(usb_vid, usb_pid) {
 
 // Get the profile name from a given .profile filename
 function _profileFileToName(filename) {
-	let name = ["<unknown>"];
 	let result = eruptionProfile.EnumProfilesSync();
 
-	name = result[0].find(profile => {
+	let name = result[0].find(profile => {
 		if (profile[1].localeCompare(filename) === 0) {
 			return true;
 		} else {
@@ -359,7 +369,10 @@ function _profileFileToName(filename) {
 		}
 	});
 
-	return name[0];
+	if (name)
+		return name[0];
+	else
+		return ["<unknown>"];
 }
 
 // Represents an eruption .profile file
@@ -441,7 +454,7 @@ var SlotMenuItem = GObject.registerClass(
 					eruptionSlot.SwitchSlotSync(this._slot);
 				} catch (e) {
 					log("[eruption] internal error: " + e.lineNumber + ": " + e.message);
-					_showNotification(ERROR_NOTIFICATION, "Could not switch slots! Is the Eruption daemon running?");
+					_showNotification(ERROR_NOTIFICATION, _("Could not switch slots! Is the Eruption daemon running?"));
 				}
 			}
 		}
@@ -477,7 +490,7 @@ var ProfileMenuItem = GObject.registerClass(
 				eruptionProfile.SwitchProfileSync(this._profile.get_filename());
 			} catch (e) {
 				log("[eruption] internal error: " + e.lineNumber + ": " + e.message);
-				_showNotification(ERROR_NOTIFICATION, "Could not switch profiles! Is the Eruption daemon running?");
+				_showNotification(ERROR_NOTIFICATION, _("Could not switch profiles! Is the Eruption daemon running?"));
 			}
 		}
 
@@ -702,7 +715,7 @@ let EruptionMenuButton = GObject.registerClass(
 
 					if (!settings.get_boolean("compact-mode")) {
 						// add "slots" header
-						let slot_header = new PopupMenu.PopupMenuItem("Slots", {
+						let slot_header = new PopupMenu.PopupMenuItem(_("Slots"), {
 							activate: false,
 							reactive: false,
 							can_focus: false,
@@ -727,7 +740,7 @@ let EruptionMenuButton = GObject.registerClass(
 
 					if (!settings.get_boolean("compact-mode")) {
 						// add "profile" header
-						let profile_header = new PopupMenu.PopupMenuItem("Active Profile", {
+						let profile_header = new PopupMenu.PopupMenuItem(_("Active Profile"), {
 							activate: false,
 							reactive: false,
 							can_focus: false,
@@ -737,7 +750,7 @@ let EruptionMenuButton = GObject.registerClass(
 					}
 
 					// add "current profile" header
-					let profile_name = "<unknown>";
+					let profile_name = _("<unknown>");
 					try {
 						profile_name = _profileFileToName(activeProfile[activeSlot]);
 					} catch (e) {
@@ -755,7 +768,7 @@ let EruptionMenuButton = GObject.registerClass(
 					}
 
 					// add sub-menu
-					this.profiles_sub = new PopupMenu.PopupSubMenuMenuItem("Select profile for current slot", {
+					this.profiles_sub = new PopupMenu.PopupSubMenuMenuItem(_("Select profile for current slot"), {
 						activate: true,
 						reactive: true,
 						can_focus: true,
@@ -765,7 +778,7 @@ let EruptionMenuButton = GObject.registerClass(
 
 					// if (!settings.get_boolean("compact-mode")) {
 					// 	// add "profiles" header
-					// 	let profiles_header = new PopupMenu.PopupMenuItem("Available Profiles", {
+					// 	let profiles_header = new PopupMenu.PopupMenuItem(_("Available Profiles"), {
 					// 		activate: false,
 					// 		reactive: false,
 					// 		can_focus: false,
@@ -804,7 +817,7 @@ let EruptionMenuButton = GObject.registerClass(
 
 					// add Pyroclasm UI menu item
 					if (isPyroclasmUiAvailable()) {
-						this.pyroclasmItem = new CustomPopupMenuItem("Run Pyroclasm UI…", (_item) => {
+						this.pyroclasmItem = new CustomPopupMenuItem(_("Run Pyroclasm UI…"), (_item) => {
 							runPyroclasmUi();
 						}, {
 							activate: true,
@@ -817,7 +830,7 @@ let EruptionMenuButton = GObject.registerClass(
 
 					// add Eruption GUI menu item
 					if (isEruptionGuiAvailable()) {
-						this.guiItem = new CustomPopupMenuItem("Run Eruption GUI…", (_item) => {
+						this.guiItem = new CustomPopupMenuItem(_("Run Eruption GUI…"), (_item) => {
 							runEruptionGui();
 						}, {
 							activate: true,
@@ -829,7 +842,7 @@ let EruptionMenuButton = GObject.registerClass(
 					}
 
 					// add preferences menu item
-					const prefs_item = new CustomPopupMenuItem("Extension preferences…", (_item) => {
+					const prefs_item = new CustomPopupMenuItem(_("Extension preferences…"), (_item) => {
 						ExtensionUtils.openPrefs();
 					}, {
 						activate: true,
@@ -844,7 +857,7 @@ let EruptionMenuButton = GObject.registerClass(
 					this.menu.addMenuItem(separator);
 
 					// add controls for the global configuration options of eruption
-					let enableAmbientFxItem = new PopupMenu.PopupSwitchMenuItem("Ambient Effect", false);
+					let enableAmbientFxItem = new PopupMenu.PopupSwitchMenuItem(_("Ambient Effect"), false);
 					this._enableAmbientFxItem = enableAmbientFxItem;
 					enableAmbientFxItem.connect("activate", event => {
 						enableAmbientFx = !enableAmbientFx;
@@ -852,7 +865,7 @@ let EruptionMenuButton = GObject.registerClass(
 					});
 					this.menu.addMenuItem(enableAmbientFxItem);
 
-					let enableSfxItem = new PopupMenu.PopupSwitchMenuItem("Audio Effects", false);
+					let enableSfxItem = new PopupMenu.PopupSwitchMenuItem(_("Audio Effects"), false);
 					this._enableSfxItem = enableSfxItem;
 					enableSfxItem.connect("activate", event => {
 						enableSfx = !enableSfx;
@@ -996,7 +1009,7 @@ let EruptionMenuButton = GObject.registerClass(
 						if (!settings.get_boolean("compact-mode")) {
 
 							// add "devices" header
-							let devices_header = new PopupMenu.PopupMenuItem("Connected Devices", {
+							let devices_header = new PopupMenu.PopupMenuItem(_("Connected Devices"), {
 								activate: false,
 								reactive: false,
 								can_focus: false,
@@ -1080,7 +1093,7 @@ let EruptionMenuButton = GObject.registerClass(
 		// D-Bus signal, emitted when the daemon registered modification or
 		// creation of new profile files
 		_profilesChanged(_proxy, sender, [object]) {
-			//_showNotification(PROFILE_SWITCH_NOTIFICATION, "Eruption profiles updated");
+			// _showNotification(PROFILE_SWITCH_NOTIFICATION, _("Eruption profiles updated"));
 			eruptionMenuButton.populateMenu();
 		}
 
@@ -1113,16 +1126,16 @@ let EruptionMenuButton = GObject.registerClass(
 					if (!failed) {
 						if (usb_vid !== 0 && usb_pid !== 0) {
 							const device_name = _getDeviceName(usb_vid, usb_pid);
-							_showNotification(HOTPLUG_NOTIFICATION, `Plugged ${device_name}`);
+							_showNotification(HOTPLUG_NOTIFICATION, _("Plugged") + ` ${device_name}`);
 						} else {
-							_showNotification(HOTPLUG_NOTIFICATION, "New device plugged and activated");
+							_showNotification(HOTPLUG_NOTIFICATION, _("New device plugged and activated"));
 						}
 					} else {
 						if (usb_vid !== 0 && usb_pid !== 0) {
 							const device_name = _getDeviceName(usb_vid, usb_pid);
-							_showNotification(HOTPLUG_NOTIFICATION, `Removed ${device_name}`);
+							_showNotification(HOTPLUG_NOTIFICATION, _("Removed") + ` ${device_name}`);
 						} else {
-							_showNotification(HOTPLUG_NOTIFICATION, "Device removed");
+							_showNotification(HOTPLUG_NOTIFICATION, _("Device removed"));
 						}
 					}
 
@@ -1142,9 +1155,9 @@ let EruptionMenuButton = GObject.registerClass(
 					this._enableAmbientFxItem.setToggleState(enableAmbientFx);
 
 					if (!suppress_notification && enableAmbientFx) {
-						_showNotification(SETTINGS_NOTIFICATION, "Ambient Effect enabled");
+						_showNotification(SETTINGS_NOTIFICATION, _("Ambient Effect enabled"));
 					} else {
-						_showNotification(SETTINGS_NOTIFICATION, "Ambient Effect disabled");
+						_showNotification(SETTINGS_NOTIFICATION, _("Ambient Effect disabled"));
 					}
 				}
 			} catch (e) {
@@ -1192,9 +1205,9 @@ let EruptionMenuButton = GObject.registerClass(
 					this._enableSfxItem.setToggleState(enableSfx);
 
 					if (!suppress_notification && enableSfx) {
-						_showNotification(SETTINGS_NOTIFICATION, "Audio Effects enabled");
+						_showNotification(SETTINGS_NOTIFICATION, _("Audio Effects enabled"));
 					} else {
-						_showNotification(SETTINGS_NOTIFICATION, "Audio Effects disabled");
+						_showNotification(SETTINGS_NOTIFICATION, _("Audio Effects disabled"));
 					}
 				} else if (changed_attr_name === "Brightness" && this._brightnessSlider != null) {
 					brightness = proxy.Brightness;
@@ -1204,7 +1217,7 @@ let EruptionMenuButton = GObject.registerClass(
 					this._brightnessSlider.value = brightness / 100;
 
 					if (!suppress_notification) {
-						_showNotification(SETTINGS_NOTIFICATION, "Brightness: " + brightness.toFixed(0) + "%");
+						_showNotification(SETTINGS_NOTIFICATION, _("Brightness: ") + brightness.toFixed(0) + "%");
 					}
 				}
 			} catch (e) {
@@ -1336,7 +1349,6 @@ let IndicatorMenuButton = GObject.registerClass(
 				this._device = device;
 
 			let icon_name;
-			let icon, label;
 
 			switch (this._type) {
 				case BATTERY_INDICATOR:
@@ -1410,7 +1422,7 @@ function _placeIndicators() {
 
 function _updateIndicators() {
 	if (indicatorIcons.length <= 0) {
-		// _removeIndicators();
+		_removeIndicators();
 		_placeIndicators();
 	} else {
 		// log(`[eruption] updating ${indicatorIcons.length} indicators...`);
@@ -1495,7 +1507,16 @@ class ProfileSwitcherExtension {
 	}
 }
 
+function reload() {
+	eruptionMenuButton.populateMenu();
+
+	_removeIndicators();
+	_placeIndicators();
+}
+
 function init() {
+	ExtensionUtils.initTranslations(Me.metadata.uuid);
+
 	instance = new ProfileSwitcherExtension();
 	return instance;
 }

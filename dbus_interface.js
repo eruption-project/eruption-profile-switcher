@@ -14,9 +14,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
+ * Copyright (c) 2019-2023, The Eruption Development Team
+ *
  */
 
 "use strict";
+
+// const Gettext = imports.gettext;
 
 // The following D-Bus Ifaces are auto generated with the command
 // `dbus-send --system --dest=org.eruption --type=method_call --print-reply /org/eruption/<path> \
