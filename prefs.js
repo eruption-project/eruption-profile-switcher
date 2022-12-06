@@ -37,7 +37,6 @@ const Domain = Gettext.domain(Me.metadata.uuid);
 const _ = Domain.gettext;
 const ngettext = Domain.ngettext;
 
-
 var settings;
 
 function init() { }
@@ -67,6 +66,7 @@ function buildPrefsWidget() {
 	builder.get_object("show_signal_strength").set_active(settings.get_boolean("show-signal-strength"));
 
 	builder.get_object("show_device_indicators").set_active(settings.get_boolean("show-device-indicators"));
+	builder.get_object("show_device_indicators_percentages").set_active(settings.get_boolean("show-device-indicators-percentages"));
 
 	return builder.get_object("main_prefs");
 }
@@ -113,25 +113,21 @@ const MyBuilderScope = GObject.registerClass({
 
 	on_compact_mode_toggled(w) {
 		settings.set_boolean("compact-mode", w.get_active());
-
-		Me.reload();
 	}
 
 	on_show_battery_level_toggled(w) {
 		settings.set_boolean("show-battery-level", w.get_active());
-
-		Me.reload();
 	}
 
 	on_show_signal_strength_toggled(w) {
 		settings.set_boolean("show-signal-strength", w.get_active());
-
-		Me.reload();
 	}
 
 	on_show_device_indicators_toggled(w) {
 		settings.set_boolean("show-device-indicators", w.get_active());
+	}
 
-		Me.reload();
+	on_show_device_indicators_percentages_toggled(w) {
+		settings.set_boolean("show-device-indicators-percentages", w.get_active());
 	}
 });

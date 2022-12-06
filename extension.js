@@ -53,7 +53,6 @@ const Domain = Gettext.domain(Me.metadata.uuid);
 const _ = Domain.gettext;
 const ngettext = Domain.ngettext;
 
-
 // Global constants
 const NOTIFICATION_TIMEOUT_MILLIS = 1200;
 const NOTIFICATION_ANIMATION_MILLIS = 500;
@@ -72,7 +71,7 @@ var eruptionSlot, eruptionProfile, eruptionConfig,
 var connected = false;
 var previous_state = null;
 var instance = null,
-	eruptionMenuButton, panelBox;
+	eruptionMenuButton, deviceStatusIndicatorBox;
 
 // Global state
 var activeSlot,
@@ -86,15 +85,13 @@ var activeSlot,
 	fade_out_source, process_poll_source,
 	brightness_slider_source;
 
-var indicatorIcons = [];
+var statusIndicatorIcons = [];
 
 var settings;
 
-
-// Global support variables for _showNotification()
+// Global support variables for showNotification()
 var notificationText = null;
 var pending_timeout = null;
-
 
 // Notification types
 const GENERAL_NOTIFICATION = 0;
@@ -103,10 +100,9 @@ const PROFILE_SWITCH_NOTIFICATION = 2;
 const HOTPLUG_NOTIFICATION = 3;
 const SETTINGS_NOTIFICATION = 4;
 
-
 // Show centered notification on the current monitor
-function _showNotification(type, msg) {
-	if (_notificationsEnabled(type)) {
+function showNotification(type, msg) {
+	if (areNotificationsEnabled(type)) {
 		if (pending_timeout !== null) {
 			Mainloop.source_remove(pending_timeout)
 			pending_timeout = null;
@@ -152,8 +148,8 @@ function _showNotification(type, msg) {
 }
 
 // Programmatically dismiss the notification overlay
-function _fadeOutNotification() {
-	if (_notificationsEnabled()) {
+function fadeOutNotification() {
+	if (areNotificationsEnabled()) {
 		fade_out_source = Mainloop.timeout_add(NOTIFICATION_TIMEOUT_MILLIS, () => {
 			Mainloop.source_remove(fade_out_source);
 			fade_out_source = null;
@@ -173,7 +169,7 @@ function _fadeOutNotification() {
 }
 
 // Returns whether notifications should be displayed
-function _notificationsEnabled(type) {
+function areNotificationsEnabled(type) {
 	let result = false;
 
 	try {
@@ -201,14 +197,14 @@ function _notificationsEnabled(type) {
 		}
 	} catch (e) {
 		log("[eruption] internal error: " + e.lineNumber + ": " + e.message);
-		// _showNotification(ERROR_NOTIFICATION, e.message);
+		// showNotification(ERROR_NOTIFICATION, e.message);
 	}
 
 	return result;
 }
 
-function _batteryLevelIcon(battery_level) {
-	var icon_name = "battery-missing-symbolic";
+function getBatteryLevelIcon(battery_level) {
+	let icon_name = "battery-missing-symbolic";
 
 	if (battery_level !== undefined) {
 		if (battery_level >= 100) {
@@ -239,8 +235,8 @@ function _batteryLevelIcon(battery_level) {
 	return icon_name;
 }
 
-function _signalStrengthIcon(signal_strength) {
-	var icon_name = "network-cellular-signal-none-symbolic";
+function getSignalStrengthIcon(signal_strength) {
+	let icon_name = "network-cellular-signal-none-symbolic";
 
 	if (signal_strength >= 100) {
 		icon_name = "network-cellular-signal-excellent-symbolic";
@@ -321,7 +317,7 @@ function runPyroclasmUi() {
 		let _result = Util.spawn([`${cmdline}`]);
 	} catch (e) {
 		log("[eruption] internal error: " + e.lineNumber + ": " + e.message);
-		_showNotification(ERROR_NOTIFICATION, e.message);
+		showNotification(ERROR_NOTIFICATION, e.message);
 	}
 }
 
@@ -333,13 +329,13 @@ function runEruptionGui() {
 		let _result = Util.spawn([`${cmdline}`]);
 	} catch (e) {
 		log("[eruption] internal error: " + e.lineNumber + ": " + e.message);
-		_showNotification(ERROR_NOTIFICATION, e.message);
+		showNotification(ERROR_NOTIFICATION, e.message);
 	}
 }
 
 // Find the name of a supported device from the SUPPORTED_DEVICES table, using USB IDs
-function _getDeviceName(usb_vid, usb_pid) {
-	const device = Devices.SUPPORTED_DEVICES.find((e) => e.usb_vid == usb_vid && e.usb_pid == usb_pid);
+function getDeviceNameFromUSBIDs(usb_vid, usb_pid) {
+	let device = Devices.SUPPORTED_DEVICES.find((e) => e.usb_vid == usb_vid && e.usb_pid == usb_pid);
 	if (device != undefined) {
 		return `${device.make} ${device.model}`;
 	} else {
@@ -348,8 +344,8 @@ function _getDeviceName(usb_vid, usb_pid) {
 }
 
 // Find if the given device supports status reporting
-function _getDeviceHasStatus(usb_vid, usb_pid) {
-	const device = Devices.SUPPORTED_DEVICES.find((e) => e.usb_vid == usb_vid && e.usb_pid == usb_pid);
+function deviceSupportsStatusReporting(usb_vid, usb_pid) {
+	let device = Devices.SUPPORTED_DEVICES.find((e) => e.usb_vid == usb_vid && e.usb_pid == usb_pid);
 	if (device != undefined) {
 		return device.has_status;
 	} else {
@@ -383,15 +379,15 @@ class Profile {
 		this._data = data;
 	}
 
-	get_name() {
+	getName() {
 		return this._name;
 	}
 
-	get_filename() {
+	getFileName() {
 		return this._filename;
 	}
 
-	get_data() {
+	getData() {
 		return this._data;
 	}
 }
@@ -454,13 +450,13 @@ var SlotMenuItem = GObject.registerClass(
 					eruptionSlot.SwitchSlotSync(this._slot);
 				} catch (e) {
 					log("[eruption] internal error: " + e.lineNumber + ": " + e.message);
-					_showNotification(ERROR_NOTIFICATION, _("Could not switch slots! Is the Eruption daemon running?"));
+					showNotification(ERROR_NOTIFICATION, _("Could not switch slots! Is the Eruption daemon running?"));
 				}
 			}
 		}
 
 		setToggleState(checked) {
-			this.setOrnament(checked ? PopupMenu.Ornament.CHECK : PopupMenu.Ornament.NONE);
+			this.setOrnament(checked ? PopupMenu.Ornament.DOT : PopupMenu.Ornament.NONE);
 		}
 	}
 );
@@ -472,7 +468,7 @@ var ProfileMenuItem = GObject.registerClass(
 			super._init(params);
 
 			this.label = new St.Label({
-				text: profile.get_name()
+				text: profile.getName()
 			});
 
 			this._profile = profile;
@@ -487,10 +483,10 @@ var ProfileMenuItem = GObject.registerClass(
 			eruptionMenuButton.uncheckAllProfileCheckmarks();
 
 			try {
-				eruptionProfile.SwitchProfileSync(this._profile.get_filename());
+				eruptionProfile.SwitchProfileSync(this._profile.getFileName());
 			} catch (e) {
 				log("[eruption] internal error: " + e.lineNumber + ": " + e.message);
-				_showNotification(ERROR_NOTIFICATION, _("Could not switch profiles! Is the Eruption daemon running?"));
+				showNotification(ERROR_NOTIFICATION, _("Could not switch profiles! Is the Eruption daemon running?"));
 			}
 		}
 
@@ -500,11 +496,51 @@ var ProfileMenuItem = GObject.registerClass(
 	}
 );
 
-let EruptionMenuButton = GObject.registerClass(
+var EruptionMenuButton = GObject.registerClass(
 	class ProfilesMenuButton extends PanelMenu.Button {
 		_init() {
 			super._init(0.0, _("Eruption Menu"));
 
+			try {
+				// setup proxies and connect to DBus interfaces
+				this._setupDBusProxyForEruptionSlot();
+				this._setupDBusProxyForEruptionProfile();
+				this._setupDBusProxyForEruptionConfig();
+				this._setupDBusProxyForEruptionStatus();
+				this._setupDBusProxyForEruptionDevice();
+
+				this._setupDBusProxyForFxProxyEffects();
+
+			} catch (e) {
+				log("[eruption] internal error: " + e.lineNumber + ": " + e.message);
+				showNotification(ERROR_NOTIFICATION, e.message);
+			}
+
+			let hbox = new St.BoxLayout({
+				style_class: "panel-status-menu-box"
+			});
+
+			this.icon = new St.Icon({
+				icon_name: connected ? "keyboard-brightness" : "gtk-no",
+				style_class: "status-icon-notify system-status-icon"
+			});
+
+			let indicator_hbox = new St.BoxLayout({
+				style_class: "panel-indicator-box"
+			});
+
+			deviceStatusIndicatorBox = indicator_hbox;
+
+			hbox.add_actor(this.icon);
+			hbox.add_actor(PopupMenu.arrowIcon(St.Side.BOTTOM));
+			hbox.add_actor(indicator_hbox);
+			this.add_actor(hbox);
+
+			this._statusMenuItems = [];
+			this.populateMenu();
+		}
+
+		_setupDBusProxyForEruptionSlot() {
 			try {
 				const EruptionSlotProxy = Gio.DBusProxy.makeProxyWrapper(
 					DbusInterface.eruptionSlotIface
@@ -529,7 +565,14 @@ let EruptionMenuButton = GObject.registerClass(
 					"ActiveSlotChanged",
 					this._activeSlotChanged.bind(this)
 				);
+			} catch (e) {
+				log("[eruption] internal error: " + e.lineNumber + ": " + e.message);
+				showNotification(ERROR_NOTIFICATION, e.message);
+			}
+		}
 
+		_setupDBusProxyForEruptionProfile() {
+			try {
 				const EruptionProfileProxy = Gio.DBusProxy.makeProxyWrapper(
 					DbusInterface.eruptionProfileIface
 				);
@@ -558,10 +601,18 @@ let EruptionMenuButton = GObject.registerClass(
 					"ProfilesChanged",
 					this._profilesChanged.bind(this)
 				);
+			} catch (e) {
+				log("[eruption] internal error: " + e.lineNumber + ": " + e.message);
+				showNotification(ERROR_NOTIFICATION, e.message);
+			}
+		}
 
+		_setupDBusProxyForEruptionConfig() {
+			try {
 				const EruptionConfigProxy = Gio.DBusProxy.makeProxyWrapper(
 					DbusInterface.eruptionConfigIface
 				);
+
 				eruptionConfig = new EruptionConfigProxy(
 					Gio.DBus.system,
 					"org.eruption",
@@ -581,7 +632,14 @@ let EruptionMenuButton = GObject.registerClass(
 				// 	"BrightnessChanged",
 				// 	this._brightnessChanged.bind(this)
 				// );
+			} catch (e) {
+				log("[eruption] internal error: " + e.lineNumber + ": " + e.message);
+				showNotification(ERROR_NOTIFICATION, e.message);
+			}
+		}
 
+		_setupDBusProxyForEruptionStatus() {
+			try {
 				const EruptionStatusProxy = Gio.DBusProxy.makeProxyWrapper(
 					DbusInterface.eruptionStatusIface
 				);
@@ -605,10 +663,18 @@ let EruptionMenuButton = GObject.registerClass(
 					"StatusChanged",
 					this._statusChanged.bind(this)
 				);
+			} catch (e) {
+				log("[eruption] internal error: " + e.lineNumber + ": " + e.message);
+				showNotification(ERROR_NOTIFICATION, e.message);
+			}
+		}
 
+		_setupDBusProxyForEruptionDevice() {
+			try {
 				const EruptionDeviceProxy = Gio.DBusProxy.makeProxyWrapper(
 					DbusInterface.eruptionDeviceIface
 				);
+
 				eruptionDevice = new EruptionDeviceProxy(
 					Gio.DBus.system,
 					"org.eruption",
@@ -635,9 +701,11 @@ let EruptionMenuButton = GObject.registerClass(
 				);
 			} catch (e) {
 				log("[eruption] internal error: " + e.lineNumber + ": " + e.message);
-				_showNotification(ERROR_NOTIFICATION, e.message);
+				showNotification(ERROR_NOTIFICATION, e.message);
 			}
+		}
 
+		_setupDBusProxyForFxProxyEffects() {
 			try {
 				const EruptionFxProxy = Gio.DBusProxy.makeProxyWrapper(
 					DbusInterface.eruptionFxProxyEffectsIface
@@ -657,34 +725,10 @@ let EruptionMenuButton = GObject.registerClass(
 						this._sync_fx_proxy(proxy, null, null, true);
 					}
 				);
-
 			} catch (e) {
 				log("[eruption] internal error: " + e.lineNumber + ": " + e.message);
-				_showNotification(ERROR_NOTIFICATION, e.message);
+				showNotification(ERROR_NOTIFICATION, e.message);
 			}
-
-			let hbox = new St.BoxLayout({
-				style_class: "panel-status-menu-box"
-			});
-
-			this.icon = new St.Icon({
-				icon_name: connected ? "keyboard-brightness" : "gtk-no",
-				style_class: "status-icon-notify system-status-icon"
-			});
-
-			let indicator_hbox = new St.BoxLayout({
-				style_class: "panel-indicator-box"
-			});
-
-			panelBox = indicator_hbox;
-
-			hbox.add_actor(this.icon);
-			hbox.add_actor(PopupMenu.arrowIcon(St.Side.BOTTOM));
-			hbox.add_actor(indicator_hbox);
-			this.add_actor(hbox);
-
-			this._statusMenuItems = [];
-			this.populateMenu();
 		}
 
 		_onDestroy() {
@@ -823,7 +867,7 @@ let EruptionMenuButton = GObject.registerClass(
 							activate: true,
 							reactive: true,
 							can_focus: true,
-							style_class: "popup-menu-item-action"
+							// style_class: "popup-menu-item-action"
 						});
 						this.menu.addMenuItem(this.pyroclasmItem);
 					}
@@ -836,7 +880,7 @@ let EruptionMenuButton = GObject.registerClass(
 							activate: true,
 							reactive: true,
 							can_focus: true,
-							style_class: "popup-menu-item-action"
+							// style_class: "popup-menu-item-action"
 						});
 						this.menu.addMenuItem(this.guiItem);
 					}
@@ -848,7 +892,7 @@ let EruptionMenuButton = GObject.registerClass(
 						activate: true,
 						reactive: true,
 						can_focus: true,
-						style_class: "popup-menu-item-action"
+						// style_class: "popup-menu-item-action"
 					});
 					this.menu.addMenuItem(prefs_item);
 
@@ -916,10 +960,10 @@ let EruptionMenuButton = GObject.registerClass(
 			this._statusMenuItems.forEach((item) => item.destroy());
 			this._statusMenuItems = [];
 
-			var separator_added = false;
+			let separator_added = false;
 
 			deviceStatus.map((device, index) => {
-				var indicators = 0;
+				let indicators = 0;
 
 				const item = new PopupMenu.PopupBaseMenuItem({
 					activate: false,
@@ -930,7 +974,7 @@ let EruptionMenuButton = GObject.registerClass(
 
 				const label = new St.Label({
 					style_class: "popup-menu-item-label",
-					text: `${_getDeviceName(device.usb_vid, device.usb_pid)}`,
+					text: `${getDeviceNameFromUSBIDs(device.usb_vid, device.usb_pid)}`,
 				});
 
 				// signal strength indicator
@@ -938,37 +982,26 @@ let EruptionMenuButton = GObject.registerClass(
 					const signal_strength = device.status["signal-strength-percent"];
 
 					if (signal_strength !== undefined) {
-						let icon_name = _signalStrengthIcon(signal_strength);
+						let icon_name = getSignalStrengthIcon(signal_strength);
 
 						const icon = new St.Icon({
 							icon_name: icon_name,
 							style_class: "menu-icon"
 						});
 
-						const level_label = new St.Label({
-							text: `${signal_strength}%`,
-							style_class: "menu-item-label",
+						let value = `${signal_strength}`;
+						let filler = Math.max(0, Math.abs(2 - value.length));
+						let text = " ".repeat(filler) + value + "%";
+
+						let level_label = new St.Label({
+							text: text,
+							style_class: "menu-item-status-label",
 						});
 
 						item.add_actor(icon);
 						item.add_actor(level_label);
 
 						indicators += 1;
-					} else {
-						// place spacer
-
-						// const icon = new St.Icon({
-						// 	icon_name: "none-symbolic",
-						// 	style_class: "menu-icon"
-						// });
-
-						// const level_label = new St.Label({
-						// 	style: "menu-item-label",
-						// 	text: `------`,
-						// });
-
-						// item.add_actor(icon);
-						// item.add_actor(level_label);
 					}
 				}
 
@@ -977,16 +1010,20 @@ let EruptionMenuButton = GObject.registerClass(
 					const battery_level = device.status["battery-level-percent"];
 
 					if (battery_level !== undefined) {
-						const icon_name = _batteryLevelIcon(device.status["battery-level-percent"]);
+						const icon_name = getBatteryLevelIcon(device.status["battery-level-percent"]);
 
 						const icon = new St.Icon({
 							icon_name: icon_name,
 							style_class: "menu-icon"
 						});
 
-						const level_label = new St.Label({
+						let value = `${battery_level}`;
+						let filler = Math.max(0, Math.abs(2 - value.length));
+						let text = " ".repeat(filler) + value + "%";
+
+						let level_label = new St.Label({
+							text: text,
 							style_class: "menu-item-label",
-							text: `${battery_level}%`,
 						});
 
 						item.add_actor(icon);
@@ -1007,7 +1044,6 @@ let EruptionMenuButton = GObject.registerClass(
 						this._statusMenuItems.push(separator);
 
 						if (!settings.get_boolean("compact-mode")) {
-
 							// add "devices" header
 							let devices_header = new PopupMenu.PopupMenuItem(_("Connected Devices"), {
 								activate: false,
@@ -1015,6 +1051,7 @@ let EruptionMenuButton = GObject.registerClass(
 								can_focus: false,
 								style_class: "popup-menu-item-header"
 							});
+
 							this.menu.addMenuItem(devices_header);
 							this._statusMenuItems.push(devices_header);
 						}
@@ -1081,9 +1118,9 @@ let EruptionMenuButton = GObject.registerClass(
 		// D-Bus signal, emitted when the daemon changed its active profile
 		_activeProfileChanged(proxy, sender, [object]) {
 			activeProfile[activeSlot] = object;
-			let new_profile = _profileFileToName(object);
 
-			_showNotification(PROFILE_SWITCH_NOTIFICATION, new_profile);
+			let new_profile = _profileFileToName(object);
+			showNotification(PROFILE_SWITCH_NOTIFICATION, new_profile);
 
 			eruptionMenuButton.populateMenu({
 				active_item: object
@@ -1093,7 +1130,7 @@ let EruptionMenuButton = GObject.registerClass(
 		// D-Bus signal, emitted when the daemon registered modification or
 		// creation of new profile files
 		_profilesChanged(_proxy, sender, [object]) {
-			// _showNotification(PROFILE_SWITCH_NOTIFICATION, _("Eruption profiles updated"));
+			// showNotification(PROFILE_SWITCH_NOTIFICATION, _("Eruption profiles updated"));
 			eruptionMenuButton.populateMenu();
 		}
 
@@ -1104,11 +1141,7 @@ let EruptionMenuButton = GObject.registerClass(
 					deviceStatus = JSON.parse(object);
 
 					this.populateMenu({ status_only: true });
-
-					// _removeIndicators();
-					// _placeIndicators();
-
-					_updateIndicators();
+					updateDeviceStatusIndicators();
 				}
 			} catch (e) {
 				log("[eruption] internal error: " + e.lineNumber + ": " + e.message);
@@ -1119,28 +1152,28 @@ let EruptionMenuButton = GObject.registerClass(
 		_deviceHotplug(_proxy, sender, [object]) {
 			try {
 				if (object !== null) {
-					var [usb_vid, usb_pid, failed] = object;
+					let [usb_vid, usb_pid, failed] = object;
 
 					log(`[eruption] device Hotplugged: ${usb_vid}:${usb_pid}; failed: ${failed}`);
 
 					if (!failed) {
 						if (usb_vid !== 0 && usb_pid !== 0) {
-							const device_name = _getDeviceName(usb_vid, usb_pid);
-							_showNotification(HOTPLUG_NOTIFICATION, _("Plugged") + ` ${device_name}`);
+							const device_name = getDeviceNameFromUSBIDs(usb_vid, usb_pid);
+							showNotification(HOTPLUG_NOTIFICATION, _("Plugged") + ` ${device_name}`);
 						} else {
-							_showNotification(HOTPLUG_NOTIFICATION, _("New device plugged and activated"));
+							showNotification(HOTPLUG_NOTIFICATION, _("New device plugged and activated"));
 						}
 					} else {
 						if (usb_vid !== 0 && usb_pid !== 0) {
-							const device_name = _getDeviceName(usb_vid, usb_pid);
-							_showNotification(HOTPLUG_NOTIFICATION, _("Removed") + ` ${device_name}`);
+							const device_name = getDeviceNameFromUSBIDs(usb_vid, usb_pid);
+							showNotification(HOTPLUG_NOTIFICATION, _("Removed") + ` ${device_name}`);
 						} else {
-							_showNotification(HOTPLUG_NOTIFICATION, _("Device removed"));
+							showNotification(HOTPLUG_NOTIFICATION, _("Device removed"));
 						}
 					}
 
-					_removeIndicators();
-					_placeIndicators();
+					removeDeviceStatusIndicators();
+					showDeviceStatusIndicators();
 				}
 			} catch (e) {
 				log("[eruption] internal error: " + e.lineNumber + ": " + e.message);
@@ -1155,9 +1188,9 @@ let EruptionMenuButton = GObject.registerClass(
 					this._enableAmbientFxItem.setToggleState(enableAmbientFx);
 
 					if (!suppress_notification && enableAmbientFx) {
-						_showNotification(SETTINGS_NOTIFICATION, _("Ambient Effect enabled"));
+						showNotification(SETTINGS_NOTIFICATION, _("Ambient Effect enabled"));
 					} else {
-						_showNotification(SETTINGS_NOTIFICATION, _("Ambient Effect disabled"));
+						showNotification(SETTINGS_NOTIFICATION, _("Ambient Effect disabled"));
 					}
 				}
 			} catch (e) {
@@ -1205,9 +1238,9 @@ let EruptionMenuButton = GObject.registerClass(
 					this._enableSfxItem.setToggleState(enableSfx);
 
 					if (!suppress_notification && enableSfx) {
-						_showNotification(SETTINGS_NOTIFICATION, _("Audio Effects enabled"));
+						showNotification(SETTINGS_NOTIFICATION, _("Audio Effects enabled"));
 					} else {
-						_showNotification(SETTINGS_NOTIFICATION, _("Audio Effects disabled"));
+						showNotification(SETTINGS_NOTIFICATION, _("Audio Effects disabled"));
 					}
 				} else if (changed_attr_name === "Brightness" && this._brightnessSlider != null) {
 					brightness = proxy.Brightness;
@@ -1217,7 +1250,7 @@ let EruptionMenuButton = GObject.registerClass(
 					this._brightnessSlider.value = brightness / 100;
 
 					if (!suppress_notification) {
-						_showNotification(SETTINGS_NOTIFICATION, _("Brightness: ") + brightness.toFixed(0) + "%");
+						showNotification(SETTINGS_NOTIFICATION, _("Brightness: ") + brightness.toFixed(0) + "%");
 					}
 				}
 			} catch (e) {
@@ -1238,10 +1271,10 @@ let EruptionMenuButton = GObject.registerClass(
 					connected = this._eruption_running;
 					eruptionMenuButton.updateIcon();
 
-					_removeIndicators();
-					_placeIndicators();
+					removeDeviceStatusIndicators();
+					showDeviceStatusIndicators();
 
-					// _updateIndicators();
+					// updateDeviceStatusIndicators();
 
 					previous_state = this._eruption_running;
 				} else {
@@ -1258,10 +1291,10 @@ let EruptionMenuButton = GObject.registerClass(
 
 				this.populateMenu({ status_only: true });
 
-				// _removeIndicators();
-				// _placeIndicators();
+				// removeDeviceStatusIndicators();
+				// showDeviceStatusIndicators();
 
-				_updateIndicators();
+				updateDeviceStatusIndicators();
 			} catch (e) {
 				log("[eruption] internal error: " + e.lineNumber + ": " + e.message);
 			}
@@ -1278,9 +1311,9 @@ let IndicatorMenuButton = GObject.registerClass(
 			this._device = device;
 			this._type = type;
 
-			// log(`[eruption] placing indicator for: ${this._getDeviceName()}`);
+			// log(`[eruption] placing indicator for: ${this.getDeviceName()}`);
 
-			super._init(0.0, _(`${_getDeviceName(device.usb_vid, device.usb_pid)}`));
+			super._init(0.0, _(`${getDeviceNameFromUSBIDs(device.usb_vid, device.usb_pid)}`));
 
 			let icon_name;
 			let icon, label;
@@ -1288,46 +1321,62 @@ let IndicatorMenuButton = GObject.registerClass(
 			switch (this._type) {
 				case BATTERY_INDICATOR:
 					// battery level indicator
-					var battery_level = this._device.status["battery-level-percent"];
-					icon_name = _batteryLevelIcon(this._device.status["battery-level-percent"]);
+					let battery_level = this._device.status["battery-level-percent"];
+					icon_name = getBatteryLevelIcon(this._device.status["battery-level-percent"]);
 
 					icon = new St.Icon({
 						icon_name: icon_name,
 						style_class: "system-status-icon"
 					});
 
-					label = new St.Label({
-						text: `${battery_level}%`,
-						style_class: "menu-item-label"
-					});
-
 					this.icon = icon;
-					// this.label = label;
 
-					panelBox.add_actor(icon);
-					// panelBox.add_actor(label);
+					deviceStatusIndicatorBox.add_actor(icon);
+
+					if (settings.get_boolean("show-device-indicators-percentages")) {
+						var value = `${battery_level}`;
+						var filler = Math.max(0, Math.abs(2 - value.length));
+						var text = " ".repeat(filler) + value + "%";
+
+						label = new St.Label({
+							text: text,
+							style_class: "indicator-item-status-label"
+						});
+
+						this.label = label;
+
+						deviceStatusIndicatorBox.add_actor(label);
+					}
 					break;
 
 				case SIGNAL_STRENGTH_INDICATOR:
 					// signal strength indicator
-					var signal_strength = this._device.status["signal-strength-percent"];
-					icon_name = _signalStrengthIcon(signal_strength);
+					let signal_strength = this._device.status["signal-strength-percent"];
+					icon_name = getSignalStrengthIcon(signal_strength);
 
 					icon = new St.Icon({
 						icon_name: icon_name,
 						style_class: "menu-icon"
 					});
 
-					label = new St.Label({
-						text: `${signal_strength}%`,
-						style_class: "menu-item-label",
-					});
-
 					this.icon = icon;
-					// this.label = label;
 
-					panelBox.add_actor(icon);
-					// panelBox.add_actor(label);
+					deviceStatusIndicatorBox.add_actor(icon);
+
+					if (settings.get_boolean("show-device-indicators-percentages")) {
+						var value = `${signal_strength}`;
+						var filler = Math.max(0, Math.abs(2 - value.length));
+						var text = " ".repeat(filler) + value + "%";
+
+						label = new St.Label({
+							text: text,
+							style_class: "indicator-item-status-label",
+						});
+
+						this.label = label;
+
+						deviceStatusIndicatorBox.add_actor(label);
+					}
 					break;
 
 				default:
@@ -1337,10 +1386,10 @@ let IndicatorMenuButton = GObject.registerClass(
 		}
 
 		update() {
-			// log(`[eruption] updating indicator for: ${this._getDeviceName()}`);
+			// log(`[eruption] updating indicator for: ${this.getDeviceName()}`);
 
 			// update device status
-			var device = deviceStatus.find((e, _index, _object) => {
+			let device = deviceStatus.find((e, _index, _object) => {
 				if (e.usb_vid === this._device.usb_vid && e.usb_pid === this._device.usb_pid)
 					return true;
 			});
@@ -1354,19 +1403,33 @@ let IndicatorMenuButton = GObject.registerClass(
 				case BATTERY_INDICATOR:
 					// battery level indicator
 					const battery_level = this._device.status["battery-level-percent"];
-					icon_name = _batteryLevelIcon(this._device.status["battery-level-percent"]);
+					icon_name = getBatteryLevelIcon(this._device.status["battery-level-percent"]);
 
 					this.icon.icon_name = icon_name;
-					// this.label.text = `${battery_level}%`;
+
+					if (settings.get_boolean("show-device-indicators-percentages")) {
+						var value = `${battery_level}`;
+						var filler = Math.max(0, Math.abs(2 - value.length));
+						var text = " ".repeat(filler) + value + "%";
+
+						this.label.text = text;
+					}
 					break;
 
 				case SIGNAL_STRENGTH_INDICATOR:
 					// signal strength indicator
 					const signal_strength = this._device.status["signal-strength-percent"];
-					icon_name = _signalStrengthIcon(signal_strength);
+					icon_name = getSignalStrengthIcon(signal_strength);
 
 					this.icon.icon_name = icon_name;
-					// this.label.text = `${signal_strength}%`;
+
+					if (settings.get_boolean("show-device-indicators-percentages")) {
+						var value = `${signal_strength}`;
+						var filler = Math.max(0, Math.abs(2 - value.length));
+						var text = " ".repeat(filler) + value + "%";
+
+						this.label.text = text;
+					}
 					break;
 
 				default:
@@ -1376,10 +1439,13 @@ let IndicatorMenuButton = GObject.registerClass(
 		}
 
 		destroy() {
-			log(`[eruption] destroying indicator for: ${this._getDeviceName()}`);
+			log(`[eruption] destroying indicator for: ${this.getDeviceName()}`);
 
-			if (this.icon) panelBox.remove_actor(this.icon);
-			if (this.label) panelBox.remove_actor(this.label);
+			if (this.icon)
+				deviceStatusIndicatorBox.remove_actor(this.icon);
+
+			if (this.label)
+				deviceStatusIndicatorBox.remove_actor(this.label);
 
 			this.icon = null;
 			this.label = null;
@@ -1387,74 +1453,75 @@ let IndicatorMenuButton = GObject.registerClass(
 			super.destroy();
 		}
 
-		_getDeviceName() {
-			return `${_getDeviceName(this._device.usb_vid, this._device.usb_pid)}`;
+		getDeviceName() {
+			return `${getDeviceNameFromUSBIDs(this._device.usb_vid, this._device.usb_pid)}`;
 		}
 	}
 );
 
-function _placeIndicators() {
+function showDeviceStatusIndicators() {
 	if (settings.get_boolean("show-device-indicators")) {
 		deviceStatus.map((device, index) => {
 			try {
-				if (_getDeviceHasStatus(device.usb_vid, device.usb_pid,)) {
+				if (deviceSupportsStatusReporting(device.usb_vid, device.usb_pid)) {
 					// signal strength indicator
 					if (settings.get_boolean("show-signal-strength")) {
 						const indicatorMenuButton = new IndicatorMenuButton(SIGNAL_STRENGTH_INDICATOR, device);
-						panelBox.add_actor(indicatorMenuButton);
-						indicatorIcons.push(indicatorMenuButton);
+						deviceStatusIndicatorBox.add_actor(indicatorMenuButton);
+						statusIndicatorIcons.push(indicatorMenuButton);
 					}
 
 					// battery level indicator
 					if (settings.get_boolean("show-battery-level")) {
 						const indicatorMenuButton = new IndicatorMenuButton(BATTERY_INDICATOR, device);
-						panelBox.add_actor(indicatorMenuButton);
-						indicatorIcons.push(indicatorMenuButton);
+						deviceStatusIndicatorBox.add_actor(indicatorMenuButton);
+						statusIndicatorIcons.push(indicatorMenuButton);
 					}
 				}
 			} catch (e) {
 				log("[eruption] internal error: " + e.lineNumber + ": " + e.message);
-				_showNotification(ERROR_NOTIFICATION, e.message);
+				showNotification(ERROR_NOTIFICATION, e.message);
 			}
 		});
 	}
 }
 
-function _updateIndicators() {
-	if (indicatorIcons.length <= 0) {
-		_removeIndicators();
-		_placeIndicators();
+function updateDeviceStatusIndicators() {
+	if (statusIndicatorIcons.length <= 0) {
+		removeDeviceStatusIndicators();
+		showDeviceStatusIndicators();
 	} else {
-		// log(`[eruption] updating ${indicatorIcons.length} indicators...`);
+		// log(`[eruption] updating ${statusIndicatorIcons.length} indicators...`);
 
-		for (var i = 0; i < indicatorIcons.length; i++) {
+		for (let i = 0; i < statusIndicatorIcons.length; i++) {
 			try {
-				indicatorIcons[i].update();
+				statusIndicatorIcons[i].update();
 			} catch (e) {
 				log("[eruption] internal error: " + e.lineNumber + ": " + e.message);
-				_showNotification(ERROR_NOTIFICATION, e.message);
+				showNotification(ERROR_NOTIFICATION, e.message);
 			}
 		}
 	}
 }
 
-function _removeIndicators() {
-	// log(`[eruption] removing ${indicatorIcons.length} indicators...`);
+function removeDeviceStatusIndicators() {
+	// log(`[eruption] removing ${statusIndicatorIcons.length} indicators...`);
 
-	for (var i = 0; i < indicatorIcons.length; i++) {
+	for (let i = 0; i < statusIndicatorIcons.length; i++) {
 		try {
-			indicatorIcons[i].destroy();
+			statusIndicatorIcons[i].destroy();
 		} catch (e) {
 			log("[eruption] internal error: " + e.lineNumber + ": " + e.message);
-			_showNotification(ERROR_NOTIFICATION, e.message);
+			showNotification(ERROR_NOTIFICATION, e.message);
 		}
 	}
 
-	panelBox.get_children().forEach((e) => {
-		panelBox.remove_actor(e);
+	deviceStatusIndicatorBox.get_children().forEach((e) => {
+		deviceStatusIndicatorBox.remove_actor(e);
 		e.destroy();
 	});
-	indicatorIcons = [];
+
+	statusIndicatorIcons = [];
 }
 
 class ProfileSwitcherExtension {
@@ -1464,12 +1531,13 @@ class ProfileSwitcherExtension {
 		log(`[eruption] enabling ${Me.metadata.name}`);
 
 		settings = ExtensionUtils.getSettings();
+		settings.connect("changed", this._update.bind(this));
 
 		eruptionMenuButton = new EruptionMenuButton();
 		Main.panel.addToStatusArea("eruption-menu", eruptionMenuButton, 1, "right");
 
-		_removeIndicators();
-		_placeIndicators();
+		removeDeviceStatusIndicators();
+		showDeviceStatusIndicators();
 	}
 
 	disable() {
@@ -1493,25 +1561,27 @@ class ProfileSwitcherExtension {
 		Mainloop.source_remove(process_poll_source);
 		process_poll_source = null;
 
-		_removeIndicators();
+		removeDeviceStatusIndicators();
 
 		Main.panel.menuManager.removeMenu(eruptionMenuButton.menu);
 		eruptionMenuButton.destroy();
 	}
 
 	reload() {
-		log(`[eruption] Reloading ${Me.metadata.name}`);
+		log(`[eruption] reloading ${Me.metadata.name}`);
 
 		this.disable();
 		this.enable();
 	}
-}
 
-function reload() {
-	eruptionMenuButton.populateMenu();
+	_update() {
+		log(`[eruption] updating settings ${Me.metadata.name}`);
 
-	_removeIndicators();
-	_placeIndicators();
+		eruptionMenuButton.populateMenu();
+
+		removeDeviceStatusIndicators();
+		showDeviceStatusIndicators();
+	}
 }
 
 function init() {

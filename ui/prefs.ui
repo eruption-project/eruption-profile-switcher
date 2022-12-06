@@ -150,6 +150,15 @@ Author: x3n0m0rph59@gmail.com
             <signal name="toggled" handler="on_show_device_indicators_toggled" swapped="no"/>
           </object>
         </child>
+        <child>
+          <object class="GtkCheckButton" id="show_device_indicators_percentages">
+            <property name="label" translatable="yes">Show numeric percentages next to the device status indicators</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <signal name="toggled" handler="on_show_device_indicators_percentages_toggled" swapped="no"/>
+          </object>
+        </child>
       </object>
     </child>
     <child type="tab">
