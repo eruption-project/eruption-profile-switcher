@@ -39,13 +39,15 @@ const ngettext = Domain.ngettext;
 
 var settings;
 
-function init() { }
+function init() {
+	ExtensionUtils.initTranslations(Me.metadata.uuid);
+}
 
 function buildPrefsWidget() {
 	let builder = new Gtk.Builder();
 
 	builder.set_scope(new MyBuilderScope());
-	// builder.set_translation_domain("eruption-profile-switcher@x3n0m0rph59.org");
+	builder.set_translation_domain("eruption-profile-switcher@x3n0m0rph59.org");
 	builder.add_from_file(Me.dir.get_path() + "/prefs.ui");
 
 	let provider = new Gtk.CssProvider();

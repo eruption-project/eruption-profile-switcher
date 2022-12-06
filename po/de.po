@@ -21,7 +21,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: 31\n"
-"Report-Msgid-Bugs-To: \n"
+"Report-Msgid-Bugs-To: X3n0m0rph59 <x3n0m0rph59@gmail.com>\n"
 "POT-Creation-Date: 2022-12-06 07:03+0100\n"
 "PO-Revision-Date: 2022-12-06 08:04+0100\n"
 "Last-Translator: X3n0m0rph59 <x3n0m0rph59@gmail.com>\n"
@@ -33,90 +33,166 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 "X-Generator: Gtranslator 42.0\n"
 
-#: extension.js:455
+#: extension.js:453
 msgid "Could not switch slots! Is the Eruption daemon running?"
-msgstr ""
+msgstr "Konnte den aktiven Slot nicht wechseln! Läuft der Eruption Daemon?"
 
-#: extension.js:491
+#: extension.js:489
 msgid "Could not switch profiles! Is the Eruption daemon running?"
-msgstr ""
+msgstr "Konnte das aktive Profil nicht wechseln! Läuft der Eruption Daemon?"
 
-#: extension.js:504
+#: extension.js:502
 msgid "Eruption Menu"
-msgstr ""
+msgstr "Eruption Menü"
 
-#: extension.js:716
+#: extension.js:762
 msgid "Slots"
 msgstr "Slots"
 
-#: extension.js:741
+#: extension.js:787
 msgid "Active Profile"
 msgstr "Aktives Profil"
 
-#: extension.js:751
+#: extension.js:797
 msgid "<unknown>"
-msgstr ""
+msgstr "<unbekannt>"
 
-#: extension.js:769
+#: extension.js:815
 msgid "Select profile for current slot"
-msgstr ""
+msgstr "Aktuelles Profil auswählen"
 
-#: extension.js:818
+#: extension.js:864
 msgid "Run Pyroclasm UI…"
-msgstr ""
+msgstr "Pyroclasm UI…"
 
-#: extension.js:831
+#: extension.js:877
 msgid "Run Eruption GUI…"
-msgstr ""
+msgstr "Eruption GUI…"
 
-#: extension.js:843
+#: extension.js:889
 msgid "Extension preferences…"
-msgstr ""
+msgstr "Einstellungen…"
 
-#: extension.js:858
+#: extension.js:904
 msgid "Ambient Effect"
-msgstr ""
+msgstr "Umgebungseffekt aktivieren"
 
-#: extension.js:866
+#: extension.js:912
 msgid "Audio Effects"
-msgstr ""
+msgstr "Audioeffekte aktivieren"
 
-#: extension.js:1010
+#: extension.js:1048
 msgid "Connected Devices"
-msgstr ""
+msgstr "Verbundene Geräte"
 
-#: extension.js:1127
+#: extension.js:1162
 msgid "Plugged"
-msgstr ""
+msgstr "Verbunden"
 
-#: extension.js:1129
+#: extension.js:1164
 msgid "New device plugged and activated"
-msgstr ""
+msgstr "Neues Gerät verbunden und aktiviert"
 
-#: extension.js:1134
+#: extension.js:1169
 msgid "Removed"
-msgstr ""
+msgstr "Entfernt"
 
-#: extension.js:1136
+#: extension.js:1171
 msgid "Device removed"
-msgstr ""
+msgstr "Gerät entfernt"
 
-#: extension.js:1156
+#: extension.js:1191
 msgid "Ambient Effect enabled"
-msgstr ""
+msgstr "Umgebungseffekt aktiviert"
 
-#: extension.js:1158
+#: extension.js:1193
 msgid "Ambient Effect disabled"
-msgstr ""
+msgstr "Umgebungseffekt deaktiviert"
 
-#: extension.js:1206
+#: extension.js:1241
 msgid "Audio Effects enabled"
-msgstr ""
+msgstr "Audioeffekte aktiviert"
 
-#: extension.js:1208
+#: extension.js:1243
 msgid "Audio Effects disabled"
-msgstr ""
+msgstr "Audioeffekte deaktiviert"
 
-#: extension.js:1218
+#: extension.js:1253
 msgid "Brightness: "
+msgstr "Helligkeit: "
+
+#: ui/prefs.ui:51
+msgid "Notification Settings"
+msgstr "Benachrichtigungseinstellungen"
+
+#: ui/prefs.ui:59
+msgid "Show general notifications"
+msgstr "Sonstige Benachrichtigungen anzeigen"
+
+#: ui/prefs.ui:68
+msgid "Show notifications on profile switch"
+msgstr "Benachrichtigungen bei Profilwechsel anzeigen"
+
+#: ui/prefs.ui:77
+msgid "Show notifications on device hotplug/remove"
+msgstr "Benachrichtigungen bei Hotplug Ereignissen anzeigen"
+
+#: ui/prefs.ui:86
+msgid "Show notifications on settings change"
+msgstr "Benachrichtigungen bei Änderungen der Einstellungen anzeigen"
+
+#: ui/prefs.ui:99
+msgid "User Interface Settings"
+msgstr "Einstellungen der Benutzer Schnittstelle"
+
+#: ui/prefs.ui:107
+msgid "Compact UI mode"
+msgstr "Kompakter Modus"
+
+#: ui/prefs.ui:116
+msgid "Show battery level indicator"
+msgstr "Aktiviere Batteriestandsanzeige"
+
+#: ui/prefs.ui:125
+msgid "Show signal strength indicator"
+msgstr "Aktiviere Signalstärkeanzeige"
+
+#: ui/prefs.ui:138
+msgid "Additional User Interface Settings"
+msgstr "Weitere Einstellungen der Benutzer Schnittstelle"
+
+#: ui/prefs.ui:146
+msgid "Show separate device status indicators on the panel"
+msgstr "Zeige separate Geräte-Statusindikatoren im Panel"
+
+#: ui/prefs.ui:155
+msgid "Show numeric percentages next to the device status indicators"
+msgstr "Zeige Prozentwerte neben den Geräte-Statusindikatoren im Panel"
+
+#: ui/prefs.ui:168
+msgid "Settings"
+msgstr "Einstellungen"
+
+#: ui/prefs.ui:175
+msgid ""
+"Eruption Profile Switcher\n"
+"GNOME Shell Extension\n"
+"\n"
+"Copyright (c) 2019-2023\n"
+"The Eruption Development Team\n"
+"\n"
+"Authors:\n"
+"x3n0m0rph59@gmail.com"
 msgstr ""
+"Eruption Profile Switcher\n"
+"GNOME Shell Erweiterung\n"
+"\n"
+"Copyright (c) 2019-2023\n"
+"Das Eruption Entwicklerteam\n"
+"\n"
+"Autoren:\n"
+"x3n0m0rph59@gmail.com"
+
+#: ui/prefs.ui:189
+msgid "About"
+msgstr "Info"

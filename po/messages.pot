@@ -20,9 +20,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-12-06 07:28+0100\n"
+"Project-Id-Version: 31\n"
+"Report-Msgid-Bugs-To: X3n0m0rph59 <x3n0m0rph59@gmail.com>\n"
+"POT-Creation-Date: 2022-12-06 20:29+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -31,143 +31,147 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: extension.js:455 extension.js:457
+#: extension.js:453
 msgid "Could not switch slots! Is the Eruption daemon running?"
 msgstr ""
 
-#: extension.js:491 extension.js:493
+#: extension.js:489
 msgid "Could not switch profiles! Is the Eruption daemon running?"
 msgstr ""
 
-#: extension.js:504 extension.js:506
+#: extension.js:502
 msgid "Eruption Menu"
 msgstr ""
 
-#: extension.js:716 extension.js:718
+#: extension.js:762
 msgid "Slots"
 msgstr ""
 
-#: extension.js:741 extension.js:743
+#: extension.js:787
 msgid "Active Profile"
 msgstr ""
 
-#: extension.js:751 extension.js:753
+#: extension.js:797
 msgid "<unknown>"
 msgstr ""
 
-#: extension.js:769 extension.js:771
+#: extension.js:815
 msgid "Select profile for current slot"
 msgstr ""
 
-#: extension.js:818 extension.js:820
+#: extension.js:864
 msgid "Run Pyroclasm UI…"
 msgstr ""
 
-#: extension.js:831 extension.js:833
+#: extension.js:877
 msgid "Run Eruption GUI…"
 msgstr ""
 
-#: extension.js:843 extension.js:845
+#: extension.js:889
 msgid "Extension preferences…"
 msgstr ""
 
-#: extension.js:858 extension.js:860
+#: extension.js:904
 msgid "Ambient Effect"
 msgstr ""
 
-#: extension.js:866 extension.js:868
+#: extension.js:912
 msgid "Audio Effects"
 msgstr ""
 
-#: extension.js:1010 extension.js:1012
+#: extension.js:1048
 msgid "Connected Devices"
 msgstr ""
 
-#: extension.js:1127 extension.js:1129
+#: extension.js:1162
 msgid "Plugged"
 msgstr ""
 
-#: extension.js:1129 extension.js:1131
+#: extension.js:1164
 msgid "New device plugged and activated"
 msgstr ""
 
-#: extension.js:1134 extension.js:1136
+#: extension.js:1169
 msgid "Removed"
 msgstr ""
 
-#: extension.js:1136 extension.js:1138
+#: extension.js:1171
 msgid "Device removed"
 msgstr ""
 
-#: extension.js:1156 extension.js:1158
+#: extension.js:1191
 msgid "Ambient Effect enabled"
 msgstr ""
 
-#: extension.js:1158 extension.js:1160
+#: extension.js:1193
 msgid "Ambient Effect disabled"
 msgstr ""
 
-#: extension.js:1206 extension.js:1208
+#: extension.js:1241
 msgid "Audio Effects enabled"
 msgstr ""
 
-#: extension.js:1208 extension.js:1210
+#: extension.js:1243
 msgid "Audio Effects disabled"
 msgstr ""
 
-#: extension.js:1218 extension.js:1220
+#: extension.js:1253
 msgid "Brightness: "
 msgstr ""
 
-#: prefs.ui:51
+#: ui/prefs.ui:51
 msgid "Notification Settings"
 msgstr ""
 
-#: prefs.ui:64
+#: ui/prefs.ui:59
 msgid "Show general notifications"
 msgstr ""
 
-#: prefs.ui:79
+#: ui/prefs.ui:68
 msgid "Show notifications on profile switch"
 msgstr ""
 
-#: prefs.ui:94
+#: ui/prefs.ui:77
 msgid "Show notifications on device hotplug/remove"
 msgstr ""
 
-#: prefs.ui:109
+#: ui/prefs.ui:86
 msgid "Show notifications on settings change"
 msgstr ""
 
-#: prefs.ui:128
+#: ui/prefs.ui:99
 msgid "User Interface Settings"
 msgstr ""
 
-#: prefs.ui:141
+#: ui/prefs.ui:107
 msgid "Compact UI mode"
 msgstr ""
 
-#: prefs.ui:156
+#: ui/prefs.ui:116
 msgid "Show battery level indicator"
 msgstr ""
 
-#: prefs.ui:171
+#: ui/prefs.ui:125
 msgid "Show signal strength indicator"
 msgstr ""
 
-#: prefs.ui:190
+#: ui/prefs.ui:138
 msgid "Additional User Interface Settings"
 msgstr ""
 
-#: prefs.ui:203
+#: ui/prefs.ui:146
 msgid "Show separate device status indicators on the panel"
 msgstr ""
 
-#: prefs.ui:222
+#: ui/prefs.ui:155
+msgid "Show numeric percentages next to the device status indicators"
+msgstr ""
+
+#: ui/prefs.ui:168
 msgid "Settings"
 msgstr ""
 
-#: prefs.ui:232
+#: ui/prefs.ui:175
 msgid ""
 "Eruption Profile Switcher\n"
 "GNOME Shell Extension\n"
@@ -179,6 +183,6 @@ msgid ""
 "x3n0m0rph59@gmail.com"
 msgstr ""
 
-#: prefs.ui:249
+#: ui/prefs.ui:189
 msgid "About"
 msgstr ""
