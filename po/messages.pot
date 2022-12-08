@@ -20,9 +20,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: 31\n"
+"Project-Id-Version: 32\n"
 "Report-Msgid-Bugs-To: X3n0m0rph59 <x3n0m0rph59@gmail.com>\n"
-"POT-Creation-Date: 2022-12-06 20:29+0100\n"
+"POT-Creation-Date: 2022-12-08 10:26+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -32,146 +32,146 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #: extension.js:453
-msgid "Could not switch slots! Is the Eruption daemon running?"
+msgid "Could not switch slots! Is Eruption running?"
 msgstr ""
 
 #: extension.js:489
-msgid "Could not switch profiles! Is the Eruption daemon running?"
+msgid "Could not switch profiles! Is Eruption running?"
 msgstr ""
 
 #: extension.js:502
 msgid "Eruption Menu"
 msgstr ""
 
-#: extension.js:762
+#: extension.js:762 extension.js:776
 msgid "Slots"
 msgstr ""
 
-#: extension.js:787
+#: extension.js:787 extension.js:802
 msgid "Active Profile"
 msgstr ""
 
-#: extension.js:797
+#: extension.js:797 extension.js:813
 msgid "<unknown>"
 msgstr ""
 
-#: extension.js:815
+#: extension.js:815 extension.js:832
 msgid "Select profile for current slot"
 msgstr ""
 
-#: extension.js:864
+#: extension.js:864 extension.js:883
 msgid "Run Pyroclasm UI…"
 msgstr ""
 
-#: extension.js:877
+#: extension.js:877 extension.js:897
 msgid "Run Eruption GUI…"
 msgstr ""
 
-#: extension.js:889
+#: extension.js:889 extension.js:910
 msgid "Extension preferences…"
 msgstr ""
 
-#: extension.js:904
+#: extension.js:904 extension.js:926
 msgid "Ambient Effect"
 msgstr ""
 
-#: extension.js:912
+#: extension.js:912 extension.js:935
 msgid "Audio Effects"
 msgstr ""
 
-#: extension.js:1048
+#: extension.js:1048 extension.js:1074
 msgid "Connected Devices"
 msgstr ""
 
-#: extension.js:1162
+#: extension.js:1162 extension.js:1191
 msgid "Plugged"
 msgstr ""
 
-#: extension.js:1164
+#: extension.js:1164 extension.js:1193
 msgid "New device plugged and activated"
 msgstr ""
 
-#: extension.js:1169
+#: extension.js:1169 extension.js:1198
 msgid "Removed"
 msgstr ""
 
-#: extension.js:1171
+#: extension.js:1171 extension.js:1200
 msgid "Device removed"
 msgstr ""
 
-#: extension.js:1191
+#: extension.js:1191 extension.js:1220
 msgid "Ambient Effect enabled"
 msgstr ""
 
-#: extension.js:1193
+#: extension.js:1193 extension.js:1222
 msgid "Ambient Effect disabled"
 msgstr ""
 
-#: extension.js:1241
+#: extension.js:1241 extension.js:1270
 msgid "Audio Effects enabled"
 msgstr ""
 
-#: extension.js:1243
+#: extension.js:1243 extension.js:1272
 msgid "Audio Effects disabled"
 msgstr ""
 
-#: extension.js:1253
+#: extension.js:1253 extension.js:1282
 msgid "Brightness: "
 msgstr ""
 
-#: ui/prefs.ui:51
+#: ui/prefs.ui:51 ui/prefs.ui:52
 msgid "Notification Settings"
 msgstr ""
 
-#: ui/prefs.ui:59
+#: ui/prefs.ui:59 ui/prefs.ui:60
 msgid "Show general notifications"
 msgstr ""
 
-#: ui/prefs.ui:68
+#: ui/prefs.ui:68 ui/prefs.ui:69
 msgid "Show notifications on profile switch"
 msgstr ""
 
-#: ui/prefs.ui:77
+#: ui/prefs.ui:77 ui/prefs.ui:78
 msgid "Show notifications on device hotplug/remove"
 msgstr ""
 
-#: ui/prefs.ui:86
+#: ui/prefs.ui:86 ui/prefs.ui:87
 msgid "Show notifications on settings change"
 msgstr ""
 
-#: ui/prefs.ui:99
+#: ui/prefs.ui:99 ui/prefs.ui:101
 msgid "User Interface Settings"
 msgstr ""
 
-#: ui/prefs.ui:107
+#: ui/prefs.ui:107 ui/prefs.ui:109
 msgid "Compact UI mode"
 msgstr ""
 
-#: ui/prefs.ui:116
+#: ui/prefs.ui:116 ui/prefs.ui:118
 msgid "Show battery level indicator"
 msgstr ""
 
-#: ui/prefs.ui:125
+#: ui/prefs.ui:125 ui/prefs.ui:127
 msgid "Show signal strength indicator"
 msgstr ""
 
-#: ui/prefs.ui:138
+#: ui/prefs.ui:138 ui/prefs.ui:141
 msgid "Additional User Interface Settings"
 msgstr ""
 
-#: ui/prefs.ui:146
+#: ui/prefs.ui:146 ui/prefs.ui:149
 msgid "Show separate device status indicators on the panel"
 msgstr ""
 
-#: ui/prefs.ui:155
+#: ui/prefs.ui:155 ui/prefs.ui:158
 msgid "Show numeric percentages next to the device status indicators"
 msgstr ""
 
-#: ui/prefs.ui:168
+#: ui/prefs.ui:168 ui/prefs.ui:171
 msgid "Settings"
 msgstr ""
 
-#: ui/prefs.ui:175
+#: ui/prefs.ui:175 ui/prefs.ui:178
 msgid ""
 "Eruption Profile Switcher\n"
 "GNOME Shell Extension\n"
@@ -183,6 +183,10 @@ msgid ""
 "x3n0m0rph59@gmail.com"
 msgstr ""
 
-#: ui/prefs.ui:189
+#: ui/prefs.ui:189 ui/prefs.ui:192
 msgid "About"
+msgstr ""
+
+#: extension.js:748
+msgid "Not connected to Eruption"
 msgstr ""

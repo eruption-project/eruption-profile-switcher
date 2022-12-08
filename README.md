@@ -10,7 +10,7 @@ It even supports showing signal strength and battery levels where supported/appl
 
 Please note that the current `master` branch of this extension requires `Eruption` version >= `0.3.0`.
 
-| Extension version | supported version of Eruption daemon |
+| Extension version | supported version of the Eruption daemon |
 | ----------------- | ------------------------------------ |
 | since `v30` | requires Eruption >= `0.3.0` |
 | since `v23` | requires Eruption >= `0.1.23` |

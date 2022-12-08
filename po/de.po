@@ -1,7 +1,5 @@
 # eruption-profile-switcher
 #
-# Copyright (c) 2019-2023, The Eruption Development Team
-#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 2 of the License, or
@@ -16,14 +14,15 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # Copyright (c) 2019-2023, The Eruption Development Team
+#
 # X3n0m0rph59 <x3n0m0rph59@gmail.com>, 2022.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: 31\n"
+"Project-Id-Version: 32\n"
 "Report-Msgid-Bugs-To: X3n0m0rph59 <x3n0m0rph59@gmail.com>\n"
-"POT-Creation-Date: 2022-12-06 07:03+0100\n"
-"PO-Revision-Date: 2022-12-06 08:04+0100\n"
+"POT-Creation-Date: 2022-12-08 10:26+0100\n"
+"PO-Revision-Date: 2022-12-08 21:24+0100\n"
 "Last-Translator: X3n0m0rph59 <x3n0m0rph59@gmail.com>\n"
 "Language-Team: German - Germany <x3n0m0rph59@gmail.com>\n"
 "Language: de\n"
@@ -34,12 +33,12 @@ msgstr ""
 "X-Generator: Gtranslator 42.0\n"
 
 #: extension.js:453
-msgid "Could not switch slots! Is the Eruption daemon running?"
-msgstr "Konnte den aktiven Slot nicht wechseln! Läuft der Eruption Daemon?"
+msgid "Could not switch slots! Is Eruption running?"
+msgstr "Konnte nicht den aktiven Slot umschalten! Läuft Eruption?"
 
 #: extension.js:489
-msgid "Could not switch profiles! Is the Eruption daemon running?"
-msgstr "Konnte das aktive Profil nicht wechseln! Läuft der Eruption Daemon?"
+msgid "Could not switch profiles! Is Eruption running?"
+msgstr "Konnte nicht das aktive Profil wechseln! Läuft Eruption?"
 
 #: extension.js:502
 msgid "Eruption Menu"
@@ -59,7 +58,7 @@ msgstr "<unbekannt>"
 
 #: extension.js:815
 msgid "Select profile for current slot"
-msgstr "Aktuelles Profil auswählen"
+msgstr "Aktives Profil auswählen"
 
 #: extension.js:864
 msgid "Run Pyroclasm UI…"
@@ -127,7 +126,7 @@ msgstr "Benachrichtigungseinstellungen"
 
 #: ui/prefs.ui:59
 msgid "Show general notifications"
-msgstr "Sonstige Benachrichtigungen anzeigen"
+msgstr "Allgemeine Benachrichtigungen anzeigen"
 
 #: ui/prefs.ui:68
 msgid "Show notifications on profile switch"
@@ -196,3 +195,7 @@ msgstr ""
 #: ui/prefs.ui:189
 msgid "About"
 msgstr "Info"
+
+#: extension.js:748
+msgid "Not connected to Eruption"
+msgstr "Nicht mit Eruption verbunden"

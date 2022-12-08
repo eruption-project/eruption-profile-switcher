@@ -450,7 +450,7 @@ var SlotMenuItem = GObject.registerClass(
 					eruptionSlot.SwitchSlotSync(this._slot);
 				} catch (e) {
 					log("[eruption] internal error: " + e.lineNumber + ": " + e.message);
-					showNotification(ERROR_NOTIFICATION, _("Could not switch slots! Is the Eruption daemon running?"));
+					showNotification(ERROR_NOTIFICATION, _("Could not switch slots! Is Eruption running?"));
 				}
 			}
 		}
@@ -486,7 +486,7 @@ var ProfileMenuItem = GObject.registerClass(
 				eruptionProfile.SwitchProfileSync(this._profile.getFileName());
 			} catch (e) {
 				log("[eruption] internal error: " + e.lineNumber + ": " + e.message);
-				showNotification(ERROR_NOTIFICATION, _("Could not switch profiles! Is the Eruption daemon running?"));
+				showNotification(ERROR_NOTIFICATION, _("Could not switch profiles! Is Eruption running?"));
 			}
 		}
 
@@ -741,215 +741,240 @@ var EruptionMenuButton = GObject.registerClass(
 
 		populateMenu(config) {
 			try {
-				// initialize to sane defaults
-				if (!config) {
-					config = {
-						active_slot: activeSlot,
-						active_item: undefined,
-						status_only: false
-					}
-				}
-
-				if (config.status_only === null || config.status_only === undefined) {
-					config.status_only = false;
-				}
-
-				if (!config.status_only) {
+				if (!connected) {
 					this.menu.removeAll();
 
-					if (!settings.get_boolean("compact-mode")) {
-						// add "slots" header
-						let slot_header = new PopupMenu.PopupMenuItem(_("Slots"), {
-							activate: false,
-							reactive: false,
-							can_focus: false,
-							style_class: "popup-menu-item-header"
-						});
-						this.menu.addMenuItem(slot_header);
+					// add "slots" header
+					let header = new PopupMenu.PopupMenuItem(_("Not connected to Eruption"), {
+						activate: false,
+						reactive: false,
+						can_focus: false,
+						style_class: "popup-menu-item-header"
+					});
+
+					this.menu.addMenuItem(header);
+				} else {
+
+					// initialize to sane defaults
+					if (!config) {
+						config = {
+							active_slot: activeSlot,
+							active_item: undefined,
+							status_only: false
+						}
 					}
 
-					// create user slots items
-					for (let i = 0; i < 4; i++) {
-						let slot = new SlotMenuItem(i)
-						if (i == activeSlot) {
-							slot.setToggleState(true);
+					if (config.status_only === null || config.status_only === undefined) {
+						config.status_only = false;
+					}
+
+					if (!config.status_only) {
+						this.menu.removeAll();
+
+						if (!settings.get_boolean("compact-mode")) {
+							// add "slots" header
+							let slot_header = new PopupMenu.PopupMenuItem(_("Slots"), {
+								activate: false,
+								reactive: false,
+								can_focus: false,
+								style_class: "popup-menu-item-header"
+							});
+
+							this.menu.addMenuItem(slot_header);
 						}
 
-						this.menu.addMenuItem(slot);
-					}
+						// create user slots items
+						for (let i = 0; i < 4; i++) {
+							let slot = new SlotMenuItem(i)
+							if (i == activeSlot) {
+								slot.setToggleState(true);
+							}
 
-					// add separator
-					let separator = new PopupMenu.PopupSeparatorMenuItem();
-					this.menu.addMenuItem(separator);
+							this.menu.addMenuItem(slot);
+						}
 
-					if (!settings.get_boolean("compact-mode")) {
-						// add "profile" header
-						let profile_header = new PopupMenu.PopupMenuItem(_("Active Profile"), {
-							activate: false,
-							reactive: false,
-							can_focus: false,
-							style_class: "popup-menu-item-header"
+						// add separator
+						let separator = new PopupMenu.PopupSeparatorMenuItem();
+						this.menu.addMenuItem(separator);
+
+						if (!settings.get_boolean("compact-mode")) {
+							// add "profile" header
+							let profile_header = new PopupMenu.PopupMenuItem(_("Active Profile"), {
+								activate: false,
+								reactive: false,
+								can_focus: false,
+								style_class: "popup-menu-item-header"
+							});
+
+							this.menu.addMenuItem(profile_header);
+						}
+
+						// add "current profile" header
+						let profile_name = _("<unknown>");
+						try {
+							profile_name = _profileFileToName(activeProfile[activeSlot]);
+						} catch (e) {
+							log("[eruption] internal error: " + e.lineNumber + ": " + e.message);
+						}
+
+						if (profile_name) {
+							let current_profile_header = new PopupMenu.PopupMenuItem(`${profile_name}`, {
+								activate: false,
+								reactive: false,
+								can_focus: false,
+								style_class: "popup-menu-item-current-profile"
+							});
+
+							this.menu.addMenuItem(current_profile_header);
+						}
+
+						// add sub-menu
+						this.profiles_sub = new PopupMenu.PopupSubMenuMenuItem(_("Select profile for current slot"), {
+							activate: true,
+							reactive: true,
+							can_focus: true,
+							style_class: "popup-menu-item-profiles"
 						});
-						this.menu.addMenuItem(profile_header);
-					}
 
-					// add "current profile" header
-					let profile_name = _("<unknown>");
-					try {
-						profile_name = _profileFileToName(activeProfile[activeSlot]);
-					} catch (e) {
-						log("[eruption] internal error: " + e.lineNumber + ": " + e.message);
-					}
+						this.menu.addMenuItem(this.profiles_sub);
 
-					if (profile_name) {
-						let current_profile_header = new PopupMenu.PopupMenuItem(`${profile_name}`, {
-							activate: false,
-							reactive: false,
-							can_focus: false,
-							style_class: "popup-menu-item-current-profile"
-						});
-						this.menu.addMenuItem(current_profile_header);
-					}
+						// if (!settings.get_boolean("compact-mode")) {
+						// 	// add "profiles" header
+						// 	let profiles_header = new PopupMenu.PopupMenuItem(_("Available Profiles"), {
+						// 		activate: false,
+						// 		reactive: false,
+						// 		can_focus: false,
+						// 		style_class: "popup-menu-item-header"
+						// 	});
+						//
+						// 	this.profiles_sub.menu.addMenuItem(profiles_header);
+						// }
 
-					// add sub-menu
-					this.profiles_sub = new PopupMenu.PopupSubMenuMenuItem(_("Select profile for current slot"), {
-						activate: true,
-						reactive: true,
-						can_focus: true,
-						style_class: "popup-menu-item-profiles"
-					});
-					this.menu.addMenuItem(this.profiles_sub);
+						try {
+							let active_profile =
+								config.active_item === undefined ? eruptionProfile.ActiveProfile : config.active_item;
 
-					// if (!settings.get_boolean("compact-mode")) {
-					// 	// add "profiles" header
-					// 	let profiles_header = new PopupMenu.PopupMenuItem(_("Available Profiles"), {
-					// 		activate: false,
-					// 		reactive: false,
-					// 		can_focus: false,
-					// 		style_class: "popup-menu-item-header"
-					// 	});
-					// 	this.profiles_sub.menu.addMenuItem(profiles_header);
-					// }
+							// add profiles radio menu items
+							let result = eruptionProfile.EnumProfilesSync();
+							result[0].forEach(profile => {
+								let item = new ProfileMenuItem(new Profile(profile[0], profile[1]), {
+									activate: true,
+									reactive: true,
+									can_focus: true,
+									style_class: "popup-menu-item-profile"
+								});
 
-					try {
-						let active_profile =
-							config.active_item === undefined ? eruptionProfile.ActiveProfile : config.active_item;
+								if (active_profile && active_profile.localeCompare(profile[1]) === 0) {
+									item.setToggleState(true);
+								}
 
-						// add profiles radio menu items
-						let result = eruptionProfile.EnumProfilesSync();
-						result[0].forEach(profile => {
-							let item = new ProfileMenuItem(new Profile(profile[0], profile[1]), {
+								this.profiles_sub.menu.addMenuItem(item);
+							});
+						} catch (e) {
+							log("[eruption] could not enumerate profiles: " + e.lineNumber + ": " + e.message);
+						}
+
+						// add separator
+						separator = new PopupMenu.PopupSeparatorMenuItem();
+						this.menu.addMenuItem(separator);
+
+						// add Pyroclasm UI menu item
+						if (isPyroclasmUiAvailable()) {
+							this.pyroclasmItem = new CustomPopupMenuItem(_("Run Pyroclasm UI…"), (_item) => {
+								runPyroclasmUi();
+							}, {
 								activate: true,
 								reactive: true,
 								can_focus: true,
-								style_class: "popup-menu-item-profile"
+								// style_class: "popup-menu-item-action"
 							});
 
-							if (active_profile && active_profile.localeCompare(profile[1]) === 0) {
-								item.setToggleState(true);
-							}
+							this.menu.addMenuItem(this.pyroclasmItem);
+						}
 
-							this.profiles_sub.menu.addMenuItem(item);
-						});
-					} catch (e) {
-						log("[eruption] could not enumerate profiles: " + e.lineNumber + ": " + e.message);
-					}
+						// add Eruption GUI menu item
+						if (isEruptionGuiAvailable()) {
+							this.guiItem = new CustomPopupMenuItem(_("Run Eruption GUI…"), (_item) => {
+								runEruptionGui();
+							}, {
+								activate: true,
+								reactive: true,
+								can_focus: true,
+								// style_class: "popup-menu-item-action"
+							});
 
-					// add separator
-					separator = new PopupMenu.PopupSeparatorMenuItem();
-					this.menu.addMenuItem(separator);
+							this.menu.addMenuItem(this.guiItem);
+						}
 
-					// add Pyroclasm UI menu item
-					if (isPyroclasmUiAvailable()) {
-						this.pyroclasmItem = new CustomPopupMenuItem(_("Run Pyroclasm UI…"), (_item) => {
-							runPyroclasmUi();
+						// add preferences menu item
+						const prefs_item = new CustomPopupMenuItem(_("Extension preferences…"), (_item) => {
+							ExtensionUtils.openPrefs();
 						}, {
 							activate: true,
 							reactive: true,
 							can_focus: true,
 							// style_class: "popup-menu-item-action"
 						});
-						this.menu.addMenuItem(this.pyroclasmItem);
-					}
 
-					// add Eruption GUI menu item
-					if (isEruptionGuiAvailable()) {
-						this.guiItem = new CustomPopupMenuItem(_("Run Eruption GUI…"), (_item) => {
-							runEruptionGui();
-						}, {
-							activate: true,
-							reactive: true,
-							can_focus: true,
-							// style_class: "popup-menu-item-action"
+						this.menu.addMenuItem(prefs_item);
+
+						// add separator
+						separator = new PopupMenu.PopupSeparatorMenuItem();
+						this.menu.addMenuItem(separator);
+
+						// add controls for the global configuration options of eruption
+						let enableAmbientFxItem = new PopupMenu.PopupSwitchMenuItem(_("Ambient Effect"), false);
+						this._enableAmbientFxItem = enableAmbientFxItem;
+						enableAmbientFxItem.connect("activate", event => {
+							enableAmbientFx = !enableAmbientFx;
+							eruptionFxProxyEffects.AmbientEffect = enableAmbientFx;
 						});
-						this.menu.addMenuItem(this.guiItem);
+
+						this.menu.addMenuItem(enableAmbientFxItem);
+
+						let enableSfxItem = new PopupMenu.PopupSwitchMenuItem(_("Audio Effects"), false);
+						this._enableSfxItem = enableSfxItem;
+						enableSfxItem.connect("activate", event => {
+							enableSfx = !enableSfx;
+							eruptionConfig.EnableSfx = enableSfx;
+						});
+
+						this.menu.addMenuItem(enableSfxItem);
+
+						// add brightness slider
+						let item = new PopupMenu.PopupBaseMenuItem();
+						let icon = new St.Icon({
+							icon_name: "keyboard-brightness",
+							style_class: "menu-icon"
+						});
+
+						let brightnessSlider = new Slider.Slider(0);
+						this._brightnessSlider = brightnessSlider;
+						brightnessSlider.value = brightness / 100;
+						brightnessSlider.connect(
+							"notify::value",
+							this._brightnessSliderChanged.bind(this)
+						);
+
+						item.add(icon);
+						item.add_actor(brightnessSlider);
+
+						item.connect("button-press-event", (actor, event) => {
+							return brightnessSlider.startDragging(event);
+						});
+
+						item.connect("key-press-event", (actor, event) => {
+							return brightnessSlider.emit("key-press-event", event);
+						});
+
+						this.menu.addMenuItem(item);
+
+						this.populateStatusMenuItems();
+
+					} else {
+						// only update the device status area of the menu
+						this.populateStatusMenuItems();
 					}
-
-					// add preferences menu item
-					const prefs_item = new CustomPopupMenuItem(_("Extension preferences…"), (_item) => {
-						ExtensionUtils.openPrefs();
-					}, {
-						activate: true,
-						reactive: true,
-						can_focus: true,
-						// style_class: "popup-menu-item-action"
-					});
-					this.menu.addMenuItem(prefs_item);
-
-					// add separator
-					separator = new PopupMenu.PopupSeparatorMenuItem();
-					this.menu.addMenuItem(separator);
-
-					// add controls for the global configuration options of eruption
-					let enableAmbientFxItem = new PopupMenu.PopupSwitchMenuItem(_("Ambient Effect"), false);
-					this._enableAmbientFxItem = enableAmbientFxItem;
-					enableAmbientFxItem.connect("activate", event => {
-						enableAmbientFx = !enableAmbientFx;
-						eruptionFxProxyEffects.AmbientEffect = enableAmbientFx;
-					});
-					this.menu.addMenuItem(enableAmbientFxItem);
-
-					let enableSfxItem = new PopupMenu.PopupSwitchMenuItem(_("Audio Effects"), false);
-					this._enableSfxItem = enableSfxItem;
-					enableSfxItem.connect("activate", event => {
-						enableSfx = !enableSfx;
-						eruptionConfig.EnableSfx = enableSfx;
-					});
-					this.menu.addMenuItem(enableSfxItem);
-
-					// add brightness slider
-					let item = new PopupMenu.PopupBaseMenuItem();
-					let icon = new St.Icon({
-						icon_name: "keyboard-brightness",
-						style_class: "menu-icon"
-					});
-
-					let brightnessSlider = new Slider.Slider(0);
-					this._brightnessSlider = brightnessSlider;
-					brightnessSlider.value = brightness / 100;
-					brightnessSlider.connect(
-						"notify::value",
-						this._brightnessSliderChanged.bind(this)
-					);
-
-					item.add(icon);
-					item.add_actor(brightnessSlider);
-
-					item.connect("button-press-event", (actor, event) => {
-						return brightnessSlider.startDragging(event);
-					});
-
-					item.connect("key-press-event", (actor, event) => {
-						return brightnessSlider.emit("key-press-event", event);
-					});
-
-					this.menu.addMenuItem(item);
-
-					this.populateStatusMenuItems();
-
-				} else {
-					// only update the device status area of the menu
-					this.populateStatusMenuItems();
 				}
 			} catch (e) {
 				log("[eruption] internal error: " + e.lineNumber + ": " + e.message);
@@ -962,107 +987,111 @@ var EruptionMenuButton = GObject.registerClass(
 
 			let separator_added = false;
 
-			deviceStatus.map((device, index) => {
-				let indicators = 0;
+			if (deviceStatus) {
+				deviceStatus.map((device, index) => {
+					let indicators = 0;
 
-				const item = new PopupMenu.PopupBaseMenuItem({
-					activate: false,
-					reactive: false,
-					can_focus: false,
-					style_class: "popup-menu-item-status"
-				});
+					const item = new PopupMenu.PopupBaseMenuItem({
+						activate: false,
+						reactive: false,
+						can_focus: false,
+						style_class: "popup-menu-item-status"
+					});
 
-				const label = new St.Label({
-					style_class: "popup-menu-item-label",
-					text: `${getDeviceNameFromUSBIDs(device.usb_vid, device.usb_pid)}`,
-				});
+					const label = new St.Label({
+						style_class: "popup-menu-item-label",
+						text: `${getDeviceNameFromUSBIDs(device.usb_vid, device.usb_pid)}`,
+					});
 
-				// signal strength indicator
-				if (settings.get_boolean("show-signal-strength")) {
-					const signal_strength = device.status["signal-strength-percent"];
+					// signal strength indicator
+					if (settings.get_boolean("show-signal-strength")) {
+						const signal_strength = device.status["signal-strength-percent"];
 
-					if (signal_strength !== undefined) {
-						let icon_name = getSignalStrengthIcon(signal_strength);
+						if (signal_strength !== undefined) {
+							let icon_name = getSignalStrengthIcon(signal_strength);
 
-						const icon = new St.Icon({
-							icon_name: icon_name,
-							style_class: "menu-icon"
-						});
-
-						let value = `${signal_strength}`;
-						let filler = Math.max(0, Math.abs(2 - value.length));
-						let text = " ".repeat(filler) + value + "%";
-
-						let level_label = new St.Label({
-							text: text,
-							style_class: "menu-item-status-label",
-						});
-
-						item.add_actor(icon);
-						item.add_actor(level_label);
-
-						indicators += 1;
-					}
-				}
-
-				// battery level indicator
-				if (settings.get_boolean("show-battery-level")) {
-					const battery_level = device.status["battery-level-percent"];
-
-					if (battery_level !== undefined) {
-						const icon_name = getBatteryLevelIcon(device.status["battery-level-percent"]);
-
-						const icon = new St.Icon({
-							icon_name: icon_name,
-							style_class: "menu-icon"
-						});
-
-						let value = `${battery_level}`;
-						let filler = Math.max(0, Math.abs(2 - value.length));
-						let text = " ".repeat(filler) + value + "%";
-
-						let level_label = new St.Label({
-							text: text,
-							style_class: "menu-item-label",
-						});
-
-						item.add_actor(icon);
-						item.add_actor(level_label);
-
-						indicators += 1;
-					}
-
-				}
-
-				if (indicators > 0) {
-					// add separator
-					if (!separator_added) {
-						separator_added = true;
-
-						const separator = new PopupMenu.PopupSeparatorMenuItem();
-						this.menu.addMenuItem(separator);
-						this._statusMenuItems.push(separator);
-
-						if (!settings.get_boolean("compact-mode")) {
-							// add "devices" header
-							let devices_header = new PopupMenu.PopupMenuItem(_("Connected Devices"), {
-								activate: false,
-								reactive: false,
-								can_focus: false,
-								style_class: "popup-menu-item-header"
+							const icon = new St.Icon({
+								icon_name: icon_name,
+								style_class: "menu-icon"
 							});
 
-							this.menu.addMenuItem(devices_header);
-							this._statusMenuItems.push(devices_header);
+							let value = `${signal_strength}`;
+							let filler = Math.max(0, Math.abs(2 - value.length));
+							let text = " ".repeat(filler) + value + "%";
+
+							let level_label = new St.Label({
+								text: text,
+								style_class: "menu-item-status-label",
+							});
+
+							item.add_actor(icon);
+							item.add_actor(level_label);
+
+							indicators += 1;
 						}
 					}
 
-					item.add_actor(label);
+					// battery level indicator
+					if (settings.get_boolean("show-battery-level")) {
+						const battery_level = device.status["battery-level-percent"];
 
-					this.menu.addMenuItem(item);
-					this._statusMenuItems.push(item);
-				}
-			});
+						if (battery_level !== undefined) {
+							const icon_name = getBatteryLevelIcon(device.status["battery-level-percent"]);
+
+							const icon = new St.Icon({
+								icon_name: icon_name,
+								style_class: "menu-icon"
+							});
+
+							let value = `${battery_level}`;
+							let filler = Math.max(0, Math.abs(2 - value.length));
+							let text = " ".repeat(filler) + value + "%";
+
+							let level_label = new St.Label({
+								text: text,
+								style_class: "menu-item-label",
+							});
+
+							item.add_actor(icon);
+							item.add_actor(level_label);
+
+							indicators += 1;
+						}
+
+					}
+
+					if (indicators > 0) {
+						// add separator
+						if (!separator_added) {
+							separator_added = true;
+
+							const separator = new PopupMenu.PopupSeparatorMenuItem();
+							this.menu.addMenuItem(separator);
+							this._statusMenuItems.push(separator);
+
+							if (!settings.get_boolean("compact-mode")) {
+								// add "devices" header
+								let devices_header = new PopupMenu.PopupMenuItem(_("Connected Devices"), {
+									activate: false,
+									reactive: false,
+									can_focus: false,
+									style_class: "popup-menu-item-header"
+								});
+
+								this.menu.addMenuItem(devices_header);
+								this._statusMenuItems.push(devices_header);
+							}
+						}
+
+						item.add_actor(label);
+
+						this.menu.addMenuItem(item);
+						this._statusMenuItems.push(item);
+					}
+				});
+			} else {
+				log("[eruption] warning: Device status not available");
+			}
 		}
 
 		uncheckAllSlotCheckmarks() {
@@ -1154,7 +1183,7 @@ var EruptionMenuButton = GObject.registerClass(
 				if (object !== null) {
 					let [usb_vid, usb_pid, failed] = object;
 
-					log(`[eruption] device Hotplugged: ${usb_vid}:${usb_pid}; failed: ${failed}`);
+					log(`[eruption] new device hot-plugged: ${usb_vid}:${usb_pid}; failed: ${failed}`);
 
 					if (!failed) {
 						if (usb_vid !== 0 && usb_pid !== 0) {
@@ -1263,18 +1292,19 @@ var EruptionMenuButton = GObject.registerClass(
 				this._eruption_running = proxy.Running;
 
 				if (previous_state != this._eruption_running) {
+					connected = this._eruption_running;
+
 					if (this._eruption_running) {
 						// we (re-)gained the connection to the Eruption daemon
-						log("[eruption] connected to Eruption daemon");
+						log("[eruption] connected to Eruption");
+
+						eruptionMenuButton.populateMenu();
+
+						removeDeviceStatusIndicators();
+						showDeviceStatusIndicators();
 					}
 
-					connected = this._eruption_running;
 					eruptionMenuButton.updateIcon();
-
-					removeDeviceStatusIndicators();
-					showDeviceStatusIndicators();
-
-					// updateDeviceStatusIndicators();
 
 					previous_state = this._eruption_running;
 				} else {
@@ -1289,12 +1319,16 @@ var EruptionMenuButton = GObject.registerClass(
 			try {
 				deviceStatus = JSON.parse(proxy.DeviceStatus);
 
-				this.populateMenu({ status_only: true });
+				if (connected) {
+					this.populateMenu({ status_only: true });
 
-				// removeDeviceStatusIndicators();
-				// showDeviceStatusIndicators();
+					updateDeviceStatusIndicators();
+				} else {
+					this.populateMenu();
 
-				updateDeviceStatusIndicators();
+					removeDeviceStatusIndicators();
+					// showDeviceStatusIndicators();
+				}
 			} catch (e) {
 				log("[eruption] internal error: " + e.lineNumber + ": " + e.message);
 			}
@@ -1461,28 +1495,32 @@ let IndicatorMenuButton = GObject.registerClass(
 
 function showDeviceStatusIndicators() {
 	if (settings.get_boolean("show-device-indicators")) {
-		deviceStatus.map((device, index) => {
-			try {
-				if (deviceSupportsStatusReporting(device.usb_vid, device.usb_pid)) {
-					// signal strength indicator
-					if (settings.get_boolean("show-signal-strength")) {
-						const indicatorMenuButton = new IndicatorMenuButton(SIGNAL_STRENGTH_INDICATOR, device);
-						deviceStatusIndicatorBox.add_actor(indicatorMenuButton);
-						statusIndicatorIcons.push(indicatorMenuButton);
-					}
+		if (deviceStatus) {
+			deviceStatus.map((device, index) => {
+				try {
+					if (deviceSupportsStatusReporting(device.usb_vid, device.usb_pid)) {
+						// signal strength indicator
+						if (settings.get_boolean("show-signal-strength")) {
+							const indicatorMenuButton = new IndicatorMenuButton(SIGNAL_STRENGTH_INDICATOR, device);
+							deviceStatusIndicatorBox.add_actor(indicatorMenuButton);
+							statusIndicatorIcons.push(indicatorMenuButton);
+						}
 
-					// battery level indicator
-					if (settings.get_boolean("show-battery-level")) {
-						const indicatorMenuButton = new IndicatorMenuButton(BATTERY_INDICATOR, device);
-						deviceStatusIndicatorBox.add_actor(indicatorMenuButton);
-						statusIndicatorIcons.push(indicatorMenuButton);
+						// battery level indicator
+						if (settings.get_boolean("show-battery-level")) {
+							const indicatorMenuButton = new IndicatorMenuButton(BATTERY_INDICATOR, device);
+							deviceStatusIndicatorBox.add_actor(indicatorMenuButton);
+							statusIndicatorIcons.push(indicatorMenuButton);
+						}
 					}
+				} catch (e) {
+					log("[eruption] internal error: " + e.lineNumber + ": " + e.message);
+					showNotification(ERROR_NOTIFICATION, e.message);
 				}
-			} catch (e) {
-				log("[eruption] internal error: " + e.lineNumber + ": " + e.message);
-				showNotification(ERROR_NOTIFICATION, e.message);
-			}
-		});
+			});
+		} else {
+			log("[eruption] warning: Device status not available");
+		}
 	}
 }
 
