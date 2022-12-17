@@ -40,18 +40,6 @@
     padding-bottom: 3px;
 }
 
-.popup-menu-item-action {
-    /* color: rgba(255, 255, 255, 0.55); */
-}
-
-.popup-menu-item-label {
-    /* color: rgba(255, 255, 255, 0.55); */
-}
-
-.popup-menu-item-status {
-    /* color: rgba(255, 255, 255, 0.55); */
-}
-
 .indicator-item-status-label {
     margin-left: 2px;
     margin-top: 10px;
@@ -81,7 +69,7 @@
     font-size: 42px;
     font-weight: bold;
     color: whitesmoke;
-    background-color: rgba(24, 24, 24, 0.50);
+    background-color: rgba(24, 24, 24, 0.65);
     border-radius: 15px;
     margin: 50px;
     padding: 64px;
