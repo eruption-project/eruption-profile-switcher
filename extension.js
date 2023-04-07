@@ -314,7 +314,7 @@ function runPyroclasmUi() {
 	try {
 		let cmdline = "/usr/bin/pyroclasm";
 
-		let _result = Util.spawn([`${cmdline}`]);
+		Util.spawn([`${cmdline}`]);
 	} catch (e) {
 		log("[eruption] internal error: " + e.lineNumber + ": " + e.message);
 		showNotification(ERROR_NOTIFICATION, e.message);
@@ -326,7 +326,7 @@ function runEruptionGui() {
 	try {
 		let cmdline = "/usr/bin/eruption-gui-gtk3";
 
-		let _result = Util.spawn([`${cmdline}`]);
+		Util.spawn([`${cmdline}`]);
 	} catch (e) {
 		log("[eruption] internal error: " + e.lineNumber + ": " + e.message);
 		showNotification(ERROR_NOTIFICATION, e.message);
@@ -407,7 +407,7 @@ var CustomPopupMenuItem = GObject.registerClass(
 			this.connect("activate", this._activate.bind(this));
 		}
 
-		_activate(_menuItem, cb, _event) {
+		_activate(_menuItem, _cb, _event) {
 			return this._callback(this);
 		}
 	}
@@ -925,7 +925,7 @@ var EruptionMenuButton = GObject.registerClass(
 						// add controls for the global configuration options of eruption
 						let enableAmbientFxItem = new PopupMenu.PopupSwitchMenuItem(_("Ambient Effect"), false);
 						this._enableAmbientFxItem = enableAmbientFxItem;
-						enableAmbientFxItem.connect("activate", event => {
+						enableAmbientFxItem.connect("activate", () => {
 							enableAmbientFx = !enableAmbientFx;
 							eruptionFxProxyEffects.AmbientEffect = enableAmbientFx;
 						});
@@ -934,7 +934,7 @@ var EruptionMenuButton = GObject.registerClass(
 
 						let enableSfxItem = new PopupMenu.PopupSwitchMenuItem(_("Audio Effects"), false);
 						this._enableSfxItem = enableSfxItem;
-						enableSfxItem.connect("activate", event => {
+						enableSfxItem.connect("activate", () => {
 							enableSfx = !enableSfx;
 							eruptionConfig.EnableSfx = enableSfx;
 						});
@@ -959,11 +959,11 @@ var EruptionMenuButton = GObject.registerClass(
 						item.add(icon);
 						item.add_actor(brightnessSlider);
 
-						item.connect("button-press-event", (actor, event) => {
+						item.connect("button-press-event", (_, event) => {
 							return brightnessSlider.startDragging(event);
 						});
 
-						item.connect("key-press-event", (actor, event) => {
+						item.connect("key-press-event", (_, event) => {
 							return brightnessSlider.emit("key-press-event", event);
 						});
 
@@ -988,7 +988,7 @@ var EruptionMenuButton = GObject.registerClass(
 			let separator_added = false;
 
 			if (deviceStatus) {
-				deviceStatus.map((device, index) => {
+				deviceStatus.map(device => {
 					let indicators = 0;
 
 					const item = new PopupMenu.PopupBaseMenuItem({
@@ -1120,7 +1120,7 @@ var EruptionMenuButton = GObject.registerClass(
 		}
 
 		// D-Bus signal, emitted when the daemon registered modification of a connected devices' status
-		_statusChanged(proxy, sender, [object]) {
+		_statusChanged(_proxy, _sender, [_object]) {
 			this.populateMenu();
 		}
 
@@ -1136,7 +1136,7 @@ var EruptionMenuButton = GObject.registerClass(
 		// }
 
 		// D-Bus signal, emitted when the daemon changed its active slot
-		_activeSlotChanged(proxy, sender, [object]) {
+		_activeSlotChanged(_proxy, _sender, [object]) {
 			activeSlot = object;
 
 			eruptionMenuButton.populateMenu({
@@ -1145,7 +1145,7 @@ var EruptionMenuButton = GObject.registerClass(
 		}
 
 		// D-Bus signal, emitted when the daemon changed its active profile
-		_activeProfileChanged(proxy, sender, [object]) {
+		_activeProfileChanged(_proxy, _sender, [object]) {
 			activeProfile[activeSlot] = object;
 
 			let new_profile = _profileFileToName(object);
@@ -1158,13 +1158,13 @@ var EruptionMenuButton = GObject.registerClass(
 
 		// D-Bus signal, emitted when the daemon registered modification or
 		// creation of new profile files
-		_profilesChanged(_proxy, sender, [object]) {
+		_profilesChanged(_proxy, _sender, [_object]) {
 			// showNotification(PROFILE_SWITCH_NOTIFICATION, _("Eruption profiles updated"));
 			eruptionMenuButton.populateMenu();
 		}
 
 		// D-Bus signal, emitted when the status of a managed device has changed
-		_deviceStatusChanged(_proxy, sender, [object]) {
+		_deviceStatusChanged(_proxy, _sender, [object]) {
 			try {
 				if (object !== null) {
 					deviceStatus = JSON.parse(object);
@@ -1178,7 +1178,7 @@ var EruptionMenuButton = GObject.registerClass(
 		}
 
 		// D-Bus signal, emitted when a device is hotplugged and subsequently bound by the eruption daemon
-		_deviceHotplug(_proxy, sender, [object]) {
+		_deviceHotplug(_proxy, _sender, [object]) {
 			try {
 				if (object !== null) {
 					let [usb_vid, usb_pid, failed] = object;
@@ -1496,7 +1496,7 @@ let IndicatorMenuButton = GObject.registerClass(
 function showDeviceStatusIndicators() {
 	if (settings.get_boolean("show-device-indicators")) {
 		if (deviceStatus) {
-			deviceStatus.map((device, index) => {
+			deviceStatus.map(device => {
 				try {
 					if (deviceSupportsStatusReporting(device.usb_vid, device.usb_pid)) {
 						// signal strength indicator

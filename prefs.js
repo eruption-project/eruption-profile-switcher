@@ -87,7 +87,7 @@ const MyBuilderScope = GObject.registerClass({
 	Implements: [Gtk.BuilderScope],
 }, class MyBuilderScope extends GObject.Object {
 
-	vfunc_create_closure(builder, handlerName, flags, connectObject) {
+	vfunc_create_closure(_builder, handlerName, flags, connectObject) {
 		if (flags & Gtk.BuilderClosureFlags.SWAPPED)
 			throw new Error("Unsupported template signal flag 'swapped'");
 
