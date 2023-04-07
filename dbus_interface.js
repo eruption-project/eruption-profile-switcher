@@ -15,7 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * Copyright (c) 2019-2023, The Eruption Development Team
- *
  */
 
 "use strict";
@@ -27,7 +26,8 @@
 //  org.freedesktop.DBus.Introspectable.Introspect`
 
 // D-Bus interface specification: Slots
-var eruptionSlotIface = `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+var eruptionSlotIface =
+  `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
 <node name="/org/eruption/slot">
   <interface name="org.eruption.Slot">
     <method name="GetSlotProfiles">
@@ -74,7 +74,8 @@ var eruptionSlotIface = `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object
 </node>`.trim();
 
 // D-Bus interface specification: Profiles
-var eruptionProfileIface = `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+var eruptionProfileIface =
+  `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
 <node name="/org/eruption/profile">
   <interface name="org.eruption.Profile">
     <method name="EnumProfiles">
@@ -128,7 +129,8 @@ var eruptionProfileIface = `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Obj
 </node>`.trim();
 
 // D-Bus interface specification: Runtime configuration
-var eruptionConfigIface = `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+var eruptionConfigIface =
+  `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
 <node name="/org/eruption/config">
   <interface name="org.eruption.Config">
     <method name="GetColorSchemes">
@@ -189,7 +191,8 @@ var eruptionConfigIface = `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Obje
 </node>`.trim();
 
 // D-Bus interface specification: Status
-var eruptionStatusIface = `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+var eruptionStatusIface =
+  `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
 <node name="/org/eruption/status">
   <interface name="org.eruption.Status">
     <method name="GetLedColors">
@@ -229,7 +232,8 @@ var eruptionStatusIface = `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Obje
 </node>`.trim();
 
 // D-Bus interface specification: Device
-var eruptionDeviceIface = `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+var eruptionDeviceIface =
+  `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
 <node name="/org/eruption/devices">
   <interface name="org.eruption.Device">
     <method name="GetDeviceConfig">
@@ -284,15 +288,15 @@ var eruptionDeviceIface = `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Obje
       <arg name="invalidated_properties" type="as"/>
     </signal>
   </interface>
-</node>`.trim()
-
+</node>`.trim();
 
 // The following D-Bus Ifaces are auto generated with the command
 // `dbus-send --session --dest=org.eruption --type=method_call --print-reply /org/eruption/fx_proxy/effects \
 //  org.freedesktop.DBus.Introspectable.Introspect`
 
 // D-Bus interface specification: /org/eruption/fx_proxy/effects
-var eruptionFxProxyEffectsIface = `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+var eruptionFxProxyEffectsIface =
+  `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
 <node name="/org/eruption/fx_proxy/effects">
   <interface name="org.eruption.fx_proxy.Effects">
     <method name="DisableAmbientEffect"/>
@@ -328,4 +332,4 @@ var eruptionFxProxyEffectsIface = `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-
       <arg name="invalidated_properties" type="as"/>
     </signal>
   </interface>
-</node>`.trim()
+</node>`.trim();
