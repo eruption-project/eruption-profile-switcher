@@ -19,7 +19,7 @@
 # Copyright (c) 2019-2023, The Eruption Development Team
 #
 
-all: build install
+all: build
 
 build:
 	@echo "Generating extension.zip package..."
@@ -31,7 +31,7 @@ build:
 								  --schema=schemas/org.gnome.shell.extensions.eruption-profile-switcher.gschema.xml \
 								  .
 
-install:
+install: build
 	gnome-extensions install --force eruption-profile-switcher@x3n0m0rph59.org.shell-extension.zip
 
 uninstall:

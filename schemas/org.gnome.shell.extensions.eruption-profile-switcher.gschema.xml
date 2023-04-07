@@ -22,7 +22,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist>
   <schema id="org.gnome.shell.extensions.eruption-profile-switcher" path="/org/gnome/shell/extensions/eruption-profile-switcher/">
-    <!-- Notifications settings -->
+    <!-- Notifications Settings -->
     <key type="b" name="notifications-general">
       <default>true</default>
       <summary>Enable general notifications</summary>
@@ -47,7 +47,7 @@
       <description>Enable notifications on settings change</description>
     </key>
 
-    <!-- User Interface settings -->
+    <!-- User Interface Settings -->
     <key type="b" name="compact-mode">
       <default>true</default>
       <summary>Compact UI mode</summary>
@@ -66,7 +66,7 @@
       <description>Show a signal strength indicator for each wireless device</description>
     </key>
 
-    <!-- Additional User Interface settings -->
+    <!-- Additional User Interface Settings -->
     <key type="b" name="show-device-indicators">
       <default>true</default>
       <summary>Show separate device status indicator icons on the panel</summary>
@@ -79,7 +79,7 @@
       <description>Show numeric percentages next to the device status indicators</description>
     </key>
 
-    <!-- Network settings / Legacy (unused) -->
+    <!-- Network Settings / Legacy (unused) -->
     <key type="s" name="netfx-host-name">
       <default>"localhost"</default>
       <summary>NetworkFX Host Name</summary>

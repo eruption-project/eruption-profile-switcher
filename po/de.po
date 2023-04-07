@@ -34,7 +34,7 @@ msgstr ""
 
 #: extension.js:453
 msgid "Could not switch slots! Is Eruption running?"
-msgstr "Konnte nicht den aktiven Slot umschalten! Läuft Eruption?"
+msgstr "Konnte nicht zwischen Slots umschalten! Läuft Eruption?"
 
 #: extension.js:489
 msgid "Could not switch profiles! Is Eruption running?"
@@ -90,7 +90,7 @@ msgstr "Verbunden"
 
 #: extension.js:1164
 msgid "New device plugged and activated"
-msgstr "Neues Gerät verbunden und aktiviert"
+msgstr "Neues Gerät wurde verbunden und aktiviert"
 
 #: extension.js:1169
 msgid "Removed"
@@ -98,7 +98,7 @@ msgstr "Entfernt"
 
 #: extension.js:1171
 msgid "Device removed"
-msgstr "Gerät entfernt"
+msgstr "Gerät wurde entfernt"
 
 #: extension.js:1191
 msgid "Ambient Effect enabled"
@@ -142,7 +142,7 @@ msgstr "Benachrichtigungen bei Änderungen der Einstellungen anzeigen"
 
 #: ui/prefs.ui:99
 msgid "User Interface Settings"
-msgstr "Einstellungen der Benutzer Schnittstelle"
+msgstr "Einstellungen der Benutzer-Schnittstelle"
 
 #: ui/prefs.ui:107
 msgid "Compact UI mode"
@@ -158,7 +158,7 @@ msgstr "Aktiviere Signalstärkeanzeige"
 
 #: ui/prefs.ui:138
 msgid "Additional User Interface Settings"
-msgstr "Weitere Einstellungen der Benutzer Schnittstelle"
+msgstr "Weitere Einstellungen der Benutzer-Schnittstelle"
 
 #: ui/prefs.ui:146
 msgid "Show separate device status indicators on the panel"
