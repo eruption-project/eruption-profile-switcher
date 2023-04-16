@@ -21,12 +21,7 @@
 
 const Gettext = imports.gettext;
 
-const {
-  GObject,
-  Gio,
-  Gtk,
-  Gdk,
-} = imports.gi;
+const { GObject, Gio, Gtk, Gdk } = imports.gi;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
@@ -36,20 +31,20 @@ const Domain = Gettext.domain(Me.metadata.uuid);
 const _ = Domain.gettext;
 const ngettext = Domain.ngettext;
 
-var settings;
+let settings;
 
 function init() {
   ExtensionUtils.initTranslations(Me.metadata.uuid);
 }
 
 function buildPrefsWidget() {
-  let builder = new Gtk.Builder();
+  const builder = new Gtk.Builder();
 
   builder.set_scope(new MyBuilderScope());
   builder.set_translation_domain("eruption-profile-switcher@x3n0m0rph59.org");
   builder.add_from_file(Me.dir.get_path() + "/prefs.ui");
 
-  let provider = new Gtk.CssProvider();
+  const provider = new Gtk.CssProvider();
 
   provider.load_from_path(Me.dir.get_path() + "/stylesheet.css");
   Gtk.StyleContext.add_provider_for_display(
@@ -60,35 +55,35 @@ function buildPrefsWidget() {
 
   settings = ExtensionUtils.getSettings();
 
-  builder.get_object("enable_notifications_general").set_active(
-    settings.get_boolean("notifications-general"),
-  );
-  builder.get_object("enable_notifications_on_profile_switch").set_active(
-    settings.get_boolean("notifications-on-profile-switch"),
-  );
-  builder.get_object("enable_notifications_on_hotplug").set_active(
-    settings.get_boolean("notifications-on-hotplug"),
-  );
-  builder.get_object("enable_notifications_on_settings_change").set_active(
-    settings.get_boolean("notifications-on-settings-change"),
-  );
+  builder
+    .get_object("enable_notifications_general")
+    .set_active(settings.get_boolean("notifications-general"));
+  builder
+    .get_object("enable_notifications_on_profile_switch")
+    .set_active(settings.get_boolean("notifications-on-profile-switch"));
+  builder
+    .get_object("enable_notifications_on_hotplug")
+    .set_active(settings.get_boolean("notifications-on-hotplug"));
+  builder
+    .get_object("enable_notifications_on_settings_change")
+    .set_active(settings.get_boolean("notifications-on-settings-change"));
 
-  builder.get_object("compact_mode").set_active(
-    settings.get_boolean("compact-mode"),
-  );
-  builder.get_object("show_battery_level").set_active(
-    settings.get_boolean("show-battery-level"),
-  );
-  builder.get_object("show_signal_strength").set_active(
-    settings.get_boolean("show-signal-strength"),
-  );
+  builder
+    .get_object("compact_mode")
+    .set_active(settings.get_boolean("compact-mode"));
+  builder
+    .get_object("show_battery_level")
+    .set_active(settings.get_boolean("show-battery-level"));
+  builder
+    .get_object("show_signal_strength")
+    .set_active(settings.get_boolean("show-signal-strength"));
 
-  builder.get_object("show_device_indicators").set_active(
-    settings.get_boolean("show-device-indicators"),
-  );
-  builder.get_object("show_device_indicators_percentages").set_active(
-    settings.get_boolean("show-device-indicators-percentages"),
-  );
+  builder
+    .get_object("show_device_indicators")
+    .set_active(settings.get_boolean("show-device-indicators"));
+  builder
+    .get_object("show_device_indicators_percentages")
+    .set_active(settings.get_boolean("show-device-indicators-percentages"));
 
   return builder.get_object("main_prefs");
 }

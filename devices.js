@@ -22,7 +22,7 @@
 // const Gettext = imports.gettext;
 
 // Supported devices: Eruption 0.3.0
-var SUPPORTED_DEVICES = [
+const SUPPORTED_DEVICES = [
   {
     make: "ROCCAT",
     model: "Vulcan 100/12x",

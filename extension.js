@@ -21,15 +21,8 @@
 
 const Gettext = imports.gettext;
 
-const {
-  Gio,
-  GLib,
-  GObject,
-  Gtk,
-  Shell,
-  Clutter,
-  St,
-} = imports.gi;
+// deno-lint-ignore no-unused-vars
+const { Gio, GLib, GObject, Gtk, Shell, Clutter, St } = imports.gi;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Util = imports.misc.util;
@@ -38,8 +31,8 @@ const Mainloop = imports.mainloop;
 const PanelMenu = imports.ui.panelMenu;
 const PopupMenu = imports.ui.popupMenu;
 const Slider = imports.ui.slider;
-const Signals = imports.signals;
-const ByteArray = imports.byteArray;
+// const Signals = imports.signals;
+// const ByteArray = imports.byteArray;
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
@@ -50,13 +43,13 @@ const Devices = Me.imports.devices;
 const Domain = Gettext.domain(Me.metadata.uuid);
 
 const _ = Domain.gettext;
-const ngettext = Domain.ngettext;
+const _ngettext = Domain.ngettext;
 
 // Global constants
 const NOTIFICATION_TIMEOUT_MILLIS = 1200;
 const NOTIFICATION_ANIMATION_MILLIS = 500;
-const PROCESS_POLL_TIMEOUT_MILLIS = 3000;
-const PROCESS_SPAWN_WAIT_MILLIS = 800;
+// const PROCESS_POLL_TIMEOUT_MILLIS = 3000;
+// const PROCESS_SPAWN_WAIT_MILLIS = 800;
 
 const DEFAULT_SLOT_NAMES = [
   "Profile Slot 1",
@@ -66,7 +59,7 @@ const DEFAULT_SLOT_NAMES = [
 ];
 
 // D-Bus proxy
-var eruptionSlot,
+let eruptionSlot,
   eruptionProfile,
   eruptionConfig,
   eruptionStatus,
@@ -74,17 +67,15 @@ var eruptionSlot,
   eruptionFxProxyEffects;
 
 // Panel menu button
-var connected = false;
-var previous_state = null;
-var instance = null,
+let connected = false;
+let previous_state = null;
+let instance = null,
   eruptionMenuButton,
   deviceStatusIndicatorBox;
 
 // Global state
-var activeSlot,
+let activeSlot,
   slotNames = DEFAULT_SLOT_NAMES,
-  activeProfile = [],
-  savedProfile,
   enableSfx,
   enableAmbientFx,
   brightness = 100,
@@ -95,13 +86,15 @@ var activeSlot,
   process_poll_source,
   brightness_slider_source;
 
-var statusIndicatorIcons = [];
+const activeProfile = [];
 
-var settings;
+let statusIndicatorIcons = [];
+
+let settings;
 
 // Global support variables for showNotification()
-var notificationText = null;
-var pending_timeout = null;
+let notificationText = null;
+let pending_timeout = null;
 
 // Notification types
 const GENERAL_NOTIFICATION = 0;
@@ -121,10 +114,10 @@ function showNotification(type, msg) {
       notificationText = null;
     }
 
-    let monitor = Main.layoutManager.currentMonitor;
+    const monitor = Main.layoutManager.currentMonitor;
 
     if (monitor) {
-      let text = new St.Label({
+      const text = new St.Label({
         style_class: "notification-label",
         text: msg,
       });
@@ -161,25 +154,25 @@ function showNotification(type, msg) {
 }
 
 // Programmatically dismiss the notification overlay
-function fadeOutNotification() {
-  if (areNotificationsEnabled()) {
-    fade_out_source = Mainloop.timeout_add(NOTIFICATION_TIMEOUT_MILLIS, () => {
-      Mainloop.source_remove(fade_out_source);
-      fade_out_source = null;
-
-      if (notificationText) {
-        notificationText.ease_property("opacity", 0, {
-          duration: NOTIFICATION_ANIMATION_MILLIS,
-          mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-          onComplete: () => {
-            Main.uiGroup.remove_actor(notificationText);
-            notificationText = null;
-          },
-        });
-      }
-    });
-  }
-}
+// function fadeOutNotification() {
+//   if (areNotificationsEnabled()) {
+//     fade_out_source = Mainloop.timeout_add(NOTIFICATION_TIMEOUT_MILLIS, () => {
+//       Mainloop.source_remove(fade_out_source);
+//       fade_out_source = null;
+//
+//       if (notificationText) {
+//         notificationText.ease_property("opacity", 0, {
+//           duration: NOTIFICATION_ANIMATION_MILLIS,
+//           mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+//           onComplete: () => {
+//             Main.uiGroup.remove_actor(notificationText);
+//             notificationText = null;
+//           },
+//         });
+//       }
+//     });
+//   }
+// }
 
 // Returns whether notifications should be displayed
 function areNotificationsEnabled(type) {
@@ -281,16 +274,16 @@ function getSignalStrengthIcon(signal_strength) {
 // Returns `true` if the Pyroclasm UI is executable
 function isPyroclasmUiAvailable() {
   try {
-    let cmdline = "/usr/bin/pyroclasm";
+    const cmdline = "/usr/bin/pyroclasm";
 
-    let file = Gio.File.new_for_path(cmdline);
-    let file_info = file.query_info(
+    const file = Gio.File.new_for_path(cmdline);
+    const file_info = file.query_info(
       "standard::*",
       Gio.FileQueryInfoFlags.NONE,
       null,
     );
 
-    let file_type = file_info.get_file_type();
+    const file_type = file_info.get_file_type();
 
     if (
       file_type == Gio.FileType.REGULAR ||
@@ -309,16 +302,16 @@ function isPyroclasmUiAvailable() {
 // Returns `true` if the Eruption GTK3+ GUI is executable
 function isEruptionGuiAvailable() {
   try {
-    let cmdline = "/usr/bin/eruption-gui-gtk3";
+    const cmdline = "/usr/bin/eruption-gui-gtk3";
 
-    let file = Gio.File.new_for_path(cmdline);
-    let file_info = file.query_info(
+    const file = Gio.File.new_for_path(cmdline);
+    const file_info = file.query_info(
       "standard::*",
       Gio.FileQueryInfoFlags.NONE,
       null,
     );
 
-    let file_type = file_info.get_file_type();
+    const file_type = file_info.get_file_type();
 
     if (
       file_type == Gio.FileType.REGULAR ||
@@ -337,7 +330,7 @@ function isEruptionGuiAvailable() {
 // Execute the Pyroclasm UI
 function runPyroclasmUi() {
   try {
-    let cmdline = "/usr/bin/pyroclasm";
+    const cmdline = "/usr/bin/pyroclasm";
 
     Util.spawn([`${cmdline}`]);
   } catch (e) {
@@ -349,7 +342,7 @@ function runPyroclasmUi() {
 // Execute Eruption GTK3+ GUI
 function runEruptionGui() {
   try {
-    let cmdline = "/usr/bin/eruption-gui-gtk3";
+    const cmdline = "/usr/bin/eruption-gui-gtk3";
 
     Util.spawn([`${cmdline}`]);
   } catch (e) {
@@ -360,8 +353,8 @@ function runEruptionGui() {
 
 // Find the name of a supported device from the SUPPORTED_DEVICES table, using USB IDs
 function getDeviceNameFromUSBIDs(usb_vid, usb_pid) {
-  let device = Devices.SUPPORTED_DEVICES.find((e) =>
-    e.usb_vid == usb_vid && e.usb_pid == usb_pid
+  const device = Devices.SUPPORTED_DEVICES.find(
+    (e) => e.usb_vid == usb_vid && e.usb_pid == usb_pid,
   );
   if (device != undefined) {
     return `${device.make} ${device.model}`;
@@ -372,8 +365,8 @@ function getDeviceNameFromUSBIDs(usb_vid, usb_pid) {
 
 // Find if the given device supports status reporting
 function deviceSupportsStatusReporting(usb_vid, usb_pid) {
-  let device = Devices.SUPPORTED_DEVICES.find((e) =>
-    e.usb_vid == usb_vid && e.usb_pid == usb_pid
+  const device = Devices.SUPPORTED_DEVICES.find(
+    (e) => e.usb_vid == usb_vid && e.usb_pid == usb_pid,
   );
   if (device != undefined) {
     return device.has_status;
@@ -384,9 +377,9 @@ function deviceSupportsStatusReporting(usb_vid, usb_pid) {
 
 // Get the profile name from a given .profile filename
 function _profileFileToName(filename) {
-  let result = eruptionProfile.EnumProfilesSync();
+  const result = eruptionProfile.EnumProfilesSync();
 
-  let name = result[0].find((profile) => {
+  const name = result[0].find((profile) => {
     if (profile[1].localeCompare(filename) === 0) {
       return true;
     } else {
@@ -422,7 +415,7 @@ class Profile {
   }
 }
 
-var CustomPopupMenuItem = GObject.registerClass(
+const CustomPopupMenuItem = GObject.registerClass(
   class CustomPopupMenuItem extends PopupMenu.PopupBaseMenuItem {
     _init(text, cb, params) {
       super._init(params);
@@ -443,7 +436,7 @@ var CustomPopupMenuItem = GObject.registerClass(
   },
 );
 
-var SlotMenuItem = GObject.registerClass(
+const SlotMenuItem = GObject.registerClass(
   class SlotMenuItem extends PopupMenu.PopupBaseMenuItem {
     _init(slot, params) {
       super._init(params);
@@ -497,7 +490,7 @@ var SlotMenuItem = GObject.registerClass(
 );
 
 // Menu item with associated profile object
-var ProfileMenuItem = GObject.registerClass(
+const ProfileMenuItem = GObject.registerClass(
   class ProfileMenuItem extends PopupMenu.PopupBaseMenuItem {
     _init(profile, params) {
       super._init(params);
@@ -536,7 +529,7 @@ var ProfileMenuItem = GObject.registerClass(
   },
 );
 
-var EruptionMenuButton = GObject.registerClass(
+const EruptionMenuButton = GObject.registerClass(
   class ProfilesMenuButton extends PanelMenu.Button {
     _init() {
       super._init(0.0, _("Eruption Menu"));
@@ -555,7 +548,7 @@ var EruptionMenuButton = GObject.registerClass(
         showNotification(ERROR_NOTIFICATION, e.message);
       }
 
-      let hbox = new St.BoxLayout({
+      const hbox = new St.BoxLayout({
         style_class: "panel-status-menu-box",
       });
 
@@ -564,7 +557,7 @@ var EruptionMenuButton = GObject.registerClass(
         style_class: "status-icon-notify system-status-icon",
       });
 
-      let indicator_hbox = new St.BoxLayout({
+      const indicator_hbox = new St.BoxLayout({
         style_class: "panel-indicator-box",
       });
 
@@ -790,7 +783,7 @@ var EruptionMenuButton = GObject.registerClass(
           this.menu.removeAll();
 
           // add "slots" header
-          let header = new PopupMenu.PopupMenuItem(
+          const header = new PopupMenu.PopupMenuItem(
             _("Not connected to Eruption"),
             {
               activate: false,
@@ -820,7 +813,7 @@ var EruptionMenuButton = GObject.registerClass(
 
             if (!settings.get_boolean("compact-mode")) {
               // add "slots" header
-              let slot_header = new PopupMenu.PopupMenuItem(_("Slots"), {
+              const slot_header = new PopupMenu.PopupMenuItem(_("Slots"), {
                 activate: false,
                 reactive: false,
                 can_focus: false,
@@ -832,7 +825,7 @@ var EruptionMenuButton = GObject.registerClass(
 
             // create user slots items
             for (let i = 0; i < 4; i++) {
-              let slot = new SlotMenuItem(i);
+              const slot = new SlotMenuItem(i);
               if (i == activeSlot) {
                 slot.setToggleState(true);
               }
@@ -846,7 +839,7 @@ var EruptionMenuButton = GObject.registerClass(
 
             if (!settings.get_boolean("compact-mode")) {
               // add "profile" header
-              let profile_header = new PopupMenu.PopupMenuItem(
+              const profile_header = new PopupMenu.PopupMenuItem(
                 _("Active Profile"),
                 {
                   activate: false,
@@ -870,7 +863,7 @@ var EruptionMenuButton = GObject.registerClass(
             }
 
             if (profile_name) {
-              let current_profile_header = new PopupMenu.PopupMenuItem(
+              const current_profile_header = new PopupMenu.PopupMenuItem(
                 `${profile_name}`,
                 {
                   activate: false,
@@ -909,14 +902,14 @@ var EruptionMenuButton = GObject.registerClass(
             // }
 
             try {
-              let active_profile = config.active_item === undefined
+              const active_profile = config.active_item === undefined
                 ? eruptionProfile.ActiveProfile
                 : config.active_item;
 
               // add profiles radio menu items
-              let result = eruptionProfile.EnumProfilesSync();
+              const result = eruptionProfile.EnumProfilesSync();
               result[0].forEach((profile) => {
-                let item = new ProfileMenuItem(
+                const item = new ProfileMenuItem(
                   new Profile(profile[0], profile[1]),
                   {
                     activate: true,
@@ -937,8 +930,10 @@ var EruptionMenuButton = GObject.registerClass(
               });
             } catch (e) {
               log(
-                "[eruption] could not enumerate profiles: " + e.lineNumber +
-                  ": " + e.message,
+                "[eruption] could not enumerate profiles: " +
+                  e.lineNumber +
+                  ": " +
+                  e.message,
               );
             }
 
@@ -1003,7 +998,7 @@ var EruptionMenuButton = GObject.registerClass(
             this.menu.addMenuItem(separator);
 
             // add controls for the global configuration options of eruption
-            let enableAmbientFxItem = new PopupMenu.PopupSwitchMenuItem(
+            const enableAmbientFxItem = new PopupMenu.PopupSwitchMenuItem(
               _("Ambient Effect"),
               false,
             );
@@ -1015,7 +1010,7 @@ var EruptionMenuButton = GObject.registerClass(
 
             this.menu.addMenuItem(enableAmbientFxItem);
 
-            let enableSfxItem = new PopupMenu.PopupSwitchMenuItem(
+            const enableSfxItem = new PopupMenu.PopupSwitchMenuItem(
               _("Audio Effects"),
               false,
             );
@@ -1028,13 +1023,13 @@ var EruptionMenuButton = GObject.registerClass(
             this.menu.addMenuItem(enableSfxItem);
 
             // add brightness slider
-            let item = new PopupMenu.PopupBaseMenuItem();
-            let icon = new St.Icon({
+            const item = new PopupMenu.PopupBaseMenuItem();
+            const icon = new St.Icon({
               icon_name: "keyboard-brightness",
               style_class: "menu-icon",
             });
 
-            let brightnessSlider = new Slider.Slider(0);
+            const brightnessSlider = new Slider.Slider(0);
             this._brightnessSlider = brightnessSlider;
             brightnessSlider.value = brightness / 100;
             brightnessSlider.connect(
@@ -1093,18 +1088,18 @@ var EruptionMenuButton = GObject.registerClass(
             const signal_strength = device.status["signal-strength-percent"];
 
             if (signal_strength !== undefined) {
-              let icon_name = getSignalStrengthIcon(signal_strength);
+              const icon_name = getSignalStrengthIcon(signal_strength);
 
               const icon = new St.Icon({
                 icon_name: icon_name,
                 style_class: "menu-icon",
               });
 
-              let value = `${signal_strength}`;
-              let filler = Math.max(0, Math.abs(2 - value.length));
-              let text = " ".repeat(filler) + value + "%";
+              const value = `${signal_strength}`;
+              const filler = Math.max(0, Math.abs(2 - value.length));
+              const text = " ".repeat(filler) + value + "%";
 
-              let level_label = new St.Label({
+              const level_label = new St.Label({
                 text: text,
                 style_class: "menu-item-status-label",
               });
@@ -1130,11 +1125,11 @@ var EruptionMenuButton = GObject.registerClass(
                 style_class: "menu-icon",
               });
 
-              let value = `${battery_level}`;
-              let filler = Math.max(0, Math.abs(2 - value.length));
-              let text = " ".repeat(filler) + value + "%";
+              const value = `${battery_level}`;
+              const filler = Math.max(0, Math.abs(2 - value.length));
+              const text = " ".repeat(filler) + value + "%";
 
-              let level_label = new St.Label({
+              const level_label = new St.Label({
                 text: text,
                 style_class: "menu-item-label",
               });
@@ -1157,7 +1152,7 @@ var EruptionMenuButton = GObject.registerClass(
 
               if (!settings.get_boolean("compact-mode")) {
                 // add "devices" header
-                let devices_header = new PopupMenu.PopupMenuItem(
+                const devices_header = new PopupMenu.PopupMenuItem(
                   _("Connected Devices"),
                   {
                     activate: false,
@@ -1201,7 +1196,7 @@ var EruptionMenuButton = GObject.registerClass(
 
       // debounce slider
       brightness_slider_source = Mainloop.timeout_add(15, () => {
-        let percent = this._brightnessSlider.value * 100;
+        const percent = this._brightnessSlider.value * 100;
 
         brightness = percent;
         eruptionConfig.Brightness = percent;
@@ -1237,7 +1232,7 @@ var EruptionMenuButton = GObject.registerClass(
     _activeProfileChanged(_proxy, _sender, [object]) {
       activeProfile[activeSlot] = object;
 
-      let new_profile = _profileFileToName(object);
+      const new_profile = _profileFileToName(object);
       showNotification(PROFILE_SWITCH_NOTIFICATION, new_profile);
 
       eruptionMenuButton.populateMenu({
@@ -1270,7 +1265,7 @@ var EruptionMenuButton = GObject.registerClass(
     _deviceHotplug(_proxy, _sender, [object]) {
       try {
         if (object !== null) {
-          let [usb_vid, usb_pid, failed] = object;
+          const [usb_vid, usb_pid, failed] = object;
 
           log(
             `[eruption] new device hot-plugged: ${usb_vid}:${usb_pid}; failed: ${failed}`,
@@ -1309,24 +1304,24 @@ var EruptionMenuButton = GObject.registerClass(
       }
     }
 
-    _sync_fx_proxy(proxy, _changed, _invalidated, suppress_notification) {
+    _sync_fx_proxy(proxy, _changed, _invalidated, _suppress_notification) {
       try {
         if (proxy.AmbientEffect != null) {
           enableAmbientFx = proxy.AmbientEffect;
 
           this._enableAmbientFxItem.setToggleState(enableAmbientFx);
 
-          if (!suppress_notification && enableAmbientFx) {
-            showNotification(
-              SETTINGS_NOTIFICATION,
-              _("Ambient Effect enabled"),
-            );
-          } else {
-            showNotification(
-              SETTINGS_NOTIFICATION,
-              _("Ambient Effect disabled"),
-            );
-          }
+          // if (!suppress_notification && enableAmbientFx) {
+          //   showNotification(
+          //     SETTINGS_NOTIFICATION,
+          //     _("Ambient Effect enabled"),
+          //   );
+          // } else {
+          //   showNotification(
+          //     SETTINGS_NOTIFICATION,
+          //     _("Ambient Effect disabled"),
+          //   );
+          // }
         }
       } catch (e) {
         log("[eruption] internal error: " + e.lineNumber + ": " + e.message);
@@ -1381,7 +1376,8 @@ var EruptionMenuButton = GObject.registerClass(
             );
           }
         } else if (
-          changed_attr_name === "Brightness" && this._brightnessSlider != null
+          changed_attr_name === "Brightness" &&
+          this._brightnessSlider != null
         ) {
           brightness = proxy.Brightness;
           if (brightness == null || brightness < 0 || brightness > 100) {
@@ -1454,7 +1450,7 @@ var EruptionMenuButton = GObject.registerClass(
 const BATTERY_INDICATOR = 0;
 const SIGNAL_STRENGTH_INDICATOR = 1;
 
-let IndicatorMenuButton = GObject.registerClass(
+const IndicatorMenuButton = GObject.registerClass(
   class IndicatorMenuButton extends PanelMenu.Button {
     _init(type, device) {
       this._device = device;
@@ -1471,9 +1467,9 @@ let IndicatorMenuButton = GObject.registerClass(
       let icon, label;
 
       switch (this._type) {
-        case BATTERY_INDICATOR:
+        case BATTERY_INDICATOR: {
           // battery level indicator
-          let battery_level = this._device.status["battery-level-percent"];
+          const battery_level = this._device.status["battery-level-percent"];
           icon_name = getBatteryLevelIcon(
             this._device.status["battery-level-percent"],
           );
@@ -1488,9 +1484,9 @@ let IndicatorMenuButton = GObject.registerClass(
           deviceStatusIndicatorBox.add_actor(icon);
 
           if (settings.get_boolean("show-device-indicators-percentages")) {
-            var value = `${battery_level}`;
-            var filler = Math.max(0, Math.abs(2 - value.length));
-            var text = " ".repeat(filler) + value + "%";
+            const value = `${battery_level}`;
+            const filler = Math.max(0, Math.abs(2 - value.length));
+            const text = " ".repeat(filler) + value + "%";
 
             label = new St.Label({
               text: text,
@@ -1502,10 +1498,12 @@ let IndicatorMenuButton = GObject.registerClass(
             deviceStatusIndicatorBox.add_actor(label);
           }
           break;
+        }
 
-        case SIGNAL_STRENGTH_INDICATOR:
+        case SIGNAL_STRENGTH_INDICATOR: {
           // signal strength indicator
-          let signal_strength = this._device.status["signal-strength-percent"];
+          const signal_strength =
+            this._device.status["signal-strength-percent"];
           icon_name = getSignalStrengthIcon(signal_strength);
 
           icon = new St.Icon({
@@ -1518,9 +1516,9 @@ let IndicatorMenuButton = GObject.registerClass(
           deviceStatusIndicatorBox.add_actor(icon);
 
           if (settings.get_boolean("show-device-indicators-percentages")) {
-            var value = `${signal_strength}`;
-            var filler = Math.max(0, Math.abs(2 - value.length));
-            var text = " ".repeat(filler) + value + "%";
+            const value = `${signal_strength}`;
+            const filler = Math.max(0, Math.abs(2 - value.length));
+            const text = " ".repeat(filler) + value + "%";
 
             label = new St.Label({
               text: text,
@@ -1532,12 +1530,14 @@ let IndicatorMenuButton = GObject.registerClass(
             deviceStatusIndicatorBox.add_actor(label);
           }
           break;
+        }
 
-        default:
+        default: {
           log(
             "[eruption] internal error: Invalid 'type' parameter in IndicatorMenuButton._init(...)",
           );
           break;
+        }
       }
     }
 
@@ -1545,7 +1545,7 @@ let IndicatorMenuButton = GObject.registerClass(
       // log(`[eruption] updating indicator for: ${this.getDeviceName()}`);
 
       // update device status
-      let device = deviceStatus.find((e, _index, _object) => {
+      const device = deviceStatus.find((e, _index, _object) => {
         if (
           e.usb_vid === this._device.usb_vid &&
           e.usb_pid === this._device.usb_pid
@@ -1561,7 +1561,7 @@ let IndicatorMenuButton = GObject.registerClass(
       let icon_name;
 
       switch (this._type) {
-        case BATTERY_INDICATOR:
+        case BATTERY_INDICATOR: {
           // battery level indicator
           const battery_level = this._device.status["battery-level-percent"];
           icon_name = getBatteryLevelIcon(
@@ -1571,15 +1571,16 @@ let IndicatorMenuButton = GObject.registerClass(
           this.icon.icon_name = icon_name;
 
           if (settings.get_boolean("show-device-indicators-percentages")) {
-            var value = `${battery_level}`;
-            var filler = Math.max(0, Math.abs(2 - value.length));
-            var text = " ".repeat(filler) + value + "%";
+            const value = `${battery_level}`;
+            const filler = Math.max(0, Math.abs(2 - value.length));
+            const text = " ".repeat(filler) + value + "%";
 
             this.label.text = text;
           }
           break;
+        }
 
-        case SIGNAL_STRENGTH_INDICATOR:
+        case SIGNAL_STRENGTH_INDICATOR: {
           // signal strength indicator
           const signal_strength =
             this._device.status["signal-strength-percent"];
@@ -1588,19 +1589,21 @@ let IndicatorMenuButton = GObject.registerClass(
           this.icon.icon_name = icon_name;
 
           if (settings.get_boolean("show-device-indicators-percentages")) {
-            var value = `${signal_strength}`;
-            var filler = Math.max(0, Math.abs(2 - value.length));
-            var text = " ".repeat(filler) + value + "%";
+            const value = `${signal_strength}`;
+            const filler = Math.max(0, Math.abs(2 - value.length));
+            const text = " ".repeat(filler) + value + "%";
 
             this.label.text = text;
           }
           break;
+        }
 
-        default:
+        default: {
           log(
             "[eruption] internal error: Invalid 'type' parameter in IndicatorMenuButton.update(...)",
           );
           break;
+        }
       }
     }
 
@@ -1623,7 +1626,10 @@ let IndicatorMenuButton = GObject.registerClass(
 
     getDeviceName() {
       return `${
-        getDeviceNameFromUSBIDs(this._device.usb_vid, this._device.usb_pid)
+        getDeviceNameFromUSBIDs(
+          this._device.usb_vid,
+          this._device.usb_pid,
+        )
       }`;
     }
   },
@@ -1764,6 +1770,7 @@ class ProfileSwitcherExtension {
   }
 }
 
+// deno-lint-ignore no-unused-vars
 function init() {
   ExtensionUtils.initTranslations(Me.metadata.uuid);
 

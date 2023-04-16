@@ -19,7 +19,7 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: 32\n"
+"Project-Id-Version: 34\n"
 "Report-Msgid-Bugs-To: X3n0m0rph59 <x3n0m0rph59@gmail.com>\n"
 "POT-Creation-Date: 2022-12-08 10:26+0100\n"
 "PO-Revision-Date: 2022-12-08 21:24+0100\n"
