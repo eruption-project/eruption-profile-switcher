@@ -26,7 +26,7 @@
 //  org.freedesktop.DBus.Introspectable.Introspect`
 
 // D-Bus interface specification: Slots
-const eruptionSlotIface =
+var eruptionSlotIface =
   `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
 <node name="/org/eruption/slot">
   <interface name="org.eruption.Slot">
@@ -74,7 +74,7 @@ const eruptionSlotIface =
 </node>`.trim();
 
 // D-Bus interface specification: Profiles
-const eruptionProfileIface =
+var eruptionProfileIface =
   `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
 <node name="/org/eruption/profile">
   <interface name="org.eruption.Profile">
@@ -129,7 +129,7 @@ const eruptionProfileIface =
 </node>`.trim();
 
 // D-Bus interface specification: Runtime configuration
-const eruptionConfigIface =
+var eruptionConfigIface =
   `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
 <node name="/org/eruption/config">
   <interface name="org.eruption.Config">
@@ -232,7 +232,7 @@ var eruptionStatusIface =
 </node>`.trim();
 
 // D-Bus interface specification: Device
-const eruptionDeviceIface =
+var eruptionDeviceIface =
   `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
 <node name="/org/eruption/devices">
   <interface name="org.eruption.Device">
@@ -295,7 +295,7 @@ const eruptionDeviceIface =
 //  org.freedesktop.DBus.Introspectable.Introspect`
 
 // D-Bus interface specification: /org/eruption/fx_proxy/effects
-const eruptionFxProxyEffectsIface =
+var eruptionFxProxyEffectsIface =
   `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
 <node name="/org/eruption/fx_proxy/effects">
   <interface name="org.eruption.fx_proxy.Effects">
