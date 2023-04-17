@@ -21,8 +21,7 @@
 
 const Gettext = imports.gettext;
 
-// deno-lint-ignore no-unused-vars
-const { Gio, GLib, GObject, Gtk, Shell, Clutter, St } = imports.gi;
+const { Gio, GObject, Clutter, St } = imports.gi;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Util = imports.misc.util;
@@ -553,7 +552,7 @@ const EruptionMenuButton = GObject.registerClass(
       });
 
       this.icon = new St.Icon({
-        icon_name: connected ? "keyboard-brightness" : "gtk-no",
+        icon_name: connected ? "keyboard-brightness-symbolic" : "gtk-no",
         style_class: "status-icon-notify system-status-icon",
       });
 
@@ -774,7 +773,9 @@ const EruptionMenuButton = GObject.registerClass(
     }
 
     updateIcon() {
-      this.icon.icon_name = connected ? "keyboard-brightness" : "gtk-no";
+      this.icon.icon_name = connected
+        ? "keyboard-brightness-symbolic"
+        : "gtk-no";
     }
 
     populateMenu(config) {
@@ -1025,7 +1026,7 @@ const EruptionMenuButton = GObject.registerClass(
             // add brightness slider
             const item = new PopupMenu.PopupBaseMenuItem();
             const icon = new St.Icon({
-              icon_name: "keyboard-brightness",
+              icon_name: "keyboard-brightness-symbolic",
               style_class: "menu-icon",
             });
 
