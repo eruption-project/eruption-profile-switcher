@@ -21,7 +21,7 @@
 
 // const Gettext = imports.gettext;
 
-// Supported devices: Eruption 0.3.0
+// Supported devices: Eruption 0.3.3
 const SUPPORTED_DEVICES = [
   {
     make: "ROCCAT",

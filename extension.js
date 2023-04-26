@@ -89,8 +89,6 @@ const activeProfile = [];
 
 let statusIndicatorIcons = [];
 
-let settings;
-
 // Global support variables for showNotification()
 let notificationText = null;
 let pending_timeout = null;
@@ -176,6 +174,8 @@ function showNotification(type, msg) {
 // Returns whether notifications should be displayed
 function areNotificationsEnabled(type) {
   let result = false;
+
+  const settings = ExtensionUtils.getSettings("org.gnome.shell.extensions.eruption-profile-switcher");
 
   try {
     switch (type) {
@@ -812,6 +812,8 @@ const EruptionMenuButton = GObject.registerClass(
           if (!config.status_only) {
             this.menu.removeAll();
 
+            const settings = ExtensionUtils.getSettings("org.gnome.shell.extensions.eruption-profile-switcher");
+
             if (!settings.get_boolean("compact-mode")) {
               // add "slots" header
               const slot_header = new PopupMenu.PopupMenuItem(_("Slots"), {
@@ -932,9 +934,9 @@ const EruptionMenuButton = GObject.registerClass(
             } catch (e) {
               log(
                 "[eruption] could not enumerate profiles: " +
-                  e.lineNumber +
-                  ": " +
-                  e.message,
+                e.lineNumber +
+                ": " +
+                e.message,
               );
             }
 
@@ -1063,6 +1065,8 @@ const EruptionMenuButton = GObject.registerClass(
     }
 
     populateStatusMenuItems() {
+      const settings = ExtensionUtils.getSettings("org.gnome.shell.extensions.eruption-profile-switcher");
+
       this._statusMenuItems.forEach((item) => item.destroy());
       this._statusMenuItems = [];
 
@@ -1464,6 +1468,8 @@ const IndicatorMenuButton = GObject.registerClass(
         _(`${getDeviceNameFromUSBIDs(device.usb_vid, device.usb_pid)}`),
       );
 
+      const settings = ExtensionUtils.getSettings("org.gnome.shell.extensions.eruption-profile-switcher");
+
       let icon_name;
       let icon, label;
 
@@ -1545,6 +1551,8 @@ const IndicatorMenuButton = GObject.registerClass(
     update() {
       // log(`[eruption] updating indicator for: ${this.getDeviceName()}`);
 
+      const settings = ExtensionUtils.getSettings("org.gnome.shell.extensions.eruption-profile-switcher");
+
       // update device status
       const device = deviceStatus.find((e, _index, _object) => {
         if (
@@ -1611,13 +1619,8 @@ const IndicatorMenuButton = GObject.registerClass(
     destroy() {
       log(`[eruption] destroying indicator for: ${this.getDeviceName()}`);
 
-      if (this.icon) {
-        deviceStatusIndicatorBox.remove_actor(this.icon);
-      }
-
-      if (this.label) {
-        deviceStatusIndicatorBox.remove_actor(this.label);
-      }
+      this.icon.destroy();
+      this.label.destroy();
 
       this.icon = null;
       this.label = null;
@@ -1626,17 +1629,18 @@ const IndicatorMenuButton = GObject.registerClass(
     }
 
     getDeviceName() {
-      return `${
-        getDeviceNameFromUSBIDs(
-          this._device.usb_vid,
-          this._device.usb_pid,
-        )
-      }`;
+      return `${getDeviceNameFromUSBIDs(
+        this._device.usb_vid,
+        this._device.usb_pid,
+      )
+        }`;
     }
   },
 );
 
 function showDeviceStatusIndicators() {
+  const settings = ExtensionUtils.getSettings("org.gnome.shell.extensions.eruption-profile-switcher");
+
   if (settings.get_boolean("show-device-indicators")) {
     if (deviceStatus) {
       deviceStatus.map((device) => {
@@ -1704,20 +1708,20 @@ function removeDeviceStatusIndicators() {
   }
 
   deviceStatusIndicatorBox.get_children().forEach((e) => {
-    deviceStatusIndicatorBox.remove_actor(e);
     e.destroy();
+    e = null;
   });
 
   statusIndicatorIcons = [];
 }
 
 class ProfileSwitcherExtension {
-  constructor() {}
+  constructor() { }
 
   enable() {
     log(`[eruption] enabling ${Me.metadata.name}`);
 
-    settings = ExtensionUtils.getSettings();
+    const settings = ExtensionUtils.getSettings("org.gnome.shell.extensions.eruption-profile-switcher");
     settings.connect("changed", this._update.bind(this));
 
     eruptionMenuButton = new EruptionMenuButton();
@@ -1764,10 +1768,10 @@ class ProfileSwitcherExtension {
   _update() {
     log(`[eruption] updating settings ${Me.metadata.name}`);
 
-    eruptionMenuButton.populateMenu();
-
     removeDeviceStatusIndicators();
     showDeviceStatusIndicators();
+
+    eruptionMenuButton.populateMenu();
   }
 }
 

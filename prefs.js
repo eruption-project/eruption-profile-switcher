@@ -31,8 +31,6 @@ const Domain = Gettext.domain(Me.metadata.uuid);
 const _ = Domain.gettext;
 const ngettext = Domain.ngettext;
 
-let settings;
-
 function init() {
   ExtensionUtils.initTranslations(Me.metadata.uuid);
 }
@@ -53,7 +51,7 @@ function buildPrefsWidget() {
     Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION,
   );
 
-  settings = ExtensionUtils.getSettings();
+  const settings = ExtensionUtils.getSettings("org.gnome.shell.extensions.eruption-profile-switcher");
 
   builder
     .get_object("enable_notifications_general")
@@ -118,38 +116,47 @@ const MyBuilderScope = GObject.registerClass(
     }
 
     on_enable_notifications_general_toggled(w) {
+      const settings = ExtensionUtils.getSettings("org.gnome.shell.extensions.eruption-profile-switcher");
       settings.set_boolean("notifications-general", w.get_active());
     }
 
     on_enable_notifications_on_profile_switch_toggled(w) {
+      const settings = ExtensionUtils.getSettings("org.gnome.shell.extensions.eruption-profile-switcher");
       settings.set_boolean("notifications-on-profile-switch", w.get_active());
     }
 
     on_enable_notifications_on_hotplug_toggled(w) {
+      const settings = ExtensionUtils.getSettings("org.gnome.shell.extensions.eruption-profile-switcher");
       settings.set_boolean("notifications-on-hotplug", w.get_active());
     }
 
     on_enable_notifications_on_settings_change_toggled(w) {
+      const settings = ExtensionUtils.getSettings("org.gnome.shell.extensions.eruption-profile-switcher");
       settings.set_boolean("notifications-on-settings-change", w.get_active());
     }
 
     on_compact_mode_toggled(w) {
+      const settings = ExtensionUtils.getSettings("org.gnome.shell.extensions.eruption-profile-switcher");
       settings.set_boolean("compact-mode", w.get_active());
     }
 
     on_show_battery_level_toggled(w) {
+      const settings = ExtensionUtils.getSettings("org.gnome.shell.extensions.eruption-profile-switcher");
       settings.set_boolean("show-battery-level", w.get_active());
     }
 
     on_show_signal_strength_toggled(w) {
+      const settings = ExtensionUtils.getSettings("org.gnome.shell.extensions.eruption-profile-switcher");
       settings.set_boolean("show-signal-strength", w.get_active());
     }
 
     on_show_device_indicators_toggled(w) {
+      const settings = ExtensionUtils.getSettings("org.gnome.shell.extensions.eruption-profile-switcher");
       settings.set_boolean("show-device-indicators", w.get_active());
     }
 
     on_show_device_indicators_percentages_toggled(w) {
+      const settings = ExtensionUtils.getSettings("org.gnome.shell.extensions.eruption-profile-switcher");
       settings.set_boolean(
         "show-device-indicators-percentages",
         w.get_active(),
