@@ -1005,6 +1005,9 @@ const EruptionMenuButton = GObject.registerClass(
               _("Ambient Effect"),
               false,
             );
+
+            enableAmbientFxItem.setToggleState(enableAmbientFx);
+
             this._enableAmbientFxItem = enableAmbientFxItem;
             enableAmbientFxItem.connect("activate", () => {
               enableAmbientFx = !enableAmbientFx;
@@ -1017,6 +1020,9 @@ const EruptionMenuButton = GObject.registerClass(
               _("Audio Effects"),
               false,
             );
+
+            enableSfxItem.setToggleState(enableSfx);
+
             this._enableSfxItem = enableSfxItem;
             enableSfxItem.connect("activate", () => {
               enableSfx = !enableSfx;
@@ -1067,7 +1073,7 @@ const EruptionMenuButton = GObject.registerClass(
     populateStatusMenuItems() {
       const settings = ExtensionUtils.getSettings("org.gnome.shell.extensions.eruption-profile-switcher");
 
-      this._statusMenuItems.forEach((item) => item.destroy());
+      this._statusMenuItems.forEach((item) => { if (item) { item.destroy() } });
       this._statusMenuItems = [];
 
       let separator_added = false;
@@ -1309,24 +1315,24 @@ const EruptionMenuButton = GObject.registerClass(
       }
     }
 
-    _sync_fx_proxy(proxy, _changed, _invalidated, _suppress_notification) {
+    _sync_fx_proxy(proxy, _changed, _invalidated, suppress_notification) {
       try {
         if (proxy.AmbientEffect != null) {
           enableAmbientFx = proxy.AmbientEffect;
 
           this._enableAmbientFxItem.setToggleState(enableAmbientFx);
 
-          // if (!suppress_notification && enableAmbientFx) {
-          //   showNotification(
-          //     SETTINGS_NOTIFICATION,
-          //     _("Ambient Effect enabled"),
-          //   );
-          // } else {
-          //   showNotification(
-          //     SETTINGS_NOTIFICATION,
-          //     _("Ambient Effect disabled"),
-          //   );
-          // }
+          if (!suppress_notification && enableAmbientFx) {
+            showNotification(
+              SETTINGS_NOTIFICATION,
+              _("Ambient Effect enabled"),
+            );
+          } else {
+            showNotification(
+              SETTINGS_NOTIFICATION,
+              _("Ambient Effect disabled"),
+            );
+          }
         }
       } catch (e) {
         log("[eruption] internal error: " + e.lineNumber + ": " + e.message);
@@ -1393,7 +1399,7 @@ const EruptionMenuButton = GObject.registerClass(
 
           if (!suppress_notification) {
             showNotification(
-              SETTINGS_NOTIFICATION,
+              GENERAL_NOTIFICATION,
               _("Brightness: ") + brightness.toFixed(0) + "%",
             );
           }
@@ -1619,8 +1625,11 @@ const IndicatorMenuButton = GObject.registerClass(
     destroy() {
       log(`[eruption] destroying indicator for: ${this.getDeviceName()}`);
 
-      this.icon.destroy();
-      this.label.destroy();
+      if (this.icon)
+        this.icon.destroy();
+
+      if (this.label)
+        this.label.destroy();
 
       this.icon = null;
       this.label = null;
