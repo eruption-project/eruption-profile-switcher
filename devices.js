@@ -30,6 +30,7 @@ const SUPPORTED_DEVICES = [
     usb_pid: 0x3098,
     has_status: false,
   },
+
   {
     make: "ROCCAT",
     model: "Vulcan 100/12x",
