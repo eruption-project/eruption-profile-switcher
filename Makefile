@@ -31,17 +31,26 @@ build:
 								  --schema=schemas/org.gnome.shell.extensions.eruption-profile-switcher.gschema.xml \
 								  .
 
+	@echo "Completed. Now you can install the extension using 'make install'"
+
 install: build
 	gnome-extensions install --force eruption-profile-switcher@x3n0m0rph59.org.shell-extension.zip
 
+	@echo "Success! Please restart the GNOME shell for the changes to take effect."
+
 uninstall:
 	gnome-extensions uninstall eruption-profile-switcher@x3n0m0rph59.org
+
+	@echo "Done."
 
 reload:
 	# gdbus call --session --dest org.gnome.Shell --object-path /org/gnome/Shell --method org.gnome.Shell.Eval 'Meta.restart(_("Restarting…"))'
 	killall -HUP gnome-shell
 
+	@echo "Done."
+
 clean:
 	rm eruption-profile-switcher@x3n0m0rph59.org.shell-extension.zip
 
+.SILENT: build install uninstall reload clean
 .PHONY: build install uninstall reload clean
