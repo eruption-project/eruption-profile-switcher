@@ -42,7 +42,7 @@
     </key>
 
     <key type="b" name="notifications-on-settings-change">
-      <default>true</default>
+      <default>false</default>
       <summary>Enable notifications on settings change</summary>
       <description>Enable notifications on settings change</description>
     </key>
