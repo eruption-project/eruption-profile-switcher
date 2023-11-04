@@ -17,15 +17,27 @@
  * Copyright (c) 2019-2023, The Eruption Development Team
  */
 
-.popup-menu-item-header {
-  margin-left: 0px;
-  padding-left: 0px;
+.center {
+  margin-left: 8px !important;
+}
 
+.popup-menu-item-state-indicator {
+  padding: 12px !important;
+  margin-left: 8px;
+  font-weight: bold;
+}
+
+.popup-menu-item-header {
+  margin-left: 8px;
+  font-weight: bold;
+}
+
+.slot-label {
   font-weight: bold;
 }
 
 .popup-menu-item-current-profile {
-  padding-left: 10px;
+  /* padding-left: 8px; */
   font-weight: bold;
 }
 
@@ -39,15 +51,29 @@
   padding-bottom: 3px;
 }
 
+.popup-menu-item-status-label {
+  margin: 0px;
+}
+
+.popup-menu-icon {
+  width: 18px;
+}
+
+.device-status-icon {
+  width: 12px;
+  height: 12px;
+}
+
 .indicator-item-status-label {
-  margin-left: 2px;
   margin-top: 10px;
+  margin-left: 2px;
+  margin-right: 4px;
   font-family: monospace;
   font-size: x-small;
 }
 
-.menu-item-status-label {
-  font-family: monospace;
+.popup-menu-item-status-label {
+  margin-left: 2px;
 }
 
 .slot-index {
@@ -55,13 +81,9 @@
   color: rgba(255, 255, 255, 0.25);
 }
 
-.slot-label {
-  font-weight: bold;
-}
-
-.menu-icon {
-  height: 5px;
-  width: 15px;
+.popup-menu-device-status-icon {
+  width: 12px;
+  height: 12px;
 }
 
 .notification-label {

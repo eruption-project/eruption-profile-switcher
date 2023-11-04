@@ -17,150 +17,144 @@
  * Copyright (c) 2019-2023, The Eruption Development Team
  */
 
-"use strict";
+import GObject from 'gi://GObject';
 
-const Gettext = imports.gettext;
+import Gdk from 'gi://Gdk?version=4.0';
+import Gtk from 'gi://Gtk?version=4.0';
+import Adw from 'gi://Adw';
 
-const { GObject, Gio, Gtk, Gdk } = imports.gi;
-const ExtensionUtils = imports.misc.extensionUtils;
-const Me = imports.misc.extensionUtils.getCurrentExtension();
+import { ExtensionPreferences, gettext as _, ngettext, pgettext } from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
-// i18n/l10n
-const Domain = Gettext.domain(Me.metadata.uuid);
+export default class ProfileSwitcherExtensionPreferences extends ExtensionPreferences {
+    constructor(metadata) {
+        super(metadata);
 
-const _ = Domain.gettext;
-const ngettext = Domain.ngettext;
-
-function init() {
-  ExtensionUtils.initTranslations(Me.metadata.uuid);
-}
-
-function buildPrefsWidget() {
-  const builder = new Gtk.Builder();
-
-  builder.set_scope(new MyBuilderScope());
-  builder.set_translation_domain("eruption-profile-switcher@x3n0m0rph59.org");
-  builder.add_from_file(Me.dir.get_path() + "/prefs.ui");
-
-  const provider = new Gtk.CssProvider();
-
-  provider.load_from_path(Me.dir.get_path() + "/stylesheet.css");
-  Gtk.StyleContext.add_provider_for_display(
-    Gdk.Display.get_default(),
-    provider,
-    Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION,
-  );
-
-  const settings = ExtensionUtils.getSettings("org.gnome.shell.extensions.eruption-profile-switcher");
-
-  builder
-    .get_object("enable_notifications_general")
-    .set_active(settings.get_boolean("notifications-general"));
-  builder
-    .get_object("enable_notifications_on_profile_switch")
-    .set_active(settings.get_boolean("notifications-on-profile-switch"));
-  builder
-    .get_object("enable_notifications_on_hotplug")
-    .set_active(settings.get_boolean("notifications-on-hotplug"));
-  builder
-    .get_object("enable_notifications_on_settings_change")
-    .set_active(settings.get_boolean("notifications-on-settings-change"));
-
-  builder
-    .get_object("compact_mode")
-    .set_active(settings.get_boolean("compact-mode"));
-  builder
-    .get_object("show_battery_level")
-    .set_active(settings.get_boolean("show-battery-level"));
-  builder
-    .get_object("show_signal_strength")
-    .set_active(settings.get_boolean("show-signal-strength"));
-
-  builder
-    .get_object("show_device_indicators")
-    .set_active(settings.get_boolean("show-device-indicators"));
-  builder
-    .get_object("show_device_indicators_percentages")
-    .set_active(settings.get_boolean("show-device-indicators-percentages"));
-
-  return builder.get_object("main_prefs");
-}
-
-const PrefsWidget = GObject.registerClass(
-  {
-    GTypeName: "PrefsWidget",
-    Template: Me.dir.get_child("prefs.ui").get_uri(),
-  },
-  class PrefsWidget extends Gtk.Box {
-    _init(params = {}) {
-      super._init(params);
+        this.initTranslations(metadata.gettext_domain);
     }
-  },
-);
+
+    fillPreferencesWindow(window) {
+        window._settings = this.getSettings();
+
+        const page = new Adw.PreferencesPage();
+        const group = new Adw.PreferencesGroup();
+
+        group.add(this.buildPrefsWidget());
+        page.add(group);
+
+        window.add(page);
+    }
+
+    buildPrefsWidget() {
+        const builder = new Gtk.Builder();
+
+        builder.set_scope(new MyBuilderScope(this));
+        builder.add_from_file(this.metadata.dir.get_path() + "/prefs.ui");
+
+        const provider = new Gtk.CssProvider();
+
+        provider.load_from_path(this.metadata.dir.get_path() + "/stylesheet.css");
+        Gtk.StyleContext.add_provider_for_display(
+            Gdk.Display.get_default(),
+            provider,
+            Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION,
+        );
+
+        const settings = this.getSettings("org.gnome.shell.extensions.eruption-profile-switcher");
+
+        builder
+            .get_object("enable_notifications_general")
+            .set_active(settings.get_boolean("notifications-general"));
+        builder
+            .get_object("enable_notifications_on_profile_switch")
+            .set_active(settings.get_boolean("notifications-on-profile-switch"));
+        builder
+            .get_object("enable_notifications_on_hotplug")
+            .set_active(settings.get_boolean("notifications-on-hotplug"));
+        builder
+            .get_object("enable_notifications_on_settings_change")
+            .set_active(settings.get_boolean("notifications-on-settings-change"));
+
+        builder
+            .get_object("compact_mode")
+            .set_active(settings.get_boolean("compact-mode"));
+        builder
+            .get_object("show_battery_level")
+            .set_active(settings.get_boolean("show-battery-level"));
+        builder
+            .get_object("show_signal_strength")
+            .set_active(settings.get_boolean("show-signal-strength"));
+
+        builder
+            .get_object("show_device_indicators")
+            .set_active(settings.get_boolean("show-device-indicators"));
+        builder
+            .get_object("show_device_indicators_percentages")
+            .set_active(settings.get_boolean("show-device-indicators-percentages"));
+
+        return builder.get_object("main_prefs");
+    }
+}
 
 const MyBuilderScope = GObject.registerClass(
-  {
-    Implements: [Gtk.BuilderScope],
-  },
-  class MyBuilderScope extends GObject.Object {
-    vfunc_create_closure(_builder, handlerName, flags, connectObject) {
-      if (flags & Gtk.BuilderClosureFlags.SWAPPED) {
-        throw new Error("Unsupported template signal flag 'swapped'");
-      }
+    {
+        Implements: [Gtk.BuilderScope],
+    },
+    class MyBuilderScope extends GObject.Object {
+        constructor(extension) {
+            super();
 
-      if (typeof this[handlerName] === "undefined") {
-        throw new Error(`${handlerName} is undefined`);
-      }
+            this.settings = extension.getSettings("org.gnome.shell.extensions.eruption-profile-switcher");
+        }
 
-      return this[handlerName].bind(connectObject || this);
-    }
+        vfunc_create_closure(_builder, handlerName, flags, connectObject) {
+            if (flags & Gtk.BuilderClosureFlags.SWAPPED) {
+                throw new Error("Unsupported template signal flag 'swapped'");
+            }
 
-    on_enable_notifications_general_toggled(w) {
-      const settings = ExtensionUtils.getSettings("org.gnome.shell.extensions.eruption-profile-switcher");
-      settings.set_boolean("notifications-general", w.get_active());
-    }
+            if (typeof this[handlerName] === "undefined") {
+                throw new Error(`${handlerName} is undefined`);
+            }
 
-    on_enable_notifications_on_profile_switch_toggled(w) {
-      const settings = ExtensionUtils.getSettings("org.gnome.shell.extensions.eruption-profile-switcher");
-      settings.set_boolean("notifications-on-profile-switch", w.get_active());
-    }
+            return this[handlerName].bind(connectObject || this);
+        }
 
-    on_enable_notifications_on_hotplug_toggled(w) {
-      const settings = ExtensionUtils.getSettings("org.gnome.shell.extensions.eruption-profile-switcher");
-      settings.set_boolean("notifications-on-hotplug", w.get_active());
-    }
+        on_enable_notifications_general_toggled(w) {
+            this.settings.set_boolean("notifications-general", w.get_active());
+        }
 
-    on_enable_notifications_on_settings_change_toggled(w) {
-      const settings = ExtensionUtils.getSettings("org.gnome.shell.extensions.eruption-profile-switcher");
-      settings.set_boolean("notifications-on-settings-change", w.get_active());
-    }
+        on_enable_notifications_on_profile_switch_toggled(w) {
+            this.settings.set_boolean("notifications-on-profile-switch", w.get_active());
+        }
 
-    on_compact_mode_toggled(w) {
-      const settings = ExtensionUtils.getSettings("org.gnome.shell.extensions.eruption-profile-switcher");
-      settings.set_boolean("compact-mode", w.get_active());
-    }
+        on_enable_notifications_on_hotplug_toggled(w) {
+            this.settings.set_boolean("notifications-on-hotplug", w.get_active());
+        }
 
-    on_show_battery_level_toggled(w) {
-      const settings = ExtensionUtils.getSettings("org.gnome.shell.extensions.eruption-profile-switcher");
-      settings.set_boolean("show-battery-level", w.get_active());
-    }
+        on_enable_notifications_on_settings_change_toggled(w) {
+            this.settings.set_boolean("notifications-on-settings-change", w.get_active());
+        }
 
-    on_show_signal_strength_toggled(w) {
-      const settings = ExtensionUtils.getSettings("org.gnome.shell.extensions.eruption-profile-switcher");
-      settings.set_boolean("show-signal-strength", w.get_active());
-    }
+        on_compact_mode_toggled(w) {
+            this.settings.set_boolean("compact-mode", w.get_active());
+        }
 
-    on_show_device_indicators_toggled(w) {
-      const settings = ExtensionUtils.getSettings("org.gnome.shell.extensions.eruption-profile-switcher");
-      settings.set_boolean("show-device-indicators", w.get_active());
-    }
+        on_show_battery_level_toggled(w) {
+            this.settings.set_boolean("show-battery-level", w.get_active());
+        }
 
-    on_show_device_indicators_percentages_toggled(w) {
-      const settings = ExtensionUtils.getSettings("org.gnome.shell.extensions.eruption-profile-switcher");
-      settings.set_boolean(
-        "show-device-indicators-percentages",
-        w.get_active(),
-      );
-    }
-  },
+        on_show_signal_strength_toggled(w) {
+            this.settings.set_boolean("show-signal-strength", w.get_active());
+        }
+
+        on_show_device_indicators_toggled(w) {
+            this.settings.set_boolean("show-device-indicators", w.get_active());
+        }
+
+        on_show_device_indicators_percentages_toggled(w) {
+            this.settings.set_boolean(
+                "show-device-indicators-percentages",
+                w.get_active(),
+            );
+        }
+    },
 );

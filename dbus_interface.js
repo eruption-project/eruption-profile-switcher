@@ -17,17 +17,13 @@
  * Copyright (c) 2019-2023, The Eruption Development Team
  */
 
-"use strict";
-
-// const Gettext = imports.gettext;
-
 // The following D-Bus Ifaces are auto generated with the command
 // `dbus-send --system --dest=org.eruption --type=method_call --print-reply /org/eruption/<path> \
 //  org.freedesktop.DBus.Introspectable.Introspect`
 
 // D-Bus interface specification: Slots
-var eruptionSlotIface =
-  `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+export var eruptionSlotIface =
+    `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
 <node name="/org/eruption/slot">
   <interface name="org.eruption.Slot">
     <method name="GetSlotProfiles">
@@ -74,8 +70,8 @@ var eruptionSlotIface =
 </node>`.trim();
 
 // D-Bus interface specification: Profiles
-var eruptionProfileIface =
-  `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+export var eruptionProfileIface =
+    `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
 <node name="/org/eruption/profile">
   <interface name="org.eruption.Profile">
     <method name="EnumProfiles">
@@ -129,8 +125,8 @@ var eruptionProfileIface =
 </node>`.trim();
 
 // D-Bus interface specification: Runtime configuration
-var eruptionConfigIface =
-  `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+export var eruptionConfigIface =
+    `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
 <node name="/org/eruption/config">
   <interface name="org.eruption.Config">
     <method name="GetColorSchemes">
@@ -191,8 +187,8 @@ var eruptionConfigIface =
 </node>`.trim();
 
 // D-Bus interface specification: Status
-var eruptionStatusIface =
-  `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+export var eruptionStatusIface =
+    `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
 <node name="/org/eruption/status">
   <interface name="org.eruption.Status">
     <method name="GetLedColors">
@@ -232,8 +228,8 @@ var eruptionStatusIface =
 </node>`.trim();
 
 // D-Bus interface specification: Device
-var eruptionDeviceIface =
-  `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+export var eruptionDeviceIface =
+    `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
 <node name="/org/eruption/devices">
   <interface name="org.eruption.Device">
     <method name="GetDeviceConfig">
@@ -295,8 +291,8 @@ var eruptionDeviceIface =
 //  org.freedesktop.DBus.Introspectable.Introspect`
 
 // D-Bus interface specification: /org/eruption/fx_proxy/effects
-var eruptionFxProxyEffectsIface =
-  `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+export var eruptionFxProxyEffectsIface =
+    `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
 <node name="/org/eruption/fx_proxy/effects">
   <interface name="org.eruption.fx_proxy.Effects">
     <method name="DisableAmbientEffect"/>
