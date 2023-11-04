@@ -1265,7 +1265,13 @@ const EruptionMenuButton = GObject.registerClass(
                     deviceStatus = JSON.parse(object);
 
                     this.populateMenu({ status_only: true });
-                    updateDeviceStatusIndicators();
+
+                    if (deviceStatus.length != statusIndicatorIcons.length) {
+                        removeDeviceStatusIndicators();
+                        showDeviceStatusIndicators();
+                    } else {
+                        updateDeviceStatusIndicators();
+                    }
                 }
             } catch (e) {
                 console.error("[eruption-profile-switcher] internal error: _deviceStatusChanged(): " + e.lineNumber + ": " + e.message);
@@ -1500,7 +1506,7 @@ const IndicatorMenuButton = GObject.registerClass(
 
                         if (battery_level !== null && battery_level !== undefined) {
                             const value = `${battery_level}`;
-                            const filler = Math.max(0, Math.abs(3 - value.length));
+                            const filler = Math.max(0, Math.abs(2 - value.length));
                             text = " ".repeat(filler) + value + "%";
                         }
 
@@ -1541,7 +1547,7 @@ const IndicatorMenuButton = GObject.registerClass(
 
                         if (signal_strength !== null && signal_strength !== undefined) {
                             const value = `${signal_strength}`;
-                            const filler = Math.max(0, Math.abs(3 - value.length));
+                            const filler = Math.max(0, Math.abs(2 - value.length));
                             text = " ".repeat(filler) + value + "%";
                         }
 
@@ -1602,7 +1608,7 @@ const IndicatorMenuButton = GObject.registerClass(
                     if (settings.get_boolean("show-device-indicators-percentages")) {
                         if (battery_level !== null && battery_level !== undefined) {
                             const value = `${battery_level}`;
-                            const filler = Math.max(0, Math.abs(3 - value.length));
+                            const filler = Math.max(0, Math.abs(2 - value.length));
                             const text = " ".repeat(filler) + value + "%";
 
                             if (this.label)
@@ -1627,7 +1633,7 @@ const IndicatorMenuButton = GObject.registerClass(
                     if (settings.get_boolean("show-device-indicators-percentages")) {
                         if (signal_strength !== null && signal_strength !== undefined) {
                             const value = `${signal_strength}`;
-                            const filler = Math.max(0, Math.abs(3 - value.length));
+                            const filler = Math.max(0, Math.abs(2 - value.length));
                             const text = " ".repeat(filler) + value + "%";
 
                             if (this.label)
@@ -1680,34 +1686,37 @@ const IndicatorMenuButton = GObject.registerClass(
 
 function showDeviceStatusIndicators() {
     if (settings.get_boolean("show-device-indicators")) {
-        deviceStatus.map((device) => {
-            try {
-                if (deviceSupportsStatusReporting(device.usb_vid, device.usb_pid)) {
-                    // signal strength indicator
-                    if (settings.get_boolean("show-signal-strength")) {
-                        let signalStrengthIndicator = new IndicatorMenuButton(
-                            SIGNAL_STRENGTH_INDICATOR,
-                            device,
-                        );
+        if (deviceStatus) {
+            deviceStatus.map((device) => {
+                try {
+                    if (deviceSupportsStatusReporting(device.usb_vid, device.usb_pid)) {
+                        // signal strength indicator
+                        if (settings.get_boolean("show-signal-strength")) {
+                            let signalStrengthIndicator = new IndicatorMenuButton(
+                                SIGNAL_STRENGTH_INDICATOR,
+                                device,
+                            );
 
-                        statusIndicatorIcons.push(signalStrengthIndicator);
+                            statusIndicatorIcons.push(signalStrengthIndicator);
+                        }
+
+                        // battery level indicator
+                        if (settings.get_boolean("show-battery-level")) {
+                            let batteryLevelIndicator = new IndicatorMenuButton(
+                                BATTERY_INDICATOR,
+                                device,
+                            );
+
+                            statusIndicatorIcons.push(batteryLevelIndicator);
+                        }
                     }
-
-                    // battery level indicator
-                    if (settings.get_boolean("show-battery-level")) {
-                        let batteryLevelIndicator = new IndicatorMenuButton(
-                            BATTERY_INDICATOR,
-                            device,
-                        );
-
-                        statusIndicatorIcons.push(batteryLevelIndicator);
-                    }
+                } catch (e) {
+                    console.error("[eruption-profile-switcher] internal error: " + e.lineNumber + ": " + e.message + `\nBacktrace:\n${e.stack}`);
+                    showNotification(ERROR_NOTIFICATION, e.message);
                 }
-            } catch (e) {
-                console.error("[eruption-profile-switcher] internal error: " + e.lineNumber + ": " + e.message + `\nBacktrace:\n${e.stack}`);
-                showNotification(ERROR_NOTIFICATION, e.message);
-            }
-        });
+            });
+
+        }
     }
 }
 
