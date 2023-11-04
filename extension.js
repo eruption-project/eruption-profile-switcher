@@ -56,8 +56,6 @@ let eruptionSlot,
     eruptionDevice,
     eruptionFxProxyEffects;
 
-let settings = null;
-
 // Panel menu button
 let connected = false;
 let previous_state = null;
@@ -168,6 +166,9 @@ function showNotification(type, msg) {
 // Returns whether notifications should be displayed
 function areNotificationsEnabled(type) {
     let result = false;
+
+    let extensionObject = Extension.lookupByUUID('eruption-profile-switcher@x3n0m0rph59.org');
+    let settings = extensionObject.getSettings();
 
     try {
         switch (type) {
@@ -810,7 +811,7 @@ const EruptionMenuButton = GObject.registerClass(
                     if (!config.status_only) {
                         this.menu.removeAll();
 
-                        if (!settings.get_boolean("compact-mode")) {
+                        if (!this.extension.getSettings().get_boolean("compact-mode")) {
                             // add "slots" header
                             const slot_header = new PopupMenu.PopupMenuItem(_("Slots"), {
                                 activate: false,
@@ -836,7 +837,7 @@ const EruptionMenuButton = GObject.registerClass(
                         let separator = new PopupMenu.PopupSeparatorMenuItem();
                         this.menu.addMenuItem(separator);
 
-                        if (!settings.get_boolean("compact-mode")) {
+                        if (!this.extension.getSettings().get_boolean("compact-mode")) {
                             // add "profile" header
                             const profile_header = new PopupMenu.PopupMenuItem(
                                 _("Active Profile"),
@@ -888,7 +889,7 @@ const EruptionMenuButton = GObject.registerClass(
 
                         this.menu.addMenuItem(this.profiles_sub);
 
-                        // if (!settings.get_boolean("compact-mode")) {
+                        // if (!this.extension.getSettings().get_boolean("compact-mode")) {
                         // 	// add "profiles" header
                         // 	let profiles_header = new PopupMenu.PopupMenuItem(_("Available Profiles"), {
                         // 		activate: false,
@@ -1089,7 +1090,7 @@ const EruptionMenuButton = GObject.registerClass(
                     });
 
                     // signal strength indicator
-                    if (settings.get_boolean("show-signal-strength")) {
+                    if (this.extension.getSettings().get_boolean("show-signal-strength")) {
                         const signal_strength = device.status["signal-strength-percent"];
 
                         if (signal_strength !== undefined) {
@@ -1117,7 +1118,7 @@ const EruptionMenuButton = GObject.registerClass(
                     }
 
                     // battery level indicator
-                    if (settings.get_boolean("show-battery-level")) {
+                    if (this.extension.getSettings().get_boolean("show-battery-level")) {
                         const battery_level = device.status["battery-level-percent"];
 
                         if (battery_level !== undefined) {
@@ -1155,7 +1156,7 @@ const EruptionMenuButton = GObject.registerClass(
                             this.menu.addMenuItem(separator);
                             this._statusMenuItems.push(separator);
 
-                            if (!settings.get_boolean("compact-mode")) {
+                            if (!this.extension.getSettings().get_boolean("compact-mode")) {
                                 // add "devices" header
                                 const devices_header = new PopupMenu.PopupMenuItem(
                                     _("Connected Devices"),
@@ -1467,7 +1468,9 @@ const SIGNAL_STRENGTH_INDICATOR = 1;
 
 const IndicatorMenuButton = GObject.registerClass(
     class IndicatorMenuButton extends PanelMenu.Button {
-        _init(type, device) {
+        _init(extension, type, device) {
+            this.extension = extension;
+
             this._device = device;
             this._type = type;
 
@@ -1478,7 +1481,6 @@ const IndicatorMenuButton = GObject.registerClass(
                 _(`${getDeviceNameFromUSBIDs(device.usb_vid, device.usb_pid)}`),
             );
 
-            let hbox;
             let icon_name;
             let icon, label;
 
@@ -1501,7 +1503,7 @@ const IndicatorMenuButton = GObject.registerClass(
 
                     this.hbox.add_child(icon);
 
-                    if (settings.get_boolean("show-device-indicators-percentages")) {
+                    if (this.extension.getSettings().get_boolean("show-device-indicators-percentages")) {
                         var text = "--%";
 
                         if (battery_level !== null && battery_level !== undefined) {
@@ -1542,7 +1544,7 @@ const IndicatorMenuButton = GObject.registerClass(
 
                     this.hbox.add_child(icon);
 
-                    if (settings.get_boolean("show-device-indicators-percentages")) {
+                    if (this.extension.getSettings().get_boolean("show-device-indicators-percentages")) {
                         var text = "--%";
 
                         if (signal_strength !== null && signal_strength !== undefined) {
@@ -1605,7 +1607,7 @@ const IndicatorMenuButton = GObject.registerClass(
                     if (this.icon)
                         this.icon.icon_name = icon_name;
 
-                    if (settings.get_boolean("show-device-indicators-percentages")) {
+                    if (this.extension.getSettings().get_boolean("show-device-indicators-percentages")) {
                         if (battery_level !== null && battery_level !== undefined) {
                             const value = `${battery_level}`;
                             const filler = Math.max(0, Math.abs(2 - value.length));
@@ -1630,7 +1632,7 @@ const IndicatorMenuButton = GObject.registerClass(
                     if (this.icon)
                         this.icon.icon_name = icon_name;
 
-                    if (settings.get_boolean("show-device-indicators-percentages")) {
+                    if (this.extension.getSettings().get_boolean("show-device-indicators-percentages")) {
                         if (signal_strength !== null && signal_strength !== undefined) {
                             const value = `${signal_strength}`;
                             const filler = Math.max(0, Math.abs(2 - value.length));
@@ -1685,6 +1687,9 @@ const IndicatorMenuButton = GObject.registerClass(
 );
 
 function showDeviceStatusIndicators() {
+    let extensionObject = Extension.lookupByUUID('eruption-profile-switcher@x3n0m0rph59.org');
+    let settings = extensionObject.getSettings();
+
     if (settings.get_boolean("show-device-indicators")) {
         if (deviceStatus) {
             deviceStatus.map((device) => {
@@ -1693,6 +1698,7 @@ function showDeviceStatusIndicators() {
                         // signal strength indicator
                         if (settings.get_boolean("show-signal-strength")) {
                             let signalStrengthIndicator = new IndicatorMenuButton(
+                                extensionObject,
                                 SIGNAL_STRENGTH_INDICATOR,
                                 device,
                             );
@@ -1703,6 +1709,7 @@ function showDeviceStatusIndicators() {
                         // battery level indicator
                         if (settings.get_boolean("show-battery-level")) {
                             let batteryLevelIndicator = new IndicatorMenuButton(
+                                extensionObject,
                                 BATTERY_INDICATOR,
                                 device,
                             );
@@ -1760,8 +1767,8 @@ export default class ProfileSwitcherExtension extends Extension {
     enable() {
         console.log(`[eruption-profile-switcher] enabling ${this.metadata.name}`);
 
-        settings = this.getSettings("org.gnome.shell.extensions.eruption-profile-switcher");
-        settings.connect("changed", this._update.bind(this));
+        this.settings = this.getSettings("org.gnome.shell.extensions.eruption-profile-switcher");
+        this.settings.connect("changed", this._update.bind(this));
 
         eruptionMenuButton = new EruptionMenuButton(this);
         Main.panel.addToStatusArea("eruption-menu", eruptionMenuButton, 1, "right");
@@ -1796,7 +1803,7 @@ export default class ProfileSwitcherExtension extends Extension {
         Main.panel.menuManager.removeMenu(eruptionMenuButton.menu);
         eruptionMenuButton.destroy();
 
-        settings = null;
+        this.settings = null;
     }
 
     reload() {
