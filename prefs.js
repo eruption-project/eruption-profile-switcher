@@ -19,35 +19,29 @@
 
 import GObject from 'gi://GObject';
 
-import Gdk from 'gi://Gdk?version=4.0';
-import Gtk from 'gi://Gtk?version=4.0';
+import Gtk from 'gi://Gtk';
+import Gdk from 'gi://Gdk';
 import Adw from 'gi://Adw';
 
 import { ExtensionPreferences, gettext as _, ngettext, pgettext } from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
 export default class ProfileSwitcherExtensionPreferences extends ExtensionPreferences {
-    constructor(metadata) {
-        super(metadata);
-
-        this.initTranslations(metadata.gettext_domain);
-    }
-
     fillPreferencesWindow(window) {
         window._settings = this.getSettings();
 
         const page = new Adw.PreferencesPage();
         const group = new Adw.PreferencesGroup();
 
-        group.add(this.buildPrefsWidget());
+        group.add(this.buildPrefsWidget(window._settings));
         page.add(group);
 
         window.add(page);
     }
 
-    buildPrefsWidget() {
+    buildPrefsWidget(settings) {
         const builder = new Gtk.Builder();
 
-        builder.set_scope(new MyBuilderScope(this));
+        builder.set_scope(new MyBuilderScope(this.win));
         builder.add_from_file(this.metadata.dir.get_path() + "/prefs.ui");
 
         const provider = new Gtk.CssProvider();
@@ -58,8 +52,6 @@ export default class ProfileSwitcherExtensionPreferences extends ExtensionPrefer
             provider,
             Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION,
         );
-
-        const settings = this.getSettings("org.gnome.shell.extensions.eruption-profile-switcher");
 
         builder
             .get_object("enable_notifications_general")
@@ -100,10 +92,10 @@ const MyBuilderScope = GObject.registerClass(
         Implements: [Gtk.BuilderScope],
     },
     class MyBuilderScope extends GObject.Object {
-        constructor(extension) {
+        constructor(extension, settings) {
             super();
 
-            this.settings = extension.getSettings("org.gnome.shell.extensions.eruption-profile-switcher");
+            this.settings = settings;
         }
 
         vfunc_create_closure(_builder, handlerName, flags, connectObject) {

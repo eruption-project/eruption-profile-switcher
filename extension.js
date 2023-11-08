@@ -1758,12 +1758,6 @@ function removeDeviceStatusIndicators() {
 }
 
 export default class ProfileSwitcherExtension extends Extension {
-    constructor(metadata) {
-        super(metadata);
-
-        this.initTranslations(metadata.gettext_domain);
-    }
-
     enable() {
         console.log(`[eruption-profile-switcher] enabling ${this.metadata.name}`);
 
