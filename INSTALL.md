@@ -5,7 +5,7 @@ Please download the `Eruption Profile Switcher` GNOME 4x shell extension from [e
 To install and enable the extension, please run the following commands in a terminal:
 
 ```shell
-gnome-extensions install ~/Downloads/eruption-profile-switcherx3n0m0rph59.org.v37.shell-extension.zip
+gnome-extensions install ~/Downloads/eruption-profile-switcherx3n0m0rph59.org.v38.shell-extension.zip
 gnome-extensions enable eruption-profile-switcher@x3n0m0rph59.org
 ```
 

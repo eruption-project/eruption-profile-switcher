@@ -41,7 +41,7 @@ export default class ProfileSwitcherExtensionPreferences extends ExtensionPrefer
     buildPrefsWidget(settings) {
         const builder = new Gtk.Builder();
 
-        builder.set_scope(new MyBuilderScope(this.win));
+        builder.set_scope(new MyBuilderScope(this.win, settings));
         builder.add_from_file(this.metadata.dir.get_path() + "/prefs.ui");
 
         const provider = new Gtk.CssProvider();
@@ -95,6 +95,7 @@ const MyBuilderScope = GObject.registerClass(
         constructor(extension, settings) {
             super();
 
+            this.extension = extension;
             this.settings = settings;
         }
 
